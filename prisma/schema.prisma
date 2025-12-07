@@ -1755,7 +1755,7 @@ model LossAlert {
   reviewedBy    String?  // User ID
   resolvedAt    DateTime?
   
-  product       Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product       Product? @relation("LossAlertProduct", fields: [productId], references: [id], onDelete: Cascade)
   staff         User?    @relation("LossAlertStaff", fields: [staffId], references: [id], onDelete: Cascade)
   
   @@index([type])

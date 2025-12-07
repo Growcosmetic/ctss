@@ -102,6 +102,7 @@ model User {
   lossAlerts       LossAlert[] @relation("LossAlertStaff") // Phase 19I
   consumptionTopStaff ConsumptionTracking[] @relation("ConsumptionTopStaff") // Phase 19J
   touchpoints      CustomerTouchpoint[] @relation("TouchpointStaff") // Phase 20
+  signatureStyle   StylistSignatureStyle?
 }
 
 ///////////////////////////////////////////////////////////////
@@ -144,6 +145,8 @@ model Customer {
   predictions  CustomerPrediction[] @relation("CustomerPredictionCustomer") // Phase 20
   upsaleRecommendations UpsaleRecommendation[] @relation("CustomerUpsaleRecommendation") // Phase 22
   upsaleRecords UpsaleRecord[] @relation("CustomerUpsaleRecord") // Phase 22
+  personalityProfile CustomerPersonalityProfile?
+  membership         CustomerMembership?
 }
 
 ///////////////////////////////////////////////////////////////
@@ -3031,15 +3034,19 @@ model Branch {
   inventoryLogs   StockLog[] @relation("BranchStockLog")
   mixLogs         MixLog[] @relation("BranchMixLog")
   
-  @@unique([code])
-  @@index([name])
-  @@index([partnerId])
-  @@index([isActive])
-  users        User[]
+  users        User[] @relation("BranchUsers")
   productStock ProductStock[]
   stockTransactions StockTransaction[]
   salaryPayout SalaryPayout[]
   staffAssessments SkillAssessment[] @relation("StaffAssessments")
+
+  performances BranchPerformance[] @relation("BranchPerformanceBranch")
+  forecasts    BranchForecast[]    @relation("BranchForecastBranch")
+
+  @@unique([code])
+  @@index([name])
+  @@index([partnerId])
+  @@index([isActive])
 }
 
 model BranchStaffAssignment {
@@ -5032,6 +5039,7 @@ model CustomerMembership {
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   tierUpgradeHistory TierUpgradeHistory[]
   rewardRedemptions RewardRedemption[]
+  pointsTransactions PointsTransaction[]
   
   @@index([customerId])
   @@index([currentTier])

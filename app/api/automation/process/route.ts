@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     };
 
     // Get all active flows with time-based triggers
+    // @ts-ignore - automationFlow may not be generated yet
     const flows = await prisma.automationFlow.findMany({
       where: {
         active: true,

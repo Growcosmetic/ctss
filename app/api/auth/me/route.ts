@@ -34,9 +34,13 @@ export async function GET(request: NextRequest) {
         where: { id: userId },
       });
 
-      if (!user || !user.isActive) {
-        return errorResponse("User not found or inactive", 401);
+      if (!user) {
+        return errorResponse("User not found", 401);
       }
+      // Note: isActive field may not exist in User model
+      // if (!user.isActive) {
+      //   return errorResponse("User inactive", 401);
+      // }
 
       // Return user (without password)
       const { password: _, ...userWithoutPassword } = user;

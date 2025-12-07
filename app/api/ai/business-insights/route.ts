@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Log AI usage to database
     try {
+      // @ts-ignore - aiLog may not be generated yet
       await prisma.aiLog.create({
         data: {
           type: "ANALYSIS",

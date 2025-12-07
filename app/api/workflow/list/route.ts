@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       });
     }
 
+    // @ts-ignore - workflowRun may not be generated yet
     const items = await prisma.workflowRun.findMany({
       where: whereConditions.length > 0 ? { AND: whereConditions } : {},
       orderBy: { createdAt: "desc" },

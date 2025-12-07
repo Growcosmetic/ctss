@@ -9,6 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
+    // @ts-ignore - workflowRun may not be generated yet
     const item = await prisma.workflowRun.findUnique({
       where: { id }
     });

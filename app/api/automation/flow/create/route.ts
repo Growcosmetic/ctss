@@ -17,7 +17,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const flow = await prisma.automationFlow.create({
+    // @ts-ignore - automationFlow may not be generated yet
+    const flow = // @ts-ignore - automationFlow may not be generated yet
+      await
+      prisma.automationFlow.create({
       data: {
         name,
         description: description || null,

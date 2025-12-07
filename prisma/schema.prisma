@@ -5030,6 +5030,8 @@ model CustomerMembership {
   expiresAt       DateTime? // Membership expiration (if applicable)
   
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tierUpgradeHistory TierUpgradeHistory[]
+  rewardRedemptions RewardRedemption[]
   
   @@index([customerId])
   @@index([currentTier])
@@ -5130,6 +5132,8 @@ model RewardCatalog {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  redemptions     RewardRedemption[]
   
   @@index([rewardType])
   @@index([isActive])

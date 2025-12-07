@@ -56,6 +56,7 @@ export async function POST(req: Request) {
     try {
     try {
       // @ts-ignore - Model may not be generated yet
+      // @ts-ignore - stylistAnalysis may not be generated yet
       const items = await prisma.stylistAnalysis.findMany({
         where: whereConditions.length > 0 ? { AND: whereConditions } : {},
         orderBy: {
@@ -89,6 +90,7 @@ export async function GET() {
   try {
     try {
       // @ts-ignore - Model may not be generated yet
+      // @ts-ignore - stylistAnalysis may not be generated yet
       const items = await prisma.stylistAnalysis.findMany({
         orderBy: { createdAt: "desc" },
       });

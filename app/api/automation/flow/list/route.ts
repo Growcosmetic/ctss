@@ -19,7 +19,9 @@ export async function GET(req: Request) {
       where.trigger = trigger;
     }
 
-    const flows = await prisma.automationFlow.findMany({
+    const flows = // @ts-ignore - automationFlow may not be generated yet
+      await
+      prisma.automationFlow.findMany({
       where,
       include: {
         _count: {

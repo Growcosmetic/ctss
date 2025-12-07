@@ -222,7 +222,8 @@ model Product {
   restockRecommendations RestockRecommendation[] @relation("RestockProduct") // Phase 19J
   restockTriggers RestockTrigger[] @relation("RestockTriggerProduct") // Phase 19J
   branchInventories BranchInventory[] @relation("BranchInventoryProduct")
-
+  serviceCosts ServiceCost[]
+  
   @@index([category])
   @@index([name])
 }
@@ -435,6 +436,9 @@ model MarketingCampaign {
   createdAt   DateTime @default(now())
 
   logs MarketingLog[]
+  channels MarketingChannel[]
+  contents MarketingContent[]
+  automations MarketingAutomation[]
 }
 
 model MarketingLog {
@@ -3031,6 +3035,8 @@ model Branch {
   
   // Relations
   partner         Partner? @relation("PartnerBranches", fields: [partnerId], references: [id], onDelete: Cascade)
+  mixLogs         MixLog[] @relation("BranchMixLog")
+  
   users        User[] @relation("BranchUsers")
   productStock ProductStock[]
   stockTransactions StockTransaction[]

@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
       where.customerId = customerId;
     }
     if (staffId) {
-      where.staffId = staffId;
+      where.stylistId = staffId;
     }
     if (date) {
-      where.bookingDate = new Date(date);
+      where.date = new Date(date);
     }
 
     const [bookings, total] = await Promise.all([
@@ -38,30 +38,23 @@ export async function GET(request: NextRequest) {
           customer: {
             select: {
               id: true,
-              firstName: true,
-              lastName: true,
+              name: true,
               phone: true,
             },
           },
-          staff: {
+          stylist: {
             select: {
               id: true,
-              employeeId: true,
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                },
-              },
+              name: true,
             },
           },
-          bookingServices: {
-            include: {
-              service: true,
-            },
-          },
+          // bookingServices: {
+          //   include: {
+          //     service: true,
+          //   },
+          // },
         },
-        orderBy: { bookingDate: "desc" },
+        orderBy: { date: "desc" },
       }),
       prisma.booking.count({ where }),
     ]);
@@ -107,30 +100,31 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.create({
       data: {
         customerId,
-        staffId,
-        bookingDate: new Date(bookingDate),
-        bookingTime: new Date(bookingTime),
-        duration: duration || items.reduce((sum: number, item: any) => sum + (item.duration || 0), 0),
-        notes,
-        totalAmount,
-        createdById: createdById || "system",
-        bookingServices: {
-          create: items.map((item: any) => ({
-            serviceId: item.serviceId,
-            price: item.price,
-            duration: item.duration,
-            notes: item.notes,
-          })),
-        },
+        stylistId: staffId,
+        date: new Date(bookingDate),
+        // bookingTime: new Date(bookingTime),
+        // duration: duration || items.reduce((sum: number, item: any) => sum + (item.duration || 0), 0),
+        status: "PENDING",
+        branchId: "default-branch-id", // TODO: Get from request or context
+        // totalAmount,
+        // createdById: createdById || "system",
+        // bookingServices: {
+        //   create: items.map((item: any) => ({
+        //     serviceId: item.serviceId,
+        //     price: item.price,
+        //     duration: item.duration,
+        //     notes: item.notes,
+        //   })),
+        // },
       },
       include: {
         customer: true,
-        staff: true,
-        bookingServices: {
-          include: {
-            service: true,
-          },
-        },
+        stylist: true,
+        // bookingServices: {
+        //   include: {
+        //     service: true,
+        //   },
+        // },
       },
     });
 

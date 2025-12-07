@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
           // Run flow
           const result = await runAutomationFlow(
-            flow,
+            flow as any,
             customer,
             visits,
             tags,

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
     // Get today's bookings
     const todayBookings = await prisma.booking.findMany({
       where: {
-        bookingDate: {
+        date: {
           gte: todayStart,
           lte: todayEnd,
         },

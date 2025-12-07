@@ -140,7 +140,7 @@ async function getStaffPerformanceReport(dateFrom: Date, dateTo: Date) {
       },
       bookings: {
         where: {
-          bookingDate: {
+          date: {
             gte: dateFrom,
             lte: dateTo,
           },
@@ -172,7 +172,7 @@ async function getCustomerAnalyticsReport(dateFrom: Date, dateTo: Date) {
       },
       bookings: {
         where: {
-          bookingDate: {
+          date: {
             gte: dateFrom,
             lte: dateTo,
           },
@@ -231,7 +231,7 @@ async function getInventoryReport() {
 async function getBookingReport(dateFrom: Date, dateTo: Date) {
   const bookings = await prisma.booking.findMany({
     where: {
-      bookingDate: {
+      date: {
         gte: dateFrom,
         lte: dateTo,
       },

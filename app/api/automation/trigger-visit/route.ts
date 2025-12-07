@@ -23,12 +23,12 @@ export async function POST(req: Request) {
     // Get all active visit-based flows
     const flows = // @ts-ignore - automationFlow may not be generated yet
       await
-      prisma.automationFlow.findMany({
-      where: {
-        active: true,
-        trigger: "visit",
-      },
-    });
+        prisma.automationFlow.findMany({
+          where: {
+            active: true,
+            trigger: "visit",
+          },
+        });
 
     if (flows.length === 0) {
       return NextResponse.json({
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     for (const flow of flows) {
       try {
         const result = await runAutomationFlow(
-          flow,
+          flow as any,
           customer,
           visits,
           tags,

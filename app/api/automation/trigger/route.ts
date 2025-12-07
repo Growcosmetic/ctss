@@ -20,9 +20,9 @@ export async function POST(req: Request) {
     // Get flow
     const flow = // @ts-ignore - automationFlow may not be generated yet
       await
-      prisma.automationFlow.findUnique({
-      where: { id: flowId },
-    });
+        prisma.automationFlow.findUnique({
+          where: { id: flowId },
+        });
 
     if (!flow) {
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
     // Run flow
     const result = await runAutomationFlow(
-      flow,
+      flow as any,
       customer,
       visits,
       tags,

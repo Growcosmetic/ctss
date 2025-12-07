@@ -12,25 +12,20 @@ export async function GET(
       where: { id: params.id },
       include: {
         customer: true,
-        staff: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+        stylist: {
+          select: {
+            name: true,
           },
         },
-        bookingServices: {
-          include: {
-            service: true,
-          },
-        },
-        posOrders: {
-          take: 5,
-          orderBy: { createdAt: "desc" },
-        },
+        // bookingServices: {
+        //   include: {
+        //     service: true,
+        //   },
+        // },
+        // posOrders: {
+        //   take: 5,
+        //   orderBy: { createdAt: "desc" },
+        // },
       },
     });
 
@@ -63,21 +58,22 @@ export async function PUT(
     const booking = await prisma.booking.update({
       where: { id: params.id },
       data: {
-        staffId,
-        bookingDate: bookingDate ? new Date(bookingDate) : undefined,
-        bookingTime: bookingTime ? new Date(bookingTime) : undefined,
-        duration,
+        stylistId: staffId,
+        // bookingDate: bookingDate ? new Date(bookingDate) : undefined,
+        // bookingTime: bookingTime ? new Date(bookingTime) : undefined,
+        date: bookingDate ? new Date(bookingDate) : undefined,
+        // duration,
         status,
         notes,
       },
       include: {
         customer: true,
-        staff: true,
-        bookingServices: {
-          include: {
-            service: true,
-          },
-        },
+        stylist: true,
+        // bookingServices: {
+        //   include: {
+        //     service: true,
+        //   },
+        // },
       },
     });
 
@@ -103,8 +99,8 @@ export async function DELETE(
       where: { id: params.id },
       data: {
         status: "CANCELLED",
-        cancelledAt: new Date(),
-        cancelledBy: cancelledBy || "system",
+        // cancelledAt: new Date(),
+        // cancelledBy: cancelledBy || "system",
       },
     });
 

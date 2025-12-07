@@ -29,7 +29,7 @@ export default async function HistoryDetailPage({
         {new Date(item.createdAt).toLocaleString("vi-VN")}
       </h1>
 
-      <StylistCoachPanel data={item.resultJson} />
+      <StylistCoachPanel data={item.resultJson as any} />
     </div>
   );
 }

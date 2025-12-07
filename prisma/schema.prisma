@@ -3031,15 +3031,6 @@ model Branch {
   
   // Relations
   partner         Partner? @relation("PartnerBranches", fields: [partnerId], references: [id], onDelete: Cascade)
-  staff           User[]   @relation("BranchStaff")
-  customers       Customer[] @relation("BranchCustomer")
-  bookings        Booking[] @relation("BranchBooking")
-  services        Service[] @relation("BranchService")
-  products        Product[] @relation("BranchProduct")
-  invoices        Invoice[] @relation("BranchInvoice")
-  inventoryLogs   StockLog[] @relation("BranchStockLog")
-  mixLogs         MixLog[] @relation("BranchMixLog")
-  
   users        User[] @relation("BranchUsers")
   productStock ProductStock[]
   stockTransactions StockTransaction[]

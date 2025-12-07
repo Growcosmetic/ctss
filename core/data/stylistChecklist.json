@@ -1,0 +1,28 @@
+[
+  { "item": "Kiểm tra lịch sử hóa chất 12 tháng", "must": true, "category": "assessment" },
+  { "item": "Kiểm tra độ giãn – đàn hồi", "must": true, "category": "assessment" },
+  { "item": "Kiểm tra độ xốp (Porosity)", "must": true, "category": "assessment" },
+  { "item": "Đánh giá độ hư tổn (1-5)", "must": true, "category": "assessment" },
+  { "item": "Chụp ảnh before nếu có rủi ro", "must": false, "category": "assessment" },
+  { "item": "Đưa 3 phương án tư vấn", "must": true, "category": "consultation" },
+  { "item": "Hỏi câu Mina trước khi báo giá", "must": true, "category": "consultation" },
+  { "item": "Giải thích rõ rủi ro (nếu có)", "must": true, "category": "consultation" },
+  { "item": "Xác nhận dịch vụ với khách", "must": true, "category": "confirmation" },
+  { "item": "Ghi đầy đủ phiếu dịch vụ", "must": true, "category": "confirmation" },
+  { "item": "Bàn giao thông tin cho pha chế", "must": true, "category": "confirmation" },
+  { "item": "Kiểm soát độ ẩm đúng chuẩn (25-35%)", "must": true, "category": "technical" },
+  { "item": "Phân khu đúng quy luật", "must": true, "category": "technical" },
+  { "item": "Test độ mềm trước khi cuốn/ép", "must": true, "category": "technical" },
+  { "item": "Test độ mềm mỗi 5-8 phút", "must": true, "category": "technical" },
+  { "item": "Kiểm soát độ căng & xoăn", "must": true, "category": "technical" },
+  { "item": "Tuân thủ thời gian tiêu chuẩn", "must": true, "category": "technical" },
+  { "item": "Quan sát rủi ro liên tục", "must": true, "category": "technical" },
+  { "item": "Cho khách xem 360 độ", "must": true, "category": "review" },
+  { "item": "Giải thích sản phẩm đã dùng", "must": true, "category": "review" },
+  { "item": "Đề xuất sản phẩm chăm sóc (tinh tế)", "must": false, "category": "review" },
+  { "item": "Gửi file hướng dẫn chăm sóc", "must": true, "category": "followup" },
+  { "item": "Nhắc lịch quay lại (4-8 tuần)", "must": true, "category": "followup" },
+  { "item": "Nhắc follow-up 24-48h", "must": true, "category": "followup" },
+  { "item": "Ghi chú kỹ thuật vào hệ thống", "must": true, "category": "followup" }
+]
+

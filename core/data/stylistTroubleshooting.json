@@ -1,0 +1,177 @@
+[
+  {
+    "id": "hair_not_hold_curl",
+    "title": "Tóc không vào nếp sau uốn",
+    "description": "Tóc không giữ được độ xoăn sau khi uốn",
+    "symptoms": [
+      "Tóc không vào nếp ngay sau khi gỡ lô",
+      "Tóc thẳng lại sau 1-2 ngày",
+      "Độ xoăn không đều"
+    ],
+    "causes": [
+      "Độ ẩm không đúng (quá ướt hoặc quá khô)",
+      "Góc cuốn không đúng",
+      "Size trục không phù hợp",
+      "Thời gian xử lý không đủ",
+      "Tóc quá khỏe, cần thuốc mạnh hơn"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Kiểm tra lại độ ẩm: Đảm bảo tóc sấy khô 80% trước khi lên thuốc"
+      },
+      {
+        "step": 2,
+        "action": "Kiểm tra góc cuốn: Góc cuốn phải 90-120 độ, không quá thấp"
+      },
+      {
+        "step": 3,
+        "action": "Kiểm tra size trục: Size trục phải phù hợp với độ xoăn mong muốn"
+      },
+      {
+        "step": 4,
+        "action": "Xử lý lại phần thân: Nếu chỉ phần thân không vào nếp, có thể làm lại phần thân với thuốc mạnh hơn"
+      },
+      {
+        "step": 5,
+        "action": "Đánh giá lại: Nếu toàn bộ không vào nếp, đợi 10-14 ngày sau làm lại từ đầu"
+      }
+    ],
+    "prevention": [
+      "Luôn kiểm soát độ ẩm đúng chuẩn",
+      "Test độ mềm mỗi 5-8 phút",
+      "Chọn size trục phù hợp",
+      "Tuân thủ thời gian xử lý"
+    ],
+    "whenToEscalate": "Nếu đã xử lý lại 2 lần mà vẫn không vào nếp, cần báo quản lý để đánh giá lại kỹ thuật"
+  },
+  {
+    "id": "color_fade_dull",
+    "title": "Tóc bị phai màu – xỉn màu",
+    "description": "Màu tóc bị phai nhanh hoặc xỉn màu sau vài lần gội",
+    "symptoms": [
+      "Màu phai nhanh sau 1-2 tuần",
+      "Màu xỉn, không còn bóng",
+      "Màu không đều"
+    ],
+    "causes": [
+      "Tóc xốp quá, màu không bám",
+      "Gội đầu quá nhiều với dầu gội có sulfate",
+      "Không dùng sản phẩm chăm sóc màu",
+      "Tóc đã từng tẩy, liên kết yếu"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Khắc phục bằng Acid Gloss: Bôi acid gloss để làm bóng, bão hòa màu lại"
+      },
+      {
+        "step": 2,
+        "action": "Bổ sung Pigment: Nếu màu quá nhạt, có thể bổ sung pigment phù hợp"
+      },
+      {
+        "step": 3,
+        "action": "Hướng dẫn chăm sóc: Dùng dầu gội không sulfate, dầu xả chuyên dụng, mask màu định kỳ"
+      },
+      {
+        "step": 4,
+        "action": "Đề xuất treatment: Nếu tóc quá xốp, cần treatment phục hồi trước khi nhuộm lại"
+      }
+    ],
+    "prevention": [
+      "Luôn test độ xốp trước khi nhuộm",
+      "Hướng dẫn khách dùng sản phẩm chăm sóc màu",
+      "Tránh nhuộm trên tóc đã tẩy quá nhiều",
+      "Đề xuất treatment phục hồi trước khi nhuộm"
+    ],
+    "whenToEscalate": "Nếu màu phai quá nhanh hoặc khách phàn nàn nghiêm trọng, cần báo quản lý"
+  },
+  {
+    "id": "hair_dry_porous",
+    "title": "Tóc khô – xốp sau dịch vụ",
+    "description": "Tóc trở nên khô, xốp, thiếu độ ẩm sau khi làm dịch vụ",
+    "symptoms": [
+      "Tóc khô, thiếu độ ẩm",
+      "Tóc xốp, hút nước nhanh",
+      "Tóc rối, khó chải"
+    ],
+    "causes": [
+      "Overprocess trong quá trình xử lý",
+      "Không dùng treatment phục hồi đủ",
+      "Tóc đã hư tổn từ trước",
+      "Sản phẩm quá mạnh so với tình trạng tóc"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Đề xuất Ampoule + Phục hồi nóng nhẹ 10 phút: Bôi ampoule phục hồi, ủ nóng nhẹ 10 phút"
+      },
+      {
+        "step": 2,
+        "action": "Hướng dẫn chăm sóc tại nhà: Dùng mask phục hồi 2-3 lần/tuần, serum dưỡng hàng ngày"
+      },
+      {
+        "step": 3,
+        "action": "Theo dõi 48h: Nhắn tin hỏi thăm sau 48h, đánh giá tình trạng tóc"
+      },
+      {
+        "step": 4,
+        "action": "Đề xuất treatment tiếp theo: Nếu cần, đề xuất treatment phục hồi chuyên sâu"
+      }
+    ],
+    "prevention": [
+      "Luôn đánh giá độ hư tổn trước khi xử lý",
+      "Dùng treatment phục hồi đủ trong quy trình",
+      "Không overprocess",
+      "Chọn sản phẩm phù hợp với tình trạng tóc"
+    ],
+    "whenToEscalate": "Nếu tóc quá khô, xốp và khách phàn nàn nghiêm trọng, cần báo quản lý và đề xuất treatment miễn phí"
+  },
+  {
+    "id": "hair_break_overprocess",
+    "title": "Tóc đứt – yếu – overprocess",
+    "description": "Tóc bị đứt gãy, yếu đi do xử lý quá mức",
+    "symptoms": [
+      "Tóc đứt gãy nhiều",
+      "Tóc mềm nhũn, không có lực",
+      "Tóc rụng nhiều khi chải",
+      "Tóc không phục hồi được"
+    ],
+    "causes": [
+      "Overprocess nghiêm trọng",
+      "Dùng thuốc quá mạnh",
+      "Thời gian xử lý quá lâu",
+      "Tóc đã hư tổn từ trước, không nên xử lý tiếp"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "KHÔNG TIẾP TỤC HÓA CHẤT: Dừng ngay tất cả hóa chất, không được làm tiếp"
+      },
+      {
+        "step": 2,
+        "action": "Điều trị phục hồi ngay: Bôi treatment phục hồi cấp tốc, ủ nóng 15-20 phút"
+      },
+      {
+        "step": 3,
+        "action": "Hướng dẫn chăm sóc khẩn cấp: Dùng mask phục hồi hàng ngày, serum dưỡng, tránh nhiệt, tránh chải mạnh"
+      },
+      {
+        "step": 4,
+        "action": "Đánh giá lại sau 10 ngày: Hẹn khách quay lại sau 10 ngày để đánh giá tình trạng, quyết định có làm tiếp hay không"
+      },
+      {
+        "step": 5,
+        "action": "Báo quản lý: Báo ngay quản lý, có thể cần bù trừ hoặc treatment miễn phí"
+      }
+    ],
+    "prevention": [
+      "Luôn kiểm tra độ hư tổn trước khi xử lý",
+      "Không xử lý trên tóc đã overprocess",
+      "Test độ mềm liên tục, dừng ngay nếu quá mức",
+      "Ưu tiên an toàn hơn kết quả"
+    ],
+    "whenToEscalate": "BÁO QUẢN LÝ NGAY - Đây là tình huống nghiêm trọng, cần xử lý đặc biệt và có thể cần bù trừ cho khách"
+  }
+]
+

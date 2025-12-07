@@ -1,0 +1,28 @@
+[
+  { "item": "Đọc đúng phiếu stylist", "must": true, "category": "reception" },
+  { "item": "Xác nhận lại công thức trước khi pha", "must": true, "category": "reception" },
+  { "item": "Kiểm tra đầy đủ dụng cụ (chén, cọ, găng, cân, kẹp, khăn)", "must": true, "category": "preparation" },
+  { "item": "Lau sạch bàn pha thuốc", "must": true, "category": "preparation" },
+  { "item": "Chuẩn chỉnh cân về 0", "must": true, "category": "preparation" },
+  { "item": "Dùng cân điện tử – không đoán", "must": true, "category": "mixing" },
+  { "item": "Đúng tỉ lệ pha theo phiếu", "must": true, "category": "mixing" },
+  { "item": "Đúng nồng độ oxy (nếu nhuộm/tẩy)", "must": true, "category": "mixing" },
+  { "item": "Khuấy thuốc đều 10–15 giây", "must": true, "category": "mixing" },
+  { "item": "Không tự ý thêm/bớt thành phần", "must": true, "category": "mixing" },
+  { "item": "Đưa thuốc cho stylist và nói lại công thức", "must": true, "category": "delivery" },
+  { "item": "Chờ stylist xác nhận OK", "must": true, "category": "delivery" },
+  { "item": "Chuẩn bị đầy đủ dụng cụ hỗ trợ", "must": true, "category": "support" },
+  { "item": "Di chuyển nhẹ nhàng, không gây ồn", "must": true, "category": "support" },
+  { "item": "Chủ động đưa dụng cụ", "must": false, "category": "support" },
+  { "item": "Giữ không gian sạch sẽ", "must": true, "category": "support" },
+  { "item": "Sấy/gội đúng kỹ thuật", "must": true, "category": "support" },
+  { "item": "Rửa chén/cọ ngay sau khi dùng", "must": true, "category": "cleaning" },
+  { "item": "Không để thuốc khô trong chén", "must": true, "category": "cleaning" },
+  { "item": "Lau bàn pha thuốc sạch sẽ", "must": true, "category": "cleaning" },
+  { "item": "Đặt dụng cụ đúng vị trí", "must": false, "category": "cleaning" },
+  { "item": "Ghi lại tên sản phẩm đã dùng", "must": true, "category": "tracking" },
+  { "item": "Ghi lại số lượng gram đã dùng", "must": true, "category": "tracking" },
+  { "item": "Ghi chú đặc biệt (nếu có)", "must": false, "category": "tracking" },
+  { "item": "Cập nhật vào hệ thống", "must": true, "category": "tracking" }
+]
+

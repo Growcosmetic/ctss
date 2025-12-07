@@ -1,0 +1,433 @@
+[
+  {
+    "step": 1,
+    "title": "Tiếp nhận phiếu dịch vụ từ Stylist",
+    "role": "assistant",
+    "detail": {
+      "purpose": "Hiểu chính xác dịch vụ, sản phẩm, tỉ lệ pha để tránh sai sót kỹ thuật",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Nhận phiếu dịch vụ từ stylist: Đảm bảo nhận được phiếu đầy đủ thông tin",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Đọc kỹ thông tin trên phiếu: Loại dịch vụ, thuốc cần pha, nồng độ oxy, thời gian, tỉ lệ pha, số lượng tóc, độ dày, tóc mới/tóc cũ",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Xác nhận lại 1 lần với stylist: 'Anh ơi em pha đúng công thức: [đọc lại công thức] đúng không ạ?' - Tránh tự suy đoán công thức",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Ghi chú lại công thức nếu cần: Viết ra giấy hoặc note trong hệ thống để đảm bảo không quên",
+          "estimatedTime": "30 giây",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Nhận phiếu dịch vụ đầy đủ",
+        "Đọc kỹ tất cả thông tin",
+        "Xác nhận lại công thức với stylist",
+        "Ghi chú công thức (nếu cần)"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Tự suy đoán công thức, không xác nhận với stylist",
+          "prevention": "Luôn xác nhận lại công thức trước khi pha, không được đoán"
+        },
+        {
+          "mistake": "Đọc không kỹ, bỏ sót thông tin quan trọng",
+          "prevention": "Đọc từng mục một, kiểm tra đầy đủ: dịch vụ, thuốc, oxy, tỉ lệ, số lượng"
+        },
+        {
+          "mistake": "Không hỏi lại khi không rõ, dẫn đến pha sai",
+          "prevention": "Khi không chắc chắn, luôn hỏi lại stylist, không được tự quyết định"
+        }
+      ],
+      "qualityStandards": [
+        "Công thức được xác nhận chính xác 100% với stylist",
+        "Tất cả thông tin trên phiếu được đọc và hiểu rõ",
+        "Không có sự nhầm lẫn về dịch vụ hoặc công thức"
+      ],
+      "notes": "Bước này cực kỳ quan trọng - pha sai công thức có thể dẫn đến hư tổn tóc hoặc kết quả không như mong đợi. Luôn xác nhận lại."
+    }
+  },
+  {
+    "step": 2,
+    "title": "Chuẩn bị khu vực & dụng cụ",
+    "role": "assistant",
+    "detail": {
+      "purpose": "Đảm bảo khu vực pha chế sạch sẽ, dụng cụ đầy đủ và sẵn sàng",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Kiểm tra đầy đủ dụng cụ: Chén pha thuốc, cọ quét, găng tay, cân điện tử, kẹp mỏ vịt, khăn sạch",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Lau sạch bàn pha thuốc: Đảm bảo không còn thuốc cũ, vết bẩn, không lẫn thuốc khác",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Chuẩn chỉnh cân điện tử về 0-0.0: Đảm bảo cân chính xác, không bị lệch",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Sắp xếp dụng cụ gọn gàng: Đặt ở vị trí dễ lấy, theo thứ tự sử dụng",
+          "estimatedTime": "30 giây",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Kiểm tra đầy đủ dụng cụ (chén, cọ, găng, cân, kẹp, khăn)",
+        "Lau sạch bàn pha thuốc",
+        "Chuẩn chỉnh cân về 0",
+        "Sắp xếp dụng cụ gọn gàng"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không kiểm tra dụng cụ trước, thiếu khi pha",
+          "prevention": "Luôn kiểm tra đầy đủ dụng cụ trước khi bắt đầu pha"
+        },
+        {
+          "mistake": "Bàn pha thuốc không sạch, lẫn thuốc cũ",
+          "prevention": "Lau sạch bàn pha thuốc trước mỗi lần pha, không để lẫn thuốc"
+        },
+        {
+          "mistake": "Cân điện tử không chuẩn, dẫn đến tỉ lệ sai",
+          "prevention": "Luôn chuẩn chỉnh cân về 0 trước khi cân, kiểm tra độ chính xác"
+        }
+      ],
+      "qualityStandards": [
+        "Tất cả dụng cụ sẵn sàng, đầy đủ",
+        "Khu vực pha chế sạch sẽ 100%",
+        "Cân điện tử chính xác, không lệch"
+      ],
+      "notes": "Chuẩn bị tốt giúp quá trình pha chế diễn ra nhanh chóng, chính xác, không bị gián đoạn."
+    }
+  },
+  {
+    "step": 3,
+      "title": "Pha thuốc theo đúng tỉ lệ",
+      "role": "assistant",
+      "detail": {
+        "purpose": "Pha thuốc chính xác theo công thức, đảm bảo chất lượng và an toàn",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "description": "UỐN NÓNG: Pha theo hướng dẫn stylist - S1/S2, thêm booster nếu yêu cầu. Kiểm soát độ nhớt, khuấy đều 10-15 giây. Tóc khỏe → thuốc tiêu chuẩn, tóc trung bình → S1 mềm hơn, tóc yếu → giảm thời gian + dùng phục hồi đi kèm",
+            "estimatedTime": "3-5 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 2,
+            "description": "NHUỘM - TẨY: Tỉ lệ 1:1 / 1:1.5 / 1:2 theo phiếu. Oxy đúng nồng độ: 6-9-12 theo yêu cầu. Không tự ý đổi oxy nếu stylist chưa đồng ý",
+            "estimatedTime": "3-5 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 3,
+            "description": "PHỤC HỒI: Định lượng theo độ dài tóc. Ampoule pha theo yêu cầu stylist. Không tự thêm sản phẩm phục hồi 'cho tốt hơn' nếu stylist không chỉ định",
+            "estimatedTime": "2-3 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 4,
+            "description": "Dùng cân điện tử để đảm bảo định lượng chính xác: Cân từng thành phần, không đoán, không ước lượng, không eyeballing",
+            "estimatedTime": "2 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 5,
+            "description": "Khuấy đều thuốc 10-15 giây: Đảm bảo thuốc hòa quyện đều, không bị vón cục",
+            "estimatedTime": "15 giây",
+            "important": true
+          }
+        ],
+        "checklist": [
+          "Pha đúng loại thuốc (uốn/nhuộm/phục hồi)",
+          "Dùng cân điện tử - không đoán",
+          "Đúng tỉ lệ pha",
+          "Đúng nồng độ oxy (nếu nhuộm/tẩy)",
+          "Khuấy đều 10-15 giây",
+          "Không tự ý thêm/bớt thành phần"
+        ],
+        "commonMistakes": [
+          {
+            "mistake": "Đoán tỉ lệ, không dùng cân, dẫn đến sai công thức",
+            "prevention": "Luôn dùng cân điện tử, không được đoán hoặc ước lượng"
+          },
+          {
+            "mistake": "Tự ý đổi nồng độ oxy, dẫn đến màu không đúng",
+            "prevention": "Pha đúng nồng độ oxy theo phiếu, không tự ý đổi"
+          },
+          {
+            "mistake": "Không khuấy đều, thuốc bị vón cục hoặc không hòa quyện",
+            "prevention": "Khuấy đều 10-15 giây, đảm bảo thuốc hòa quyện hoàn toàn"
+          },
+          {
+            "mistake": "Tự thêm sản phẩm phục hồi, làm thay đổi công thức",
+            "prevention": "Chỉ pha theo công thức stylist chỉ định, không tự thêm bớt"
+          }
+        ],
+        "qualityStandards": [
+          "Tỉ lệ pha chính xác 100%",
+          "Thuốc hòa quyện đều, không vón cục",
+          "Không có sai sót về công thức",
+          "An toàn cho khách hàng"
+        ],
+        "notes": "Nguyên tắc vàng: KHÔNG PHA KHI CHƯA XÁC NHẬN LẦN CUỐI VỚI STYLIST. KHÔNG ĐOÁN - KHÔNG ƯỚC LƯỢNG - KHÔNG EYEBALLING."
+      }
+    },
+    {
+      "step": 4,
+      "title": "Đưa thuốc cho Stylist",
+      "role": "assistant",
+      "detail": {
+        "purpose": "Bàn giao thuốc đúng cách, đảm bảo stylist nhận được chính xác",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "description": "Đặt thuốc đúng hướng - dễ cầm: Đặt chén thuốc ở vị trí thuận tiện, stylist có thể cầm dễ dàng",
+            "estimatedTime": "10 giây",
+            "important": true
+          },
+          {
+            "stepNumber": 2,
+            "description": "Thông báo rõ công thức: 'Em pha 80g thuốc + 80g oxy nha anh' - Đọc lại công thức để stylist xác nhận",
+            "estimatedTime": "15 giây",
+            "important": true
+          },
+          {
+            "stepNumber": 3,
+            "description": "Chờ stylist kiểm tra OK rồi mới rời vị trí: Đảm bảo stylist đã kiểm tra và đồng ý với công thức",
+            "estimatedTime": "30 giây",
+            "important": true
+          }
+        ],
+        "checklist": [
+          "Đặt thuốc đúng hướng, dễ cầm",
+          "Thông báo lại công thức cho stylist",
+          "Chờ stylist xác nhận OK"
+        ],
+        "commonMistakes": [
+          {
+            "mistake": "Không thông báo công thức, stylist không biết đã pha gì",
+            "prevention": "Luôn đọc lại công thức khi đưa thuốc, để stylist xác nhận"
+          },
+          {
+            "mistake": "Rời vị trí ngay, không chờ stylist kiểm tra",
+            "prevention": "Chờ stylist kiểm tra và xác nhận OK trước khi rời vị trí"
+          }
+        ],
+        "qualityStandards": [
+          "Stylist nhận được thuốc đúng công thức",
+          "Stylist đã xác nhận OK trước khi sử dụng",
+          "Không có nhầm lẫn về công thức"
+        ],
+        "notes": "Bàn giao tốt giúp stylist yên tâm sử dụng thuốc, tránh nhầm lẫn."
+      }
+    },
+    {
+      "step": 5,
+      "title": "Hỗ trợ trong quá trình làm",
+      "role": "assistant",
+      "detail": {
+        "purpose": "Hỗ trợ stylist hiệu quả trong quá trình thực hiện dịch vụ",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "description": "Chuẩn bị khăn, kẹp, găng, áo choàng: Sẵn sàng trước khi stylist cần",
+            "estimatedTime": "Ongoing",
+            "important": true
+          },
+          {
+            "stepNumber": 2,
+            "description": "Hạn chế di chuyển gây ồn: Di chuyển nhẹ nhàng, không làm ồn ảnh hưởng đến khách và stylist",
+            "estimatedTime": "Ongoing",
+            "important": true
+          },
+          {
+            "stepNumber": 3,
+            "description": "Quan sát để đưa dụng cụ trước khi stylist yêu cầu: Chủ động, không để stylist phải chờ",
+            "estimatedTime": "Ongoing",
+            "important": true
+          },
+          {
+            "stepNumber": 4,
+            "description": "Lau khu vực sạch sẽ: Giữ không gian làm việc sạch sẽ, gọn gàng trong suốt quá trình",
+            "estimatedTime": "Ongoing",
+            "important": true
+          },
+          {
+            "stepNumber": 5,
+            "description": "Sấy - gội theo yêu cầu stylist: Thực hiện đúng kỹ thuật, đúng thời gian, đúng nhiệt độ",
+            "estimatedTime": "Tuỳ dịch vụ",
+            "important": true
+          }
+        ],
+        "checklist": [
+          "Chuẩn bị đầy đủ dụng cụ hỗ trợ",
+          "Di chuyển nhẹ nhàng, không gây ồn",
+          "Chủ động đưa dụng cụ",
+          "Giữ không gian sạch sẽ",
+          "Sấy/gội đúng kỹ thuật"
+        ],
+        "commonMistakes": [
+          {
+            "mistake": "Không chuẩn bị sẵn dụng cụ, stylist phải chờ",
+            "prevention": "Chuẩn bị sẵn dụng cụ trước khi cần, quan sát và chủ động"
+          },
+          {
+            "mistake": "Di chuyển ồn ào, ảnh hưởng đến khách",
+            "prevention": "Di chuyển nhẹ nhàng, không gây tiếng động lớn"
+          },
+          {
+            "mistake": "Sấy/gội không đúng kỹ thuật, làm hỏng tóc",
+            "prevention": "Học kỹ thuật đúng, thực hiện theo hướng dẫn stylist"
+          }
+        ],
+        "qualityStandards": [
+          "Stylist được hỗ trợ kịp thời, không phải chờ",
+          "Không gian làm việc sạch sẽ, chuyên nghiệp",
+          "Kỹ thuật sấy/gội đúng chuẩn"
+        ],
+        "notes": "Hỗ trợ tốt giúp stylist làm việc hiệu quả hơn, tạo trải nghiệm tốt cho khách."
+      }
+    },
+    {
+      "step": 6,
+      "title": "Vệ sinh & Trả dụng cụ",
+      "role": "assistant",
+      "detail": {
+        "purpose": "Vệ sinh dụng cụ ngay sau khi dùng, đảm bảo sẵn sàng cho lần sử dụng tiếp theo",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "description": "Rửa chén - cọ ngay sau khi dùng: Không để thuốc khô trong chén, rửa ngay sau khi stylist dùng xong",
+            "estimatedTime": "2 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 2,
+            "description": "Không để thuốc khô trong chén: Thuốc khô rất khó rửa, ảnh hưởng đến lần sử dụng sau",
+            "estimatedTime": "Ongoing",
+            "important": true
+          },
+          {
+            "stepNumber": 3,
+            "description": "Lau bàn pha thuốc sạch sẽ: Đảm bảo không còn vết thuốc, sẵn sàng cho lần pha tiếp theo",
+            "estimatedTime": "1 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 4,
+            "description": "Dụng cụ đặt đúng vị trí chuẩn hóa: Sắp xếp lại dụng cụ về vị trí cố định, dễ tìm cho lần sau",
+            "estimatedTime": "1 phút",
+            "important": false
+          }
+        ],
+        "checklist": [
+          "Rửa chén/cọ ngay sau khi dùng",
+          "Không để thuốc khô trong chén",
+          "Lau bàn pha thuốc sạch sẽ",
+          "Đặt dụng cụ đúng vị trí"
+        ],
+        "commonMistakes": [
+          {
+            "mistake": "Để thuốc khô trong chén, rất khó rửa",
+            "prevention": "Rửa ngay sau khi dùng, không để thuốc khô"
+          },
+          {
+            "mistake": "Không lau bàn pha thuốc, để vết thuốc cũ",
+            "prevention": "Lau sạch bàn pha thuốc sau mỗi lần sử dụng"
+          },
+          {
+            "mistake": "Đặt dụng cụ lung tung, khó tìm cho lần sau",
+            "prevention": "Có vị trí cố định cho từng dụng cụ, luôn đặt về đúng chỗ"
+          }
+        ],
+        "qualityStandards": [
+          "Dụng cụ sạch sẽ, sẵn sàng cho lần sử dụng tiếp",
+          "Khu vực pha chế luôn sạch sẽ, chuyên nghiệp",
+          "Dụng cụ được sắp xếp gọn gàng, dễ tìm"
+        ],
+        "notes": "Vệ sinh tốt giúp khu vực pha chế luôn sạch sẽ, chuyên nghiệp, tránh lẫn thuốc cũ vào lần pha sau."
+      }
+    },
+    {
+      "step": 7,
+      "title": "Ghi nhận lượng sản phẩm đã dùng",
+      "role": "assistant",
+      "detail": {
+        "purpose": "Ghi lại chính xác lượng sản phẩm đã sử dụng để quản lý kho và tính chi phí",
+        "steps": [
+          {
+            "stepNumber": 1,
+            "description": "Ghi lại STT, tên sản phẩm, số lượng gram đã dùng vào hệ thống",
+            "estimatedTime": "2 phút",
+            "important": true
+          },
+          {
+            "stepNumber": 2,
+            "description": "Ghi chú đặc biệt (nếu có): Ví dụ: Dùng thêm booster, pha đặc biệt, sản phẩm mới",
+            "estimatedTime": "1 phút",
+            "important": false
+          },
+          {
+            "stepNumber": 3,
+            "description": "Chụp ảnh minh chứng (nếu yêu cầu): Chụp ảnh chén thuốc, nhãn sản phẩm, cân để làm bằng chứng",
+            "estimatedTime": "1 phút",
+            "important": false
+          },
+          {
+            "stepNumber": 4,
+            "description": "Cập nhật vào hệ thống: Nhập đầy đủ thông tin vào hệ thống quản lý sản phẩm (liên kết với Phase 54)",
+            "estimatedTime": "2 phút",
+            "important": true
+          }
+        ],
+        "checklist": [
+          "Ghi lại tên sản phẩm",
+          "Ghi lại số lượng gram đã dùng",
+          "Ghi chú đặc biệt (nếu có)",
+          "Chụp ảnh minh chứng (nếu yêu cầu)",
+          "Cập nhật vào hệ thống"
+        ],
+        "commonMistakes": [
+          {
+            "mistake": "Quên ghi lại, dẫn đến thiếu dữ liệu",
+            "prevention": "Ghi ngay sau khi pha, không trì hoãn"
+          },
+          {
+            "mistake": "Ghi sai số lượng, ảnh hưởng đến quản lý kho",
+            "prevention": "Ghi chính xác số lượng đã cân, không ước lượng"
+          },
+          {
+            "mistake": "Không cập nhật vào hệ thống, mất dữ liệu",
+            "prevention": "Luôn cập nhật vào hệ thống ngay sau khi ghi"
+          }
+        ],
+        "qualityStandards": [
+          "Thông tin được ghi chính xác 100%",
+          "Dữ liệu được cập nhật vào hệ thống đầy đủ",
+          "Có bằng chứng (ảnh) nếu cần"
+        ],
+        "notes": "Ghi nhận chính xác giúp quản lý kho hiệu quả, tính chi phí đúng, và có dữ liệu để phân tích."
+      }
+    }
+  ]
+

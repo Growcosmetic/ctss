@@ -1,0 +1,63 @@
+[
+  {
+    "id": "customer_wants_perm",
+    "situation": "Khách muốn làm uốn",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị muốn làm uốn nè, đẹp lắm ạ! Để em tư vấn cho mình ha.\n\nEm hỏi chị xíu nè:\n- Tóc chị hiện tại đang là tóc gì ạ? (uốn – duỗi – nhuộm – tự nhiên)\n- Lần gần nhất làm tóc là khi nào?\n- Tóc có bị khô – xơ – hư không?\n\nVà chị gửi em xin 1–2 hình tóc hiện tại giúp em với ha ❤️ (ảnh sáng thường, không filter nhen)\n\nEm cần hình để tư vấn chính xác nhất cho mình nè chị!"
+  },
+  {
+    "id": "customer_asks_price",
+    "situation": "Khách hỏi giá",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị hỏi giá em nè, nhưng trước tiên em muốn hỏi chị: Chị muốn em báo giá trước hay mình chốt dịch vụ rồi báo giá sau ha?\n\nLý do em hỏi vậy vì:\n- Nếu em tư vấn chính xác dịch vụ phù hợp với tóc mình trước → giá sẽ chính xác hơn ạ\n- Hoặc nếu chị muốn biết giá trước thì em cũng báo ngay ạ\n\nTùy chị nha, em không ép, em hỏi để tư vấn tốt nhất cho mình thôi ạ ❤️"
+  },
+  {
+    "id": "customer_asks_style",
+    "situation": "Khách muốn tư vấn kiểu",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị muốn em tư vấn kiểu nè, đẹp lắm ạ!\n\nĐể em tư vấn chính xác nhất, em cần chị gửi em:\n- 1-2 hình tóc hiện tại của chị (ảnh sáng thường, không filter)\n- 1-2 hình mẫu kiểu chị thích (nếu có)\n\nSau khi em nhận được hình, em sẽ:\n1. Phân tích tình trạng tóc hiện tại\n2. Đề xuất 2-3 kiểu phù hợp nhất\n3. Giải thích ưu điểm từng kiểu\n\nChị gửi hình giúp em nhen ❤️"
+  },
+  {
+    "id": "customer_sends_photo",
+    "situation": "Khách gửi ảnh",
+    "platform": "all",
+    "script": "Dạ em cảm ơn chị đã gửi hình ạ! Em đang phân tích tóc mình nè, chị đợi em xíu ha 💛\n\n[Sau 30 giây - 2 phút]\n\nDạ em đã phân tích xong rồi ạ! Nhìn tóc mình thì hiện tại em thấy:\n\n✅ Tình trạng: [Kết quả từ AI]\n✅ Pattern tóc: [Kết quả từ AI]\n✅ Độ hư tổn: [Kết quả từ AI]\n\nDựa vào phân tích, em gợi ý cho mình 2-3 option:\n\n**Option A:** [Dịch vụ 1] – [Ưu điểm]\n**Option B:** [Dịch vụ 2] – [Ưu điểm]\n**Option C:** [Dịch vụ 3] – [Ưu điểm]\n\nEm gửi chị để mình chọn thử ha. Chị muốn em tư vấn thêm về option nào không ạ?"
+  },
+  {
+    "id": "customer_wants_specific_stylist",
+    "situation": "Khách muốn stylist nhất định",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị muốn làm với [Tên Stylist] nè, đẹp lắm ạ! Stylist đó rất chuyên nghiệp và có nhiều kinh nghiệm.\n\nĐể em check lịch của [Tên Stylist] cho chị nhen. Chị muốn đặt lịch ngày giờ nào ạ?\n\n[Kiểm tra lịch]\n\nDạ em đã check rồi ạ:\n- [Ngày] [Giờ] → Còn trống ✅\n- [Ngày] [Giờ] → Còn trống ✅\n- [Ngày] [Giờ] → Đã kín ❌\n\nChị muốn chọn khung giờ nào ạ? Em giữ lịch cho mình nè ❤️"
+  },
+  {
+    "id": "customer_complains_price_high",
+    "situation": "Khách chê giá cao",
+    "platform": "all",
+    "script": "Dạ em hiểu cảm giác của chị ạ. Giá thực sự có thể hơi cao so với một số nơi khác.\n\nNhưng em muốn giải thích cho chị tại sao giá như vậy:\n\n✅ Sản phẩm cao cấp, nhập khẩu\n✅ Stylist chuyên nghiệp, nhiều năm kinh nghiệm\n✅ Quy trình chuẩn, đảm bảo an toàn\n✅ Hỗ trợ sau dịch vụ đầy đủ\n\nNếu chị muốn, em có thể gợi ý một số option tối ưu chi phí hơn nhưng vẫn đảm bảo chất lượng:\n\n**Option B:** [Dịch vụ tối ưu] – [Giá]\n\nHoặc nếu chị muốn, em có thể check xem có ưu đãi nào phù hợp không ạ. Chị muốn em check giúp không ạ?"
+  },
+  {
+    "id": "customer_slow_response",
+    "situation": "Khách lâu không trả lời",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nEm thấy chị đã hỏi em lúc trước nhưng chưa thấy chị trả lời. Không biết chị còn quan tâm dịch vụ bên em không ạ?\n\nNếu chị còn quan tâm, em sẵn sàng hỗ trợ tư vấn cho mình. Hoặc nếu chị đang bận, chị cứ nhắn em khi nào rảnh nhen ❤️\n\nEm luôn sẵn sàng hỗ trợ chị!"
+  },
+  {
+    "id": "customer_wants_refund",
+    "situation": "Khách muốn hoàn tiền (hiếm)",
+    "platform": "all",
+    "script": "Dạ em hiểu cảm giác của chị ạ. Em rất tiếc khi dịch vụ không đạt kỳ vọng của chị.\n\nĐể em hỗ trợ chị tốt nhất, em cần hỏi chị:\n- Chị có thể mô tả chi tiết vấn đề gặp phải không ạ?\n- Dịch vụ nào chị đã làm?\n- Stylist nào đã làm cho chị?\n\nSau khi em hiểu rõ vấn đề, em sẽ:\n1. Báo quản lý để xử lý\n2. Đề xuất giải pháp phù hợp (có thể là làm lại hoặc bù trừ)\n\nChị có thể mô tả chi tiết giúp em không ạ? Em sẽ cố gắng giải quyết cho chị tốt nhất ❤️"
+  },
+  {
+    "id": "customer_asks_if_beautiful",
+    "situation": "Khách hỏi 'làm xong có đẹp không?'",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị hỏi làm xong có đẹp không nè, em hiểu lo lắng của chị ạ!\n\nEm cam kết với chị:\n✅ Stylist chuyên nghiệp, nhiều năm kinh nghiệm\n✅ Sản phẩm cao cấp, đảm bảo chất lượng\n✅ Quy trình chuẩn, đảm bảo an toàn\n✅ Hỗ trợ sau dịch vụ nếu có vấn đề\n\nEm có thể gửi chị xem một số hình khách làm xong tại salon em nè. Nhưng quan trọng nhất là em cần xem tóc chị hiện tại để tư vấn chính xác nhất.\n\nChị có thể gửi em 1-2 hình tóc hiện tại giúp em với ha ❤️? Em sẽ phân tích và đưa ra gợi ý phù hợp nhất cho mình."
+  },
+  {
+    "id": "customer_wants_discount",
+    "situation": "Khách muốn ưu đãi",
+    "platform": "all",
+    "script": "Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛\n\nChị hỏi ưu đãi nè, em hiểu ạ!\n\nĐể em check xem hiện tại có ưu đãi nào phù hợp với chị không nhen:\n\n[Kiểm tra ưu đãi]\n\nDạ em đã check rồi ạ:\n✅ [Ưu đãi 1] – [Mô tả]\n✅ [Ưu đãi 2] – [Mô tả]\n\nHoặc nếu chị muốn, em có thể:\n- Đặt lịch vào giờ vắng → giảm 10%\n- Đặt lịch vào ngày thường (thứ 2-5) → giảm 5%\n\nChị muốn em check ưu đãi nào phù hợp với lịch chị không ạ? Em sẵn sàng hỗ trợ ❤️"
+  }
+]
+

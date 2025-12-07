@@ -1,0 +1,372 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import MainLayout from "@/components/layout/MainLayout";
+import RoleGuard from "@/features/auth/components/RoleGuard";
+import { CTSSRole } from "@/features/auth/types";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import {
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Phone,
+  Mail,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  User,
+  Star,
+  X,
+} from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
+import { Customer360Layout } from "@/features/customer360/components/Customer360Layout";
+
+interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  totalVisits: number;
+  totalSpent: number;
+  lastVisitDate?: string;
+  loyaltyPoints: number;
+  status: string;
+  createdAt: string;
+}
+
+// Customer360 Drawer Component
+function Customer360Drawer({
+  customerId,
+  customerName,
+  onClose,
+}: {
+  customerId: string;
+  customerName: string;
+  onClose: () => void;
+}) {
+  const { data, loading, error } = useCustomer360(customerId);
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex justify-end z-50" onClick={onClose}>
+      <div
+        className="bg-white w-full max-w-6xl h-full overflow-y-auto shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+          <h2 className="text-xl font-semibold text-gray-900">{customerName} - 360° View</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-0">
+          <Customer360Layout data={data} loading={loading} error={error} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function CRMPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [activeTab]);
+
+  const fetchCustomers = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (activeTab !== "all") params.append("status", activeTab.toUpperCase());
+
+      const response = await fetch(`/api/customers?${params.toString()}`);
+      const result = await response.json();
+      if (result.success) {
+        setCustomers(result.data.customers);
+      }
+    } catch (error) {
+      console.error("Failed to fetch customers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bạn có chắc muốn xóa khách hàng này?")) return;
+
+    try {
+      const response = await fetch(`/api/customers/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        await fetchCustomers();
+      }
+    } catch (error) {
+      console.error("Failed to delete customer:", error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      ACTIVE: "bg-green-100 text-green-800",
+      INACTIVE: "bg-gray-100 text-gray-800",
+      BLACKLISTED: "bg-red-100 text-red-800",
+    };
+    return colors[status] || colors.ACTIVE;
+  };
+
+  return (
+    <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST]}>
+      <MainLayout>
+        <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">CRM 360°</h1>
+            <p className="text-gray-500 mt-1">Quản lý khách hàng toàn diện</p>
+          </div>
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus size={18} className="mr-2" />
+            Thêm khách hàng
+          </Button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Tổng khách hàng</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {customers.length}
+                </p>
+              </div>
+              <User className="w-8 h-8 text-primary-500" />
+            </div>
+          </Card>
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Khách hàng hoạt động</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {customers.filter((c) => c.status === "ACTIVE").length}
+                </p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-green-500" />
+            </div>
+          </Card>
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Tổng doanh thu</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(
+                    customers.reduce((sum, c) => sum + Number(c.totalSpent), 0)
+                  )}
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-blue-500" />
+            </div>
+          </Card>
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Điểm tích lũy</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {customers.reduce((sum, c) => sum + c.loyaltyPoints, 0)}
+                </p>
+              </div>
+              <Star className="w-8 h-8 text-yellow-500" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Filters and Search */}
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Input
+                  placeholder="Tìm kiếm khách hàng..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    fetchCustomers();
+                  }}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Button variant="outline">
+              <Filter size={18} className="mr-2" />
+              Lọc
+            </Button>
+          </div>
+        </Card>
+
+        {/* Tabs */}
+        <Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="all">Tất cả</TabsTrigger>
+              <TabsTrigger value="active">Hoạt động</TabsTrigger>
+              <TabsTrigger value="inactive">Không hoạt động</TabsTrigger>
+              <TabsTrigger value="blacklisted">Blacklist</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Khách hàng</TableHead>
+                    <TableHead>Liên hệ</TableHead>
+                    <TableHead>Lượt đến</TableHead>
+                    <TableHead>Tổng chi tiêu</TableHead>
+                    <TableHead>Điểm tích lũy</TableHead>
+                    <TableHead>Lần đến cuối</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        Đang tải...
+                      </TableCell>
+                    </TableRow>
+                  ) : customers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-gray-400">
+                        Chưa có dữ liệu khách hàng
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    customers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {customer.firstName} {customer.lastName}
+                            </p>
+                            {customer.dateOfBirth && (
+                              <p className="text-sm text-gray-500">
+                                {formatDate(customer.dateOfBirth)}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {customer.phone && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Phone size={14} className="text-gray-400" />
+                                <span>{customer.phone}</span>
+                              </div>
+                            )}
+                            {customer.email && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Mail size={14} className="text-gray-400" />
+                                <span>{customer.email}</span>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium">{customer.totalVisits}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-semibold text-gray-900">
+                            {formatCurrency(customer.totalSpent)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Star size={14} className="text-yellow-500" />
+                            <span>{customer.loyaltyPoints}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {customer.lastVisitDate ? (
+                            <span className="text-sm text-gray-500">
+                              {formatDate(customer.lastVisitDate)}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">Chưa có</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              customer.status
+                            )}`}
+                          >
+                            {customer.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedCustomer(customer)}
+                              className="text-primary-600 hover:text-primary-700"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(customer.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+          </Tabs>
+        </Card>
+
+        {/* Customer 360 Detail Drawer */}
+        {selectedCustomer && (
+          <Customer360Drawer
+            customerId={selectedCustomer.id}
+            customerName={`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}
+            onClose={() => setSelectedCustomer(null)}
+          />
+        )}
+      </div>
+      </MainLayout>
+    </RoleGuard>
+  );
+}

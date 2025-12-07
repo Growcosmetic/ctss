@@ -1,0 +1,509 @@
+[
+  {
+    "step": 1,
+    "title": "Chào & Tạo thiện cảm",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Giúp khách cảm thấy 'được đối xử riêng – được quan tâm' ngay từ giây phút đầu tiên",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Cười – chào – xưng tên: 'Em chào chị/anh, em là [Tên], em hỗ trợ chị/anh hôm nay ạ'",
+          "estimatedTime": "5 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Quan sát tóc nhanh trong 1–2 giây: Nhận diện tình trạng tóc ban đầu",
+          "estimatedTime": "2 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Hỏi nhẹ: 'Hôm nay chị/anh muốn làm gì cho mái tóc mình ha?'",
+          "estimatedTime": "5 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Lắng nghe thật sự, không cắt lời khách: Ghi chú đầy đủ nhu cầu và mong muốn",
+          "estimatedTime": "30 giây - 2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Ghi chú cảm xúc khách: vui – lo – phân vân – sợ hư → Điều chỉnh cách tư vấn phù hợp",
+          "estimatedTime": "5 giây",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Chào khách đúng cách, xưng tên",
+        "Quan sát tóc ban đầu",
+        "Hỏi nhu cầu khách rõ ràng",
+        "Lắng nghe không cắt lời",
+        "Ghi chú cảm xúc khách"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không chào khách đúng cách, thiếu chuyên nghiệp",
+          "prevention": "Luôn cười, chào, xưng tên ngay khi gặp khách"
+        },
+        {
+          "mistake": "Không quan sát tóc trước khi hỏi, thiếu thông tin",
+          "prevention": "Quan sát nhanh tình trạng tóc để có context trước khi tư vấn"
+        },
+        {
+          "mistake": "Cắt lời khách, không lắng nghe đầy đủ",
+          "prevention": "Để khách nói hết, ghi chú, sau đó mới tư vấn"
+        }
+      ],
+      "qualityStandards": [
+        "Khách cảm thấy được đối xử riêng, quan tâm",
+        "Nhu cầu khách được hiểu đầy đủ",
+        "Cảm xúc khách được ghi nhận và xử lý phù hợp"
+      ],
+      "notes": "Bước này tạo ấn tượng đầu tiên, rất quan trọng. Cần chân thành, chuyên nghiệp, không gượng ép."
+    }
+  },
+  {
+    "step": 2,
+    "title": "Khảo sát tóc (Hair Diagnosis)",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Phân tích toàn diện tình trạng tóc để đưa ra phương án tư vấn chính xác và an toàn",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Kiểm tra độ giãn (Elasticity): Kéo nhẹ sợi tóc, quan sát khả năng phục hồi. Phân loại: yếu (weak) / trung bình (medium) / khỏe (strong)",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Kiểm tra độ đàn hồi (Porosity): Nhúng tóc vào nước, quan sát tốc độ hấp thụ. Phân loại: thấp (low) / trung bình (medium) / cao (high)",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Kiểm tra lịch sử hóa chất 12 tháng gần nhất: Uốn, nhuộm, tẩy, duỗi, ép. Ghi chú số lần và thời gian",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Đánh giá độ khô – xốp – hư tổn: Quan sát độ bóng, độ mềm, chẻ ngọn, đứt gãy. Phân loại từ 1–5 (5 = hư tổn nặng)",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Kiểm tra tỷ lệ tóc mới mọc / tóc cũ: Xác định độ dài tóc mới, tóc cũ để tính toán vùng xử lý",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 6,
+          "description": "Đánh giá độ dày – sợi tóc – pattern hiện tại: Mỏng/thường/dày, sợi tóc mảnh/trung bình/thô, pattern tự nhiên",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 7,
+          "description": "Tuyên bố rủi ro rõ ràng nếu có: Tóc từng tẩy? Uốn quá đà? Giòn đứt? Overprocessed? Giải thích rõ ràng cho khách",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 8,
+          "description": "Chụp ảnh before nếu có rủi ro: Lưu lại tình trạng ban đầu để so sánh sau dịch vụ",
+          "estimatedTime": "1 phút",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Kiểm tra độ giãn (Elasticity)",
+        "Kiểm tra độ đàn hồi (Porosity)",
+        "Kiểm tra lịch sử hóa chất 12 tháng",
+        "Đánh giá độ khô – xốp – hư tổn (1-5)",
+        "Kiểm tra tỷ lệ tóc mới / tóc cũ",
+        "Đánh giá độ dày – sợi tóc – pattern",
+        "Tuyên bố rủi ro rõ ràng (nếu có)",
+        "Chụp ảnh before (nếu có rủi ro)"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không kiểm tra kỹ lịch sử hóa chất, dẫn đến xử lý sai",
+          "prevention": "Luôn hỏi chi tiết, kiểm tra lịch sử trong hệ thống, xác nhận lại với khách"
+        },
+        {
+          "mistake": "Đánh giá sai độ hư tổn, chọn sai sản phẩm/xử lý",
+          "prevention": "Kiểm tra kỹ 6 yếu tố, phân loại đúng, tham khảo AI Coach nếu cần"
+        },
+        {
+          "mistake": "Không tuyên bố rủi ro, khách không hiểu, sau đó phàn nàn",
+          "prevention": "Luôn thông báo rõ ràng rủi ro, giải thích, xin phép khách trước khi xử lý"
+        }
+      ],
+      "qualityStandards": [
+        "6 yếu tố được kiểm tra đầy đủ, chính xác",
+        "Rủi ro được xác định và thông báo rõ ràng",
+        "Thông tin được ghi chú đầy đủ vào hệ thống",
+        "Ảnh before được chụp nếu có rủi ro"
+      ],
+      "notes": "Khảo sát kỹ là nền tảng cho tư vấn chính xác. Không được bỏ qua bất kỳ yếu tố nào. Có thể sử dụng AI Stylist Coach để hỗ trợ phân tích."
+    }
+  },
+  {
+    "step": 3,
+    "title": "Tư vấn & Đề xuất 3 phương án",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Đưa ra 3 phương án tư vấn thông minh, giúp khách có lựa chọn phù hợp nhất",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Phương án A (Đẹp nhất): Kết hợp kỹ thuật cao cấp + sản phẩm premium, đảm bảo an toàn + vào nếp tốt. Giải thích lợi ích và chi phí",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Phương án B (Cân bằng): Tối ưu chi phí nhưng vẫn đẹp, phù hợp hầu hết khách hàng. Giải thích điểm mạnh",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Phương án C (An toàn nhất): Dành cho tóc yếu, đang tổn thương. Ưu tiên phục hồi trước, làm nhẹ sau. Giải thích lý do",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Hỏi câu Mina trước khi báo giá: 'Chị/anh muốn em báo giá trước hay mình chốt dịch vụ rồi báo giá sau ha?' (Theo nguyên tắc Mina)",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Lắng nghe phản hồi khách, giải thích thêm nếu cần, không ép buộc",
+          "estimatedTime": "1-3 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Đưa đủ 3 phương án (A, B, C)",
+        "Giải thích rõ lợi ích từng phương án",
+        "Hỏi câu Mina trước khi báo giá",
+        "Không ép buộc, để khách tự quyết định"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Chỉ đưa 1 phương án, khách không có lựa chọn",
+          "prevention": "Luôn đưa 3 phương án, giúp khách có quyền quyết định"
+        },
+        {
+          "mistake": "Quên hỏi câu Mina, báo giá ngay gây áp lực",
+          "prevention": "Hỏi câu Mina trước, tôn trọng quyết định khách"
+        },
+        {
+          "mistake": "Ép buộc chọn phương án đắt, làm khách khó chịu",
+          "prevention": "Đưa ra lựa chọn, giải thích, để khách quyết định, không ép buộc"
+        }
+      ],
+      "qualityStandards": [
+        "3 phương án được đưa ra đầy đủ, rõ ràng",
+        "Câu Mina được hỏi trước khi báo giá",
+        "Khách cảm thấy được tôn trọng, không bị ép buộc",
+        "Khách chọn phương án phù hợp nhất"
+      ],
+      "notes": "Tư vấn 3 phương án giúp khách có quyền quyết định, tạo niềm tin. Câu Mina giúp giảm áp lực, tăng tỷ lệ chốt dịch vụ."
+    }
+  },
+  {
+    "step": 4,
+    "title": "Xác nhận dịch vụ + Ghi phiếu",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Xác nhận dịch vụ chính xác và bàn giao thông tin cho lễ tân và pha chế",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Xác nhận lại dịch vụ khách chọn: 'Vậy mình làm phương án [A/B/C], đúng không ạ?'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Ghi rõ vào phiếu: Dịch vụ chính, phụ phí (nếu có), sản phẩm dự kiến sử dụng, thời gian dự kiến",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Bàn giao phiếu cho lễ tân: Xác nhận giá, ưu đãi, thanh toán",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Bàn giao thông tin cho pha chế: Sản phẩm cần, công thức (nếu có), lưu ý đặc biệt",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Bắt đầu chuẩn bị kỹ thuật: Dụng cụ, sản phẩm, không gian làm việc",
+          "estimatedTime": "2 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Xác nhận lại dịch vụ với khách",
+        "Ghi phiếu đầy đủ, chính xác",
+        "Bàn giao cho lễ tân",
+        "Bàn giao cho pha chế",
+        "Chuẩn bị kỹ thuật sẵn sàng"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Ghi sai dịch vụ, gây nhầm lẫn khi thanh toán",
+          "prevention": "Xác nhận lại với khách trước khi ghi, kiểm tra lại sau khi ghi"
+        },
+        {
+          "mistake": "Quên bàn giao thông tin cho pha chế, gây chậm trễ",
+          "prevention": "Bàn giao đầy đủ thông tin ngay sau khi ghi phiếu"
+        },
+        {
+          "mistake": "Không chuẩn bị kỹ thuật trước, làm chậm quy trình",
+          "prevention": "Chuẩn bị dụng cụ, sản phẩm sẵn sàng trước khi bắt đầu"
+        }
+      ],
+      "qualityStandards": [
+        "Thông tin dịch vụ chính xác 100%",
+        "Phiếu được ghi đầy đủ, rõ ràng",
+        "Bàn giao kịp thời, không chậm trễ",
+        "Kỹ thuật được chuẩn bị sẵn sàng"
+      ],
+      "notes": "Bàn giao tốt giúp quy trình diễn ra mượt mà, tránh nhầm lẫn và chậm trễ."
+    }
+  },
+  {
+    "step": 5,
+    "title": "Thực hiện kỹ thuật (7 nguyên tắc)",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Thực hiện kỹ thuật an toàn, chuyên nghiệp, đảm bảo chất lượng và kết quả như mong đợi",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Nguyên tắc 1 - Kiểm soát độ ẩm (Hydration Control): Tóc uốn nóng/nhuộm cần độ ẩm 25–35% là lý tưởng. Sấy khô 80% trước khi lên thuốc",
+          "estimatedTime": "5-10 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Nguyên tắc 2 - Quy luật phân khu: Sử dụng Hình dáng thuần (Pure Forms) hoặc Dáng tóc không tầng (Solid Form) tùy kiểu. Phân khu đúng, cân đối",
+          "estimatedTime": "10-15 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Nguyên tắc 3 - Đo độ mềm, test thuốc đúng chuẩn: Test mỗi 5-8 phút, kiểm tra độ giãn, không quá mức. Áp dụng cho uốn/nhuộm",
+          "estimatedTime": "Ongoing",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Nguyên tắc 4 - Kiểm soát độ căng & độ xoăn (Curl Tension): Góc cuốn, size trục phù hợp. Không quá căng, không quá lỏng",
+          "estimatedTime": "Ongoing",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Nguyên tắc 5 - Thời gian tiêu chuẩn, không đoán mò: Tuân thủ thời gian theo sản phẩm và tình trạng tóc. Không rút ngắn, không kéo dài tùy tiện",
+          "estimatedTime": "Tuỳ dịch vụ",
+          "important": true
+        },
+        {
+          "stepNumber": 6,
+          "description": "Nguyên tắc 6 - Lưu ý rủi ro (overprocess – đứt liên kết): Quan sát liên tục, dừng ngay nếu có dấu hiệu quá mức. Ưu tiên an toàn",
+          "estimatedTime": "Ongoing",
+          "important": true
+        },
+        {
+          "stepNumber": 7,
+          "description": "Nguyên tắc 7 - Hoàn thiện mềm mại, tạo style theo khuôn mặt: Sấy, tạo kiểu phù hợp với khuôn mặt, phong cách khách. Mềm mại, tự nhiên",
+          "estimatedTime": "15-20 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Kiểm soát độ ẩm đúng chuẩn (25-35%)",
+        "Phân khu đúng quy luật",
+        "Test độ mềm đúng chuẩn (mỗi 5-8 phút)",
+        "Kiểm soát độ căng & xoăn",
+        "Tuân thủ thời gian tiêu chuẩn",
+        "Quan sát rủi ro liên tục",
+        "Hoàn thiện mềm mại, phù hợp khuôn mặt"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không kiểm soát độ ẩm, tóc quá ướt hoặc quá khô",
+          "prevention": "Luôn sấy khô 80% trước khi lên thuốc, kiểm tra bằng cách sờ tay"
+        },
+        {
+          "mistake": "Không test độ mềm, đoán mò thời gian, dẫn đến overprocess",
+          "prevention": "Test mỗi 5-8 phút, kiểm tra độ giãn, không được bỏ qua"
+        },
+        {
+          "mistake": "Phân khu không đều, kết quả không đồng nhất",
+          "prevention": "Tuân thủ quy luật phân khu, đo đạc cẩn thận"
+        },
+        {
+          "mistake": "Không quan sát rủi ro, tóc bị hư tổn thêm",
+          "prevention": "Quan sát liên tục, dừng ngay nếu có dấu hiệu quá mức"
+        }
+      ],
+      "qualityStandards": [
+        "7 nguyên tắc được tuân thủ đầy đủ",
+        "Không có rủi ro overprocess hoặc đứt liên kết",
+        "Kết quả đồng nhất, phù hợp với khuôn mặt",
+        "An toàn được ưu tiên hàng đầu"
+      ],
+      "notes": "7 nguyên tắc này là nền tảng của kỹ thuật chuyên nghiệp. Không được bỏ qua bất kỳ nguyên tắc nào. Có thể tham khảo AI Stylist Coach để hỗ trợ quyết định kỹ thuật."
+    }
+  },
+  {
+    "step": 6,
+    "title": "Review kết quả + Hướng dẫn",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Xác nhận kết quả với khách, hướng dẫn chăm sóc, và đề xuất sản phẩm một cách tinh tế",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Cho khách xem 360 độ: Quay khách xem tóc từ mọi góc, giải thích điểm mạnh của kiểu tóc mới",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Giải thích sản phẩm đang lên tóc: Sản phẩm nào, công dụng gì, tác dụng như thế nào",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Đề xuất sản phẩm chăm sóc tại nhà (theo style Mina - tinh tế, không hard sale): 'Nếu chị/anh muốn giữ nếp lâu hơn, em gợi ý thêm [sản phẩm], nhưng tùy chị/anh nha, em không ép'",
+          "estimatedTime": "2 phút",
+          "important": false
+        },
+        {
+          "stepNumber": 4,
+          "description": "Hỏi nhu cầu khách về sản phẩm: 'Chị/anh hay sấy ở nhà không?', 'Chị/anh muốn giữ nếp lâu hay tự nhiên?'",
+          "estimatedTime": "1 phút",
+          "important": false
+        },
+        {
+          "stepNumber": 5,
+          "description": "Gợi ý nhẹ, không áp lực: Chỉ đề xuất khi phù hợp, không ép buộc, tôn trọng quyết định khách",
+          "estimatedTime": "1 phút",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Cho khách xem 360 độ",
+        "Giải thích sản phẩm đã dùng",
+        "Đề xuất sản phẩm chăm sóc (tinh tế)",
+        "Hỏi nhu cầu khách về sản phẩm",
+        "Không ép buộc, tôn trọng quyết định"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không cho khách xem kỹ, khách phát hiện lỗi sau khi về",
+          "prevention": "Luôn cho khách xem 360 độ, giải thích, xác nhận hài lòng"
+        },
+        {
+          "mistake": "Upsell quá ép buộc, làm khách khó chịu",
+          "prevention": "Hỏi nhu cầu trước, gợi ý nhẹ, không ép buộc, tôn trọng quyết định"
+        },
+        {
+          "mistake": "Không giải thích sản phẩm, khách không hiểu",
+          "prevention": "Giải thích rõ sản phẩm đã dùng, công dụng, tác dụng"
+        }
+      ],
+      "qualityStandards": [
+        "Khách hài lòng với kết quả sau khi xem 360 độ",
+        "Sản phẩm được giải thích rõ ràng",
+        "Upsell tinh tế, không ép buộc",
+        "Khách cảm thấy được tôn trọng"
+      ],
+      "notes": "Review tốt giúp khách hài lòng, giảm phàn nàn sau dịch vụ. Upsell tinh tế theo style Mina giúp tăng doanh thu mà không làm khách khó chịu."
+    }
+  },
+  {
+    "step": 7,
+    "title": "Hướng dẫn chăm sóc sau dịch vụ",
+    "role": "stylist",
+    "detail": {
+      "purpose": "Đảm bảo khách biết cách chăm sóc tóc đúng cách, duy trì kết quả và quay lại salon",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Gửi file hướng dẫn (uốn – nhuộm – phục hồi): Gửi qua Zalo/Email, giải thích từng bước",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Nhắc lịch quay lại (4–8 tuần): 'Chị/anh có muốn em giữ lịch đẹp cho lần sau không ạ? Khoảng 4–6 tuần nữa sẽ phù hợp để chăm sóc tiếp'",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Nhắc khách follow-up 24–48h: 'Em sẽ nhắn tin hỏi thăm chị/anh sau 24h, nếu có gì chưa ổn cứ báo em nha'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Ghi chú kỹ thuật vào hệ thống: Dịch vụ đã làm, sản phẩm đã dùng, công thức (nếu có), lưu ý đặc biệt → Để AI Coach sử dụng cho lần tới",
+          "estimatedTime": "3 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Gửi file hướng dẫn chăm sóc",
+        "Nhắc lịch quay lại (4-8 tuần)",
+        "Nhắc follow-up 24-48h",
+        "Ghi chú kỹ thuật vào hệ thống đầy đủ"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Quên gửi hướng dẫn, khách chăm sóc sai cách",
+          "prevention": "Luôn gửi file hướng dẫn, giải thích qua, xác nhận khách đã nhận"
+        },
+        {
+          "mistake": "Không nhắc lịch quay lại, mất khách",
+          "prevention": "Luôn nhắc, đề nghị giữ lịch, tạo cảm giác được quan tâm"
+        },
+        {
+          "mistake": "Không ghi chú kỹ thuật, lần sau không có thông tin",
+          "prevention": "Ghi chú đầy đủ ngay sau dịch vụ, để AI Coach và stylist khác sử dụng"
+        }
+      ],
+      "qualityStandards": [
+        "File hướng dẫn được gửi đầy đủ",
+        "Lịch quay lại được nhắc, khách đồng ý",
+        "Follow-up được thông báo rõ ràng",
+        "Thông tin kỹ thuật được ghi chú đầy đủ vào hệ thống"
+      ],
+      "notes": "Hướng dẫn tốt giúp khách chăm sóc đúng cách, duy trì kết quả. Ghi chú kỹ thuật giúp AI Coach và stylist khác có thông tin cho lần sau."
+    }
+  }
+]
+

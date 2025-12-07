@@ -1,0 +1,416 @@
+[
+  {
+    "step": 1,
+    "title": "Chào khách & Nhận nhiệm vụ",
+    "role": "online",
+    "detail": {
+      "purpose": "Tạo ấn tượng đầu tiên tốt, chào khách thân thiện và chủ động hỏi nhu cầu",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Trả lời tin nhắn trong 1 phút: Mục tiêu phản hồi nhanh, không để khách chờ",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Chào khách với tone Mina: 'Dạ em chào chị, Chí Tâm Hair Salon nè chị yêu 💛. Hôm nay em hỗ trợ cho mình nè. Chị đang quan tâm làm dịch vụ gì ha ạ?'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Quy tắc giao tiếp: Không hỏi 'bạn cần gì?', không dùng dấu hỏi liên tiếp, giọng thân thiện – lễ phép – chủ động",
+          "estimatedTime": "Ongoing",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Trả lời tin nhắn trong 1 phút",
+        "Chào khách đúng tone Mina",
+        "Không dùng câu hỏi không lịch sự",
+        "Giọng thân thiện, lễ phép, chủ động"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Trả lời quá chậm, để khách chờ lâu",
+          "prevention": "Luôn ưu tiên trả lời trong 1 phút, set up notification"
+        },
+        {
+          "mistake": "Chào khách quá cứng nhắc, không thân thiện",
+          "prevention": "Dùng tone Mina, thân thiện, lễ phép, có emoji phù hợp"
+        },
+        {
+          "mistake": "Hỏi 'bạn cần gì?' gây cảm giác không chuyên nghiệp",
+          "prevention": "Hỏi 'Chị đang quan tâm làm dịch vụ gì ha ạ?' thay vì 'bạn cần gì?'"
+        }
+      ],
+      "qualityStandards": [
+        "Trả lời trong 1 phút",
+        "Tone Mina chuẩn, thân thiện",
+        "Khách cảm thấy được quan tâm ngay từ đầu"
+      ],
+      "notes": "Bước này tạo ấn tượng đầu tiên, rất quan trọng. Tone Mina giúp khách cảm thấy gần gũi, tin tưởng."
+    }
+  },
+  {
+    "step": 2,
+    "title": "Xác định nhu cầu & Lấy thông tin",
+    "role": "online",
+    "detail": {
+      "purpose": "Thu thập đầy đủ thông tin về tình trạng tóc và nhu cầu khách để tư vấn chính xác",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Hỏi: 'Tóc chị hiện tại đang là tóc gì?' (uốn – duỗi – nhuộm – tự nhiên)",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Hỏi: 'Lần gần nhất làm tóc là khi nào?'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Hỏi: 'Tóc có bị khô – xơ – hư không?'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Xin hình tóc: 'Chị gửi em xin 1–2 hình tóc hiện tại giúp em với ha ❤️' (Ảnh sáng thường, không filter). Mục tiêu: Lấy hình tóc càng sớm càng tốt",
+          "estimatedTime": "2-5 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Hỏi tình trạng tóc hiện tại",
+        "Hỏi lần làm tóc gần nhất",
+        "Hỏi về độ hư tổn",
+        "Xin hình tóc khách (1-2 hình)"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Quên xin hình tóc, không có thông tin để tư vấn chính xác",
+          "prevention": "Luôn xin hình tóc, giải thích lý do cần hình để tư vấn chính xác"
+        },
+        {
+          "mistake": "Không hỏi đủ thông tin, tư vấn không chính xác",
+          "prevention": "Hỏi đủ 4 câu hỏi: tình trạng tóc, lần làm gần nhất, độ hư tổn, hình tóc"
+        },
+        {
+          "mistake": "Khách không gửi hình, không nhắc lại",
+          "prevention": "Nhắc lại 1-2 lần nếu khách chưa gửi, giải thích lợi ích"
+        }
+      ],
+      "qualityStandards": [
+        "Lấy được đầy đủ thông tin",
+        "Có hình tóc khách (mục tiêu 80% khách inbox)",
+        "Thông tin đầy đủ để AI phân tích"
+      ],
+      "notes": "Lấy hình tóc là bước quan trọng nhất. Không có hình, không thể tư vấn chính xác. Mục tiêu: 80% khách inbox → lấy được hình."
+    }
+  },
+  {
+    "step": 3,
+    "title": "Gửi ảnh cho AI (Mina / AI Stylist Coach)",
+    "role": "online",
+    "detail": {
+      "purpose": "Sử dụng AI để phân tích tóc khách, đưa ra tư vấn chính xác và nhanh chóng",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Nhận hình từ khách: Lưu ảnh vào hệ thống",
+          "estimatedTime": "10 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Gửi lên AI phân tích: Sử dụng AI Stylist Coach hoặc Mina AI để phân tích ảnh",
+          "estimatedTime": "30 giây - 2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Nhận phân tích sơ bộ từ AI: Độ hư tổn, pattern tóc, độ dày, lịch sử hóa chất (dự đoán), nguy cơ rủi ro",
+          "estimatedTime": "Tự động",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "CSKH Online chỉ cần 1 click: Tự động hóa quy trình, không cần làm thủ công",
+          "estimatedTime": "Tự động",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Lưu ảnh vào hệ thống",
+        "Gửi lên AI phân tích",
+        "Nhận kết quả phân tích",
+        "Sử dụng kết quả để tư vấn"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không gửi ảnh cho AI, tự tư vấn không chính xác",
+          "prevention": "Luôn gửi ảnh cho AI phân tích, không tự đoán"
+        },
+        {
+          "mistake": "Không đợi kết quả AI, tư vấn ngay",
+          "prevention": "Đợi AI phân tích xong, sử dụng kết quả để tư vấn chính xác"
+        }
+      ],
+      "qualityStandards": [
+        "Tất cả ảnh được gửi cho AI phân tích",
+        "Kết quả phân tích được sử dụng để tư vấn",
+        "Tư vấn dựa trên dữ liệu, không đoán mò"
+      ],
+      "notes": "AI phân tích giúp tư vấn chính xác hơn, nhanh hơn, chuyên nghiệp hơn. CSKH chỉ cần nhấn 1 nút, AI làm phần còn lại."
+    }
+  },
+  {
+    "step": 4,
+    "title": "Chuyển tư vấn cho Stylist (Khi cần)",
+    "role": "online",
+    "detail": {
+      "purpose": "Chuyển các ca phức tạp cho stylist tư vấn chuyên sâu",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Xác định ca cần chuyển: Tóc tẩy, tóc overprocess, khách yêu cầu quá 'khó', muốn chọn stylist phù hợp",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Chuẩn câu chuyển tiếp: 'Dạ case tóc của chị hơi đặc biệt nên để em nhờ stylist kiểm tra giúp chị nhen. Em gửi chị trong 3–5 phút nha 💛'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Thông báo cho stylist: Gửi thông tin khách và ảnh tóc cho stylist phù hợp",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Theo dõi: Đảm bảo stylist trả lời trong 3-5 phút, nhắc lại nếu cần",
+          "estimatedTime": "Ongoing",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Xác định ca cần chuyển",
+        "Thông báo cho khách",
+        "Gửi thông tin cho stylist",
+        "Theo dõi phản hồi"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không chuyển ca phức tạp, tự tư vấn sai",
+          "prevention": "Khi gặp ca phức tạp, luôn chuyển cho stylist, không tự tư vấn"
+        },
+        {
+          "mistake": "Không thông báo cho khách, để khách chờ",
+          "prevention": "Luôn thông báo cho khách khi chuyển ca, cho biết thời gian phản hồi"
+        },
+        {
+          "mistake": "Không theo dõi, stylist không trả lời",
+          "prevention": "Theo dõi phản hồi, nhắc lại stylist nếu cần"
+        }
+      ],
+      "qualityStandards": [
+        "Ca phức tạp được chuyển cho stylist",
+        "Khách được thông báo rõ ràng",
+        "Stylist phản hồi trong 3-5 phút"
+      ],
+      "notes": "Không phải tất cả ca đều cần stylist. Nhưng ca phức tạp (tẩy, overprocess, yêu cầu khó) thì bắt buộc phải chuyển."
+    }
+  },
+  {
+    "step": 5,
+    "title": "Gợi ý dịch vụ (Dựa trên SOP Mina)",
+    "role": "online",
+    "detail": {
+      "purpose": "Đưa ra gợi ý dịch vụ phù hợp, không chỉ đưa 1 lựa chọn mà đưa 2-3 option",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Phân tích kết quả AI: Dựa vào phân tích AI về tình trạng tóc, pattern, độ hư tổn",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Đưa ra 2-3 option dịch vụ: Option A (đẹp nhất), Option B (cân bằng), Option C (an toàn nhất). Ví dụ: 'Dạ nhìn tóc mình thì hiện tại em thấy hợp nhất là: Option A: Uốn Rê Soft Hàn Quốc – vào nếp, mềm mại. Option B: Uốn Layer sóng lơi nhẹ tự nhiên. Em gửi chị để mình chọn thử ha.'",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Giải thích từng option: Nêu rõ ưu điểm, phù hợp với ai",
+          "estimatedTime": "1 phút",
+          "important": false
+        },
+        {
+          "stepNumber": 4,
+          "description": "Áp dụng nguyên tắc Mina: Không push, không ép, để khách tự quyết định",
+          "estimatedTime": "Ongoing",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Phân tích kết quả AI",
+        "Đưa ra 2-3 option dịch vụ",
+        "Giải thích từng option",
+        "Không push, không ép"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Chỉ đưa 1 option, khách không có lựa chọn",
+          "prevention": "Luôn đưa 2-3 option, giúp khách có quyền quyết định"
+        },
+        {
+          "mistake": "Push quá mạnh, ép khách chọn option đắt",
+          "prevention": "Áp dụng nguyên tắc Mina: Không push, không ép, để khách tự quyết định"
+        },
+        {
+          "mistake": "Không giải thích option, khách không hiểu",
+          "prevention": "Giải thích rõ từng option, ưu điểm, phù hợp với ai"
+        }
+      ],
+      "qualityStandards": [
+        "Đưa ra 2-3 option dịch vụ",
+        "Giải thích rõ ràng từng option",
+        "Khách cảm thấy được tôn trọng, không bị ép"
+      ],
+      "notes": "Không phải chỉ đưa 1 lựa chọn. Phải đưa 2-3 option để khách có quyền quyết định. Áp dụng nguyên tắc Mina: Không push, không ép."
+    }
+  },
+  {
+    "step": 6,
+    "title": "Báo giá & Chốt lịch",
+    "role": "online",
+    "detail": {
+      "purpose": "Báo giá tinh tế và chốt lịch hẹn thành công",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Áp dụng nguyên tắc Mina: 'Chị muốn em báo giá trước hay mình chốt dịch vụ rồi báo giá sau ha?'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Nếu khách đồng ý: Hỏi ngày – giờ phù hợp, chọn stylist, xác nhận số điện thoại",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Tin nhắn chuẩn xác nhận lịch: 'Dạ em đã giữ lịch cho chị lúc 3:00 chiều mai – stylist Chí Tâm làm cho mình nhe chị. Em gửi chị mã đặt lịch nè: CT-38612.'",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Gửi mã đặt lịch và thông tin chi tiết: Mã booking, thời gian, stylist, địa chỉ, lưu ý",
+          "estimatedTime": "1 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Hỏi câu Mina trước khi báo giá",
+        "Hỏi ngày – giờ",
+        "Chọn stylist",
+        "Xác nhận số điện thoại",
+        "Gửi mã đặt lịch",
+        "Gửi thông tin chi tiết"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Báo giá ngay, không hỏi câu Mina",
+          "prevention": "Luôn hỏi câu Mina trước, tôn trọng quyết định khách"
+        },
+        {
+          "mistake": "Không xác nhận đầy đủ thông tin, khách đến sai",
+          "prevention": "Xác nhận đầy đủ: ngày, giờ, stylist, số điện thoại, mã booking"
+        },
+        {
+          "mistake": "Không gửi mã booking, khách không biết mã",
+          "prevention": "Luôn gửi mã booking và thông tin chi tiết"
+        }
+      ],
+      "qualityStandards": [
+        "Câu Mina được hỏi trước khi báo giá",
+        "Thông tin lịch hẹn đầy đủ, chính xác",
+        "Khách nhận được mã booking và thông tin chi tiết",
+        "Mục tiêu: 60% khách hỏi → chuyển thành đặt lịch"
+      ],
+      "notes": "Áp dụng nguyên tắc Mina: Hỏi câu 'Chị muốn em báo giá trước hay mình chốt dịch vụ rồi báo giá sau ha?' giúp tăng tỷ lệ chốt. Mục tiêu: 60% khách hỏi → đặt lịch."
+    }
+  },
+  {
+    "step": 7,
+    "title": "Follow-up trước & sau dịch vụ",
+    "role": "online",
+    "detail": {
+      "purpose": "Chăm sóc khách trước và sau dịch vụ, tăng tỷ lệ giữ chân khách",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Nhắc lịch trước 12h: 'Dạ em nhắc nhẹ chị lịch làm tóc hôm nay 3h chiều nè chị ❤️'",
+          "estimatedTime": "Tự động",
+          "important": false
+        },
+        {
+          "stepNumber": 2,
+          "description": "Follow-up sau dịch vụ 24h: 'Hôm qua chị làm tóc bên em. Không biết hôm nay tóc chị vào nếp ok không ạ?'",
+          "estimatedTime": "Tự động",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Hỏi feedback: Nếu có vấn đề, hỏi chi tiết và giải quyết ngay",
+          "estimatedTime": "2-5 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Mục tiêu: 100% khách sau làm tóc → nhận được follow-up Zalo",
+          "estimatedTime": "Tự động",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Nhắc lịch trước 12h (tùy chọn)",
+        "Follow-up 24h sau làm tóc (bắt buộc)",
+        "Hỏi feedback",
+        "Giải quyết vấn đề nếu có"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không follow-up, khách quên salon",
+          "prevention": "Luôn follow-up 24h sau làm tóc, tự động hóa nếu có thể"
+        },
+        {
+          "mistake": "Follow-up quá muộn, khách đã quên",
+          "prevention": "Follow-up trong 24-48h sau làm tóc, không quá muộn"
+        },
+        {
+          "mistake": "Không hỏi feedback, không biết khách có hài lòng không",
+          "prevention": "Luôn hỏi feedback, giải quyết vấn đề ngay nếu có"
+        }
+      ],
+      "qualityStandards": [
+        "100% khách sau làm tóc nhận được follow-up",
+        "Follow-up trong 24-48h",
+        "Feedback được thu thập và xử lý"
+      ],
+      "notes": "Follow-up rất quan trọng để giữ chân khách. Tự động hóa nếu có thể. Mục tiêu: 100% khách sau làm tóc → nhận được follow-up Zalo."
+    }
+  }
+]
+

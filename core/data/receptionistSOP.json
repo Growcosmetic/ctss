@@ -1,0 +1,450 @@
+[
+  {
+    "step": 1,
+    "title": "Chào khách & Nhận diện khách",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Tạo cảm giác thân thiện, chuyên nghiệp trong 3 giây đầu tiên khi khách đến salon",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Đứng dậy, mỉm cười, chào khách rõ ràng: 'Chào chị/anh, chào mừng đến Chí Tâm Hair Salon'",
+          "estimatedTime": "3 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Hỏi ngay câu: 'Chị/anh đến để làm dịch vụ gì hôm nay ha ạ?'",
+          "estimatedTime": "5 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Nếu khách có lịch hẹn → Xác nhận lịch: 'Chị/anh là [tên] đúng không ạ? Lịch hẹn với stylist [tên stylist] lúc [giờ] phải không ạ?'",
+          "estimatedTime": "10 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Nếu khách walk-in → Hỏi nhu cầu: 'Chị/anh muốn làm gì cho tóc hôm nay ạ? Tóc hiện tại chị/anh như thế nào ạ?'",
+          "estimatedTime": "15 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Ghi chú nhanh trạng thái tâm lý khách (vội – thoải mái – lo lắng) vào hệ thống",
+          "estimatedTime": "5 giây",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Chào khách trong 3 giây đầu",
+        "Hỏi nhu cầu khách rõ ràng",
+        "Xác nhận lịch hẹn (nếu có)",
+        "Ghi chú trạng thái khách vào hệ thống"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không chào khách kịp thời, để khách đợi quá lâu",
+          "prevention": "Luôn chú ý cửa ra vào, chào ngay khi thấy khách"
+        },
+        {
+          "mistake": "Không kiểm tra lịch trước khi hỏi, gây nhầm lẫn",
+          "prevention": "Kiểm tra hệ thống lịch trước khi chào khách"
+        },
+        {
+          "mistake": "Truyền đạt sai nhu cầu khách cho stylist",
+          "prevention": "Ghi chú rõ ràng, xác nhận lại với khách trước khi bàn giao"
+        }
+      ],
+      "qualityStandards": [
+        "Khách được chào trong vòng 3 giây đầu",
+        "Thông tin khách được xác nhận chính xác 100%",
+        "Trạng thái khách được cập nhật vào hệ thống ngay lập tức"
+      ],
+      "notes": "Bước này rất quan trọng, tạo ấn tượng đầu tiên. Cần thân thiện nhưng vẫn chuyên nghiệp."
+    }
+  },
+  {
+    "step": 2,
+    "title": "Xác nhận thông tin + Điều phối",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Xác nhận thông tin khách hàng và điều phối stylist phù hợp, đảm bảo quy trình diễn ra suôn sẻ",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Kiểm tra lịch hẹn trong hệ thống: Xác nhận tên khách, stylist, giờ hẹn, dịch vụ đã đặt",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Chọn stylist phù hợp dựa trên: Kỹ thuật (phù hợp dịch vụ), phong cách (phù hợp khách), thời gian (stylist có sẵn)",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Thông báo thời gian chờ (nếu có): 'Chị/anh chờ khoảng [X] phút, stylist đang hoàn thiện khách trước ạ'",
+          "estimatedTime": "10 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Mời khách ngồi chờ hoặc mời nước: 'Chị/anh ngồi đây chờ một chút ạ, em mời nước nha'",
+          "estimatedTime": "15 giây",
+          "important": false
+        },
+        {
+          "stepNumber": 5,
+          "description": "Cập nhật trạng thái khách trên hệ thống: 'Đã đến' → 'Đang tư vấn' → 'Đang làm'",
+          "estimatedTime": "10 giây",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Kiểm tra lịch hẹn trong hệ thống",
+        "Chọn stylist phù hợp",
+        "Thông báo thời gian chờ (nếu có)",
+        "Mời nước cho khách",
+        "Cập nhật trạng thái khách vào hệ thống"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Chọn sai stylist, không phù hợp với dịch vụ hoặc khách hàng",
+          "prevention": "Luôn kiểm tra profile stylist và yêu cầu khách trước khi phân công"
+        },
+        {
+          "mistake": "Không cập nhật trạng thái, gây nhầm lẫn cho bộ phận khác",
+          "prevention": "Cập nhật ngay sau mỗi bước, không trì hoãn"
+        },
+        {
+          "mistake": "Không thông báo thời gian chờ, để khách phàn nàn",
+          "prevention": "Luôn thông báo rõ ràng và xin lỗi nếu phải chờ lâu"
+        }
+      ],
+      "qualityStandards": [
+        "Stylist được chọn phù hợp 100% với yêu cầu khách",
+        "Trạng thái khách được cập nhật real-time",
+        "Khách được thông báo rõ ràng về thời gian chờ"
+      ],
+      "notes": "Điều phối tốt sẽ giúp quy trình diễn ra mượt mà, tránh phàn nàn từ khách."
+    }
+  },
+  {
+    "step": 3,
+    "title": "Hỗ trợ tư vấn cho Stylist",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Bàn giao thông tin khách hàng cho stylist một cách chính xác và hỗ trợ quá trình tư vấn",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Khi stylist đến → Lễ tân giới thiệu ngắn gọn: 'Đây là chị/anh [tên], hôm nay muốn làm [dịch vụ]. Tóc chị/anh hơi [tình trạng] nhẹ'",
+          "estimatedTime": "20 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Bàn giao thông tin chính xác: Lịch sử khách (nếu có), nhu cầu, thời gian, ghi chú đặc biệt",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Chuẩn bị không gian tư vấn: Ghế, gương, ánh sáng đủ, không gian yên tĩnh",
+          "estimatedTime": "1 phút",
+          "important": false
+        },
+        {
+          "stepNumber": 4,
+          "description": "Theo dõi để hỗ trợ stylist khi cần: Nước, tài liệu, mẫu màu, sản phẩm demo",
+          "estimatedTime": "Ongoing",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Giới thiệu khách cho stylist đúng cách",
+        "Bàn giao thông tin chính xác",
+        "Chuẩn bị không gian tư vấn",
+        "Sẵn sàng hỗ trợ khi stylist cần"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Bàn giao thông tin không đầy đủ, stylist phải hỏi lại khách",
+          "prevention": "Ghi chú đầy đủ, bàn giao rõ ràng, xác nhận lại với stylist"
+        },
+        {
+          "mistake": "Không gian tư vấn không phù hợp (ồn, thiếu ánh sáng)",
+          "prevention": "Kiểm tra trước, đảm bảo không gian yên tĩnh, đủ ánh sáng"
+        },
+        {
+          "mistake": "Không sẵn sàng hỗ trợ khi stylist cần",
+          "prevention": "Quan sát, chủ động hỗ trợ, không để stylist phải chờ đợi"
+        }
+      ],
+      "qualityStandards": [
+        "Thông tin bàn giao chính xác 100%",
+        "Không gian tư vấn sẵn sàng trước khi stylist đến",
+        "Stylist không phải chờ đợi hỗ trợ"
+      ],
+      "notes": "Bàn giao tốt giúp stylist tư vấn hiệu quả hơn, tiết kiệm thời gian cho cả khách và salon."
+    }
+  },
+  {
+    "step": 4,
+    "title": "Trong suốt quá trình làm",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Hỗ trợ liên tục trong quá trình làm tóc, đảm bảo khách hài lòng và quy trình diễn ra suôn sẻ",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Chủ động quan sát khách: Kiểm tra xem khách có cần gì không, có thoải mái không",
+          "estimatedTime": "Ongoing",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Mời nước nếu khách chờ lâu (sau 10 phút): 'Chị/anh có muốn thêm nước không ạ?'",
+          "estimatedTime": "30 giây",
+          "important": false
+        },
+        {
+          "stepNumber": 3,
+          "description": "Điều phối phụ việc/pha chế theo yêu cầu stylist: Giao nhiệm vụ, kiểm tra tiến độ",
+          "estimatedTime": "Ongoing",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Kiểm tra môi trường: Sạch sẽ, gọn gàng, không ồn ào, nhiệt độ phù hợp",
+          "estimatedTime": "5 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Hỗ trợ stylist khi cần: Khăn, kẹp, máy móc, sản phẩm, dụng cụ",
+          "estimatedTime": "Ongoing",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Quan sát khách thường xuyên",
+        "Mời nước sau 10 phút chờ",
+        "Điều phối phụ việc/pha chế hiệu quả",
+        "Kiểm tra môi trường sạch sẽ, gọn gàng",
+        "Sẵn sàng hỗ trợ stylist"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Không quan sát khách, để khách phải tự yêu cầu",
+          "prevention": "Chủ động quan sát, hỏi thăm khách định kỳ"
+        },
+        {
+          "mistake": "Môi trường không sạch sẽ, gây ấn tượng xấu",
+          "prevention": "Kiểm tra định kỳ, dọn dẹp ngay khi cần"
+        },
+        {
+          "mistake": "Không hỗ trợ stylist kịp thời, làm chậm quy trình",
+          "prevention": "Sẵn sàng, chủ động, phản ứng nhanh"
+        }
+      ],
+      "qualityStandards": [
+        "Khách luôn được quan tâm, không bị bỏ quên",
+        "Môi trường luôn sạch sẽ, chuyên nghiệp",
+        "Stylist được hỗ trợ kịp thời, không bị gián đoạn"
+      ],
+      "notes": "Hỗ trợ liên tục tạo trải nghiệm tốt cho khách và giúp stylist làm việc hiệu quả hơn."
+    }
+  },
+  {
+    "step": 5,
+    "title": "Bàn giao Lễ tân ↔ Stylist",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Xác nhận lại dịch vụ đã làm và chuẩn bị thanh toán chính xác",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Sau khi stylist hoàn thiện → Stylist báo lễ tân: 'Đã làm xong, dịch vụ [tên], có thêm [addon], dùng sản phẩm [tên]'",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Lễ tân xác nhận lại đúng dịch vụ + addon + sản phẩm đã dùng: Đối chiếu với booking ban đầu",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Lễ tân hỏi: 'Chị/anh có muốn mua thêm chăm sóc tại nhà không ạ?' (Upsell tinh tế, không ép buộc)",
+          "estimatedTime": "20 giây",
+          "important": false
+        },
+        {
+          "stepNumber": 4,
+          "description": "Chuẩn bị hóa đơn đúng – rõ – không sai sót: Kiểm tra lại dịch vụ, giá, ưu đãi, điểm thành viên",
+          "estimatedTime": "2 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Nhận thông tin từ stylist chính xác",
+        "Xác nhận lại dịch vụ với stylist",
+        "Hỏi upsell sản phẩm chăm sóc (nếu phù hợp)",
+        "Chuẩn bị hóa đơn đúng, không sai sót"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Ghi sai dịch vụ, gây thắc mắc khi thanh toán",
+          "prevention": "Xác nhận lại với stylist và khách trước khi làm hóa đơn"
+        },
+        {
+          "mistake": "Quên addon hoặc sản phẩm đã dùng",
+          "prevention": "Ghi chú đầy đủ, đối chiếu với booking"
+        },
+        {
+          "mistake": "Upsell quá ép buộc, làm khách khó chịu",
+          "prevention": "Hỏi nhẹ nhàng, chấp nhận khi khách từ chối"
+        }
+      ],
+      "qualityStandards": [
+        "Thông tin dịch vụ chính xác 100%",
+        "Hóa đơn không có sai sót",
+        "Upsell tinh tế, không ép buộc"
+      ],
+      "notes": "Bàn giao tốt giúp thanh toán diễn ra nhanh chóng, tránh thắc mắc và phàn nàn."
+    }
+  },
+  {
+    "step": 6,
+    "title": "Thanh toán chuẩn 5 bước",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Thanh toán chuyên nghiệp, rõ ràng, tạo cảm giác hài lòng cuối cùng cho khách",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Xác nhận dịch vụ: 'Chị/anh ơi hôm nay mình làm: [dịch vụ 1], [dịch vụ 2], đúng ha ạ?'",
+          "estimatedTime": "15 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Giải thích giá rõ ràng: 'Tổng tiền là [số tiền]. Dịch vụ [tên] [giá], [addon] [giá]...' (Không nói nhanh, không gượng ép)",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Đưa ưu đãi đúng thời điểm: Combo (nếu có), Thành viên (giảm X%), Voucher theo tuần (nếu áp dụng)",
+          "estimatedTime": "30 giây",
+          "important": true
+        },
+        {
+          "stepNumber": 4,
+          "description": "Mở hóa đơn trước mặt khách: Cho khách xem, giải thích từng khoản",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 5,
+          "description": "Chúc khách + mời chụp ảnh (nếu phù hợp): 'Chị/anh có muốn chụp ảnh lưu niệm không ạ?' → Gửi ảnh cho khách qua Zalo",
+          "estimatedTime": "2 phút",
+          "important": false
+        }
+      ],
+      "checklist": [
+        "Xác nhận dịch vụ với khách",
+        "Giải thích giá rõ ràng, không nói nhanh",
+        "Áp dụng ưu đãi đúng thời điểm",
+        "Mở hóa đơn trước mặt khách",
+        "Mời chụp ảnh (nếu phù hợp)"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Nói giá quá nhanh, khách không nghe rõ, gây thắc mắc",
+          "prevention": "Nói rõ ràng, chậm rãi, giải thích từng khoản"
+        },
+        {
+          "mistake": "Quên áp dụng ưu đãi, khách phải nhắc",
+          "prevention": "Kiểm tra ưu đãi trước khi tính tiền, áp dụng tự động"
+        },
+        {
+          "mistake": "Không cho khách xem hóa đơn, gây nghi ngờ",
+          "prevention": "Luôn mở hóa đơn, giải thích rõ ràng"
+        }
+      ],
+      "qualityStandards": [
+        "Giá được giải thích rõ ràng, khách hiểu 100%",
+        "Ưu đãi được áp dụng đúng, không bỏ sót",
+        "Khách hài lòng với quy trình thanh toán"
+      ],
+      "notes": "Thanh toán là bước cuối cùng, tạo ấn tượng lâu dài. Cần chuyên nghiệp, rõ ràng, thân thiện."
+    }
+  },
+  {
+    "step": 7,
+    "title": "Chăm sóc sau dịch vụ (Follow-up)",
+    "role": "receptionist",
+    "detail": {
+      "purpose": "Duy trì mối quan hệ với khách hàng, đảm bảo khách hài lòng và quay lại",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "description": "Nhắn tin Zalo 24h sau dịch vụ: 'Dạ em là lễ tân Chí Tâm Hair Salon, chị/anh [tên] làm tóc hôm qua nè. Không biết tóc chị/anh hôm nay vào nếp ổn không ạ?'",
+          "estimatedTime": "2 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 2,
+          "description": "Nếu khách uốn/nhuộm → Gửi hướng dẫn chăm sóc: 'Chị/anh nhớ gội nhẹ, dùng dầu xả, tránh nắng...'",
+          "estimatedTime": "1 phút",
+          "important": true
+        },
+        {
+          "stepNumber": 3,
+          "description": "Mời khách book lại lịch sau 4-8 tuần: 'Chị/anh có muốn em giữ lịch đẹp cho lần sau không ạ? Khoảng 4-6 tuần nữa sẽ phù hợp ạ'",
+          "estimatedTime": "1 phút",
+          "important": false
+        },
+        {
+          "stepNumber": 4,
+          "description": "Nhập toàn bộ thông tin vào hệ thống: Ghi chú feedback khách, dịch vụ đã làm, lần follow-up tiếp theo",
+          "estimatedTime": "3 phút",
+          "important": true
+        }
+      ],
+      "checklist": [
+        "Nhắn tin follow-up sau 24h",
+        "Gửi hướng dẫn chăm sóc (nếu uốn/nhuộm)",
+        "Mời book lịch lại (nếu phù hợp)",
+        "Nhập thông tin vào hệ thống đầy đủ"
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Quên follow-up, khách cảm thấy không được quan tâm",
+          "prevention": "Đặt reminder, nhắn tin đúng thời điểm 24h sau"
+        },
+        {
+          "mistake": "Không gửi hướng dẫn chăm sóc, khách chăm sóc sai cách",
+          "prevention": "Gửi kèm hướng dẫn chi tiết cho khách uốn/nhuộm"
+        },
+        {
+          "mistake": "Không nhập thông tin vào hệ thống, mất dữ liệu",
+          "prevention": "Nhập ngay sau follow-up, không trì hoãn"
+        }
+      ],
+      "qualityStandards": [
+        "100% khách được follow-up sau 24h",
+        "Hướng dẫn chăm sóc được gửi đầy đủ",
+        "Thông tin được cập nhật vào hệ thống ngay"
+      ],
+      "notes": "Follow-up tốt giúp duy trì mối quan hệ, tăng tỷ lệ khách quay lại và giảm phàn nàn."
+    }
+  }
+]
+

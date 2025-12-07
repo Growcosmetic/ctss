@@ -1,0 +1,123 @@
+[
+  {
+    "id": "hot_perm_standard",
+    "serviceType": "uốn nóng",
+    "name": "Uốn nóng - Tiêu chuẩn",
+    "description": "Công thức uốn nóng cho tóc khỏe, tiêu chuẩn",
+    "formula": {
+      "product": "Plexis Hot Perm S1/S2",
+      "ratio": "100%",
+      "booster": "Không bắt buộc",
+      "mixingTime": "Khuấy đều 10-15 giây",
+      "processingTime": "15-20 phút (test mềm mỗi 5-8 phút)"
+    },
+    "applicableHair": "Tóc khỏe, đàn hồi tốt",
+    "notes": "Test độ mềm trước khi cuốn"
+  },
+  {
+    "id": "hot_perm_medium",
+    "serviceType": "uốn nóng",
+    "name": "Uốn nóng - Tóc trung bình",
+    "description": "Công thức uốn nóng cho tóc trung bình, cần mềm hơn",
+    "formula": {
+      "product": "Plexis Hot Perm S1 (mềm hơn)",
+      "ratio": "100%",
+      "booster": "Có thể thêm nhẹ",
+      "mixingTime": "Khuấy đều 10-15 giây",
+      "processingTime": "12-18 phút (test mềm mỗi 5-8 phút)"
+    },
+    "applicableHair": "Tóc trung bình, độ đàn hồi vừa phải",
+    "notes": "Giảm thời gian xử lý, test thường xuyên"
+  },
+  {
+    "id": "hot_perm_weak",
+    "serviceType": "uốn nóng",
+    "name": "Uốn nóng - Tóc yếu",
+    "description": "Công thức uốn nóng cho tóc yếu, cần phục hồi đi kèm",
+    "formula": {
+      "product": "Plexis Hot Perm S1 + Phục hồi",
+      "ratio": "100% thuốc + 20-30% phục hồi",
+      "booster": "Không dùng",
+      "mixingTime": "Khuấy đều 10-15 giây",
+      "processingTime": "10-15 phút (test mềm mỗi 3-5 phút)"
+    },
+    "applicableHair": "Tóc yếu, hư tổn nhẹ",
+    "notes": "Giảm thời gian, dùng phục hồi đi kèm, test thường xuyên"
+  },
+  {
+    "id": "color_standard",
+    "serviceType": "nhuộm",
+    "name": "Nhuộm - Tiêu chuẩn",
+    "description": "Công thức nhuộm màu tiêu chuẩn",
+    "formula": {
+      "product": "Thuốc nhuộm + Oxy",
+      "ratio": "1:1 hoặc 1:1.5",
+      "oxygen": "6% / 9% / 12% (theo yêu cầu)",
+      "mixingTime": "Khuấy đều 10-15 giây",
+      "processingTime": "30-45 phút (theo nhãn sản phẩm)"
+    },
+    "applicableHair": "Tóc không tẩy, độ xốp bình thường",
+    "notes": "Không tự ý đổi nồng độ oxy"
+  },
+  {
+    "id": "color_bleach",
+    "serviceType": "nhuộm",
+    "name": "Nhuộm trên tóc tẩy",
+    "description": "Công thức nhuộm cho tóc đã tẩy, cần cẩn thận",
+    "formula": {
+      "product": "Thuốc nhuộm + Oxy",
+      "ratio": "1:1 hoặc 1:1.5",
+      "oxygen": "3% / 6% (tránh oxy cao)",
+      "mixingTime": "Khuấy kỹ 15-20 giây",
+      "processingTime": "20-30 phút (kiểm tra thường xuyên)"
+    },
+    "applicableHair": "Tóc đã tẩy, độ xốp cao",
+    "notes": "Dùng oxy thấp, kiểm tra thường xuyên, có thể cần phục hồi trước"
+  },
+  {
+    "id": "color_tone_mix",
+    "serviceType": "nhuộm",
+    "name": "Nhuộm - Tone mix",
+    "description": "Công thức nhuộm nhiều màu, cần khuấy kỹ",
+    "formula": {
+      "product": "Thuốc nhuộm (nhiều màu) + Oxy",
+      "ratio": "1:1.5",
+      "oxygen": "Theo yêu cầu",
+      "mixingTime": "Khuấy kỹ 20-30 giây (đảm bảo không loang màu)",
+      "processingTime": "Theo nhãn sản phẩm"
+    },
+    "applicableHair": "Tóc bình thường",
+    "notes": "Khuấy kỹ để không loang màu, đảm bảo hòa quyện đều"
+  },
+  {
+    "id": "recovery_standard",
+    "serviceType": "phục hồi",
+    "name": "Phục hồi - Tiêu chuẩn",
+    "description": "Công thức phục hồi tóc tiêu chuẩn",
+    "formula": {
+      "product": "Sản phẩm phục hồi",
+      "ratio": "Theo độ dài tóc (50-100g)",
+      "ampoule": "Theo yêu cầu stylist",
+      "mixingTime": "Khuấy đều 10 giây",
+      "processingTime": "15-20 phút (ủ nóng nhẹ nếu cần)"
+    },
+    "applicableHair": "Tóc hư tổn, cần phục hồi",
+    "notes": "Định lượng theo độ dài tóc, không tự thêm"
+  },
+  {
+    "id": "recovery_intensive",
+    "serviceType": "phục hồi",
+    "name": "Phục hồi - Chuyên sâu",
+    "description": "Công thức phục hồi chuyên sâu cho tóc hư tổn nặng",
+    "formula": {
+      "product": "Sản phẩm phục hồi + Ampoule",
+      "ratio": "100% phục hồi + 1-2 ống ampoule",
+      "ampoule": "Bắt buộc",
+      "mixingTime": "Khuấy đều 15 giây",
+      "processingTime": "20-30 phút (ủ nóng 10 phút)"
+    },
+    "applicableHair": "Tóc hư tổn nặng (độ 4-5)",
+    "notes": "Dùng ampoule, ủ nóng để tăng hiệu quả"
+  }
+]
+

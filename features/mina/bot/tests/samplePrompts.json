@@ -1,0 +1,125 @@
+{
+  "samplePrompts": [
+    {
+      "category": "Customer Lookup",
+      "prompts": [
+        "Khách Hà Trần lần cuối làm dịch vụ gì?",
+        "Cho em xem thông tin khách hàng số điện thoại 0901234567",
+        "Khách này có bao nhiêu lần đến salon?",
+        "Khách hàng này tổng chi tiêu bao nhiêu?"
+      ]
+    },
+    {
+      "category": "Return Prediction",
+      "prompts": [
+        "Khách này bao lâu nên quay lại?",
+        "Dự đoán khi nào khách Hà Trần quay lại?",
+        "Khách này đã quá hạn quay lại chưa?",
+        "Khi nào nên nhắc khách quay lại?"
+      ]
+    },
+    {
+      "category": "Service Suggestions",
+      "prompts": [
+        "Cho em gợi ý upsell cho bill uốn này",
+        "Khách này nên làm dịch vụ gì tiếp theo?",
+        "Gợi ý dịch vụ phù hợp cho khách hàng này",
+        "Dịch vụ nào phù hợp với lịch sử của khách này?"
+      ]
+    },
+    {
+      "category": "Booking Schedule",
+      "prompts": [
+        "Hôm nay stylist Minh có lịch gì?",
+        "Xem lịch hẹn của stylist Ngọc tuần này",
+        "Stylist nào còn trống vào chiều mai?",
+        "Lịch hẹn của ngày mai như thế nào?"
+      ]
+    },
+    {
+      "category": "Customer Concerns",
+      "prompts": [
+        "Khách này hay phàn nàn gì không?",
+        "Khách Hà Trần có vấn đề gì không?",
+        "Khách này có rủi ro không quay lại không?",
+        "Khách này có đánh giá thấp dịch vụ không?"
+      ]
+    },
+    {
+      "category": "Consultation",
+      "prompts": [
+        "Chị muốn uốn nhưng sợ khô. Mina giúp em tư vấn nhẹ nhàng nha.",
+        "Khách muốn nhuộm nhưng tóc đã hư. Em tư vấn như thế nào?",
+        "Khách hỏi về dịch vụ phục hồi tóc. Em trả lời sao?",
+        "Tư vấn cho khách về dịch vụ chăm sóc tóc tại nhà"
+      ]
+    },
+    {
+      "category": "Price Inquiry",
+      "prompts": [
+        "Giá dịch vụ uốn tóc là bao nhiêu?",
+        "Dịch vụ nhuộm có giá như thế nào?",
+        "Cho em biết giá các dịch vụ cơ bản",
+        "Khách hỏi giá, em trả lời thế nào?"
+      ]
+    },
+    {
+      "category": "Invoice History",
+      "prompts": [
+        "Xem lịch sử hóa đơn của khách Hà Trần",
+        "Khách này đã thanh toán những gì?",
+        "Hóa đơn gần đây nhất của khách này",
+        "Tổng chi tiêu của khách trong tháng này"
+      ]
+    }
+  ],
+  "testScenarios": [
+    {
+      "scenario": "Receptionist helping customer",
+      "role": "RECEPTIONIST",
+      "conversation": [
+        {
+          "user": "Khách Hà Trần lần cuối làm dịch vụ gì?",
+          "expectedIntent": "customer_lookup"
+        },
+        {
+          "user": "Khách này bao lâu nên quay lại?",
+          "expectedIntent": "return_prediction"
+        },
+        {
+          "user": "Cho em gợi ý upsell cho khách này",
+          "expectedIntent": "service_suggestion"
+        }
+      ]
+    },
+    {
+      "scenario": "Stylist checking schedule",
+      "role": "STYLIST",
+      "conversation": [
+        {
+          "user": "Hôm nay em có lịch gì?",
+          "expectedIntent": "booking_schedule"
+        },
+        {
+          "user": "Khách này nên làm dịch vụ gì tiếp theo?",
+          "expectedIntent": "service_suggestion"
+        }
+      ]
+    },
+    {
+      "scenario": "Manager checking reports",
+      "role": "MANAGER",
+      "conversation": [
+        {
+          "user": "Khách này có rủi ro không quay lại không?",
+          "expectedIntent": "churn_risk"
+        },
+        {
+          "user": "Xem lịch sử hóa đơn của khách này",
+          "expectedIntent": "invoice_lookup"
+        }
+      ]
+    }
+  ]
+}
+

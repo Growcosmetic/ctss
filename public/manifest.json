@@ -1,0 +1,43 @@
+{
+  "name": "Chí Tâm Hair Salon - Customer App",
+  "short_name": "CTSS Customer",
+  "description": "Ứng dụng khách hàng của Chí Tâm Hair Salon",
+  "start_url": "/customer-app/home",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["beauty", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Đặt lịch",
+      "short_name": "Đặt lịch",
+      "description": "Đặt lịch hẹn mới",
+      "url": "/customer-app/book",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lịch hẹn",
+      "short_name": "Lịch hẹn",
+      "description": "Xem lịch hẹn của tôi",
+      "url": "/customer-app/bookings",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+

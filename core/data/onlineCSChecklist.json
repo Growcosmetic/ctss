@@ -1,0 +1,27 @@
+[
+  { "item": "Trả lời tin nhắn trong 1 phút", "must": true, "category": "response" },
+  { "item": "Chào khách đúng tone Mina", "must": true, "category": "greeting" },
+  { "item": "Hỏi tình trạng tóc hiện tại", "must": true, "category": "information" },
+  { "item": "Hỏi lần làm tóc gần nhất", "must": true, "category": "information" },
+  { "item": "Hỏi về độ hư tổn", "must": true, "category": "information" },
+  { "item": "Xin hình tóc khách (1-2 hình)", "must": true, "category": "information" },
+  { "item": "Lưu ảnh vào hệ thống", "must": true, "category": "ai" },
+  { "item": "Gửi ảnh cho AI phân tích", "must": true, "category": "ai" },
+  { "item": "Sử dụng kết quả AI để tư vấn", "must": true, "category": "ai" },
+  { "item": "Xác định ca cần chuyển cho stylist", "must": false, "category": "escalation" },
+  { "item": "Thông báo cho khách khi chuyển ca", "must": false, "category": "escalation" },
+  { "item": "Đưa ra 2-3 option dịch vụ", "must": true, "category": "consultation" },
+  { "item": "Giải thích rõ ràng từng option", "must": false, "category": "consultation" },
+  { "item": "Không push, không ép khách", "must": true, "category": "consultation" },
+  { "item": "Hỏi câu Mina trước khi báo giá", "must": true, "category": "pricing" },
+  { "item": "Hỏi ngày – giờ phù hợp", "must": true, "category": "booking" },
+  { "item": "Chọn stylist", "must": true, "category": "booking" },
+  { "item": "Xác nhận số điện thoại", "must": true, "category": "booking" },
+  { "item": "Gửi mã đặt lịch", "must": true, "category": "booking" },
+  { "item": "Gửi thông tin chi tiết lịch hẹn", "must": true, "category": "booking" },
+  { "item": "Nhắc lịch trước 12h (tùy chọn)", "must": false, "category": "followup" },
+  { "item": "Follow-up 24h sau làm tóc", "must": true, "category": "followup" },
+  { "item": "Hỏi feedback", "must": true, "category": "followup" },
+  { "item": "Giải quyết vấn đề nếu có", "must": true, "category": "followup" }
+]
+

@@ -34,15 +34,6 @@ export async function GET(
 
     const branch = await prisma.branch.findUnique({
       where: { id: params.id },
-      include: {
-        manager: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
     });
 
     if (!branch) {

@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
     // Get today's invoices (PAID)
     const todayInvoices = await prisma.invoice.findMany({
       where: {
-        status: "PAID",
-        createdAt: {
+        // status: "PAID",
+        date: {
           gte: todayStart,
           lte: todayEnd,
         },
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
     // Get yesterday's revenue for comparison
     const yesterdayInvoices = await prisma.invoice.findMany({
       where: {
-        status: "PAID",
-        createdAt: {
+        // status: "PAID",
+        date: {
           gte: yesterdayStart,
           lte: yesterdayEnd,
         },

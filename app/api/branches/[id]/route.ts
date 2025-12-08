@@ -57,17 +57,17 @@ export async function GET(
       return successResponse(branch);
     }
 
-    // Check if user's staff is assigned to this branch
-    const staff = await prisma.staff.findUnique({
-      where: { userId },
+    // Check if user is assigned to this branch
+    const userWithBranch = await prisma.user.findUnique({
+      where: { id: userId },
       include: {
-        branchStaff: {
+        branchAssignments: {
           where: { branchId: params.id },
         },
       },
     });
 
-    if (staff && staff.branchStaff.length > 0) {
+    if (userWithBranch && userWithBranch.branchAssignments.length > 0) {
       return successResponse(branch);
     }
 
@@ -129,15 +129,6 @@ export async function PUT(
         ...(email !== undefined && { email }),
         ...(managerId !== undefined && { managerId }),
         ...(isActive !== undefined && { isActive }),
-      },
-      include: {
-        manager: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
     });
 

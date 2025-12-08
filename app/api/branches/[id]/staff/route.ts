@@ -57,23 +57,19 @@ export async function GET(
       return errorResponse("Access denied", 403);
     }
 
-    const branchStaff = await prisma.branchStaff.findMany({
+    const branchStaff = await prisma.branchStaffAssignment.findMany({
       where: {
         branchId: params.id,
         isActive: true,
       },
       include: {
         staff: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phone: true,
-              },
-            },
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+            role: true,
           },
         },
         branch: {

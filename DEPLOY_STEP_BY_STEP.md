@@ -1,361 +1,340 @@
-# 🚀 Hướng Dẫn Deploy Từng Bước - CTSS lên Hostinger
+# 🚀 Deploy CTSS lên VPS - Từng Bước Chi Tiết
 
-**VPS IP:** 72.61.119.247  
-**SSH Username:** root  
-**OS:** Ubuntu 24.04 LTS
+## 📋 Chuẩn bị
+
+Trước khi bắt đầu, đảm bảo bạn đã:
+- [ ] SSH vào VPS thành công
+- [ ] Đã clone repo về VPS (hoặc đã có thư mục `/root/ctss`)
+- [ ] Có quyền root hoặc sudo
 
 ---
 
-## ✅ BƯỚC 1: Kết Nối SSH vào VPS
-
-### Trên Mac/Linux Terminal:
+## 🔧 BƯỚC 1: SSH vào VPS
 
 ```bash
-ssh root@72.61.119.247
+ssh root@your-vps-ip
+# hoặc
+ssh user@your-vps-ip
 ```
 
-### Trên Windows (PowerShell hoặc PuTTY):
-
+**Kiểm tra:**
 ```bash
-ssh root@72.61.119.247
-```
-
-**Hoặc dùng Terminal trên Hostinger:**
-- Click nút "Terminal" ở góc trên bên phải trong hPanel
-- Terminal sẽ mở trong browser
-
-**Sau khi kết nối thành công**, bạn sẽ thấy prompt như:
-```
-root@srv1136013:~#
+pwd
+# Phải ở trong thư mục /root/ctss hoặc /path/to/ctss
 ```
 
 ---
 
-## ✅ BƯỚC 2: Cập Nhật Hệ Thống
+## 📥 BƯỚC 2: Fix Git Configuration
 
-Chạy lệnh này để cập nhật packages:
-
+### 2.1. Kiểm tra git status
 ```bash
-apt update && apt upgrade -y
+cd /root/ctss
+git status
 ```
 
-**Chờ hoàn thành** (có thể mất 2-5 phút)
+### 2.2. Nếu có lỗi "divergent branches":
+```bash
+# Set merge strategy
+git config pull.rebase false
+
+# Hoặc nếu muốn force pull (overwrite local changes)
+git fetch origin
+git reset --hard origin/main
+```
+
+### 2.3. Pull code mới nhất
+```bash
+git pull origin main
+```
+
+**Kiểm tra:**
+```bash
+git log --oneline -3
+# Phải thấy commit mới nhất
+```
 
 ---
 
-## ✅ BƯỚC 3: Cài Đặt Node.js
+## 📦 BƯỚC 3: Install Dependencies
 
-### 3.1. Thêm NodeSource repository:
-
+### 3.1. Kiểm tra Node.js version
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+node -v
+# Phải >= 18.0.0
 ```
 
-### 3.2. Cài Node.js:
-
+Nếu chưa có Node.js:
 ```bash
+# Cài Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt-get install -y nodejs
 ```
 
-### 3.3. Kiểm tra cài đặt:
-
+### 3.2. Install dependencies
 ```bash
-node -v
-npm -v
-```
-
-**Kết quả mong đợi:**
-- `node -v` phải hiển thị: `v20.x.x` hoặc cao hơn
-- `npm -v` phải hiển thị: `10.x.x` hoặc cao hơn
-
----
-
-## ✅ BƯỚC 4: Cài Đặt PM2
-
-```bash
-npm install -g pm2
-```
-
-Kiểm tra:
-```bash
-pm2 -v
-```
-
----
-
-## ✅ BƯỚC 5: Cài Đặt Git (nếu chưa có)
-
-```bash
-apt install git -y
-```
-
-Kiểm tra:
-```bash
-git --version
-```
-
----
-
-## ✅ BƯỚC 6: Cài Đặt PostgreSQL
-
-### 6.1. Cài PostgreSQL:
-
-```bash
-apt install postgresql postgresql-contrib -y
-```
-
-### 6.2. Start PostgreSQL:
-
-```bash
-systemctl start postgresql
-systemctl enable postgresql
-```
-
-### 6.3. Tạo Database và User:
-
-```bash
-sudo -u postgres psql
-```
-
-**Trong PostgreSQL shell**, chạy các lệnh sau (copy từng dòng):
-
-```sql
-CREATE DATABASE ctss_db;
-CREATE USER ctss_user WITH PASSWORD 'Ctss2024!SecurePass';
-GRANT ALL PRIVILEGES ON DATABASE ctss_db TO ctss_user;
-\q
-```
-
-**Lưu ý:** Password `Ctss2024!SecurePass` - bạn có thể đổi thành password khác mạnh hơn.
-
----
-
-## ✅ BƯỚC 7: Clone Repository
-
-### 7.1. Tạo thư mục:
-
-```bash
-mkdir -p /root/projects
-cd /root/projects
-```
-
-### 7.2. Clone repo:
-
-```bash
-git clone https://github.com/Growcosmetic/ctss.git
-```
-
-### 7.3. Vào thư mục project:
-
-```bash
-cd ctss
-```
-
----
-
-## ✅ BƯỚC 8: Tạo File .env
-
-### 8.1. Copy template:
-
-```bash
-cp env.hostinger.template .env
-```
-
-### 8.2. Mở file để chỉnh sửa:
-
-```bash
-nano .env
-```
-
-### 8.3. Điền thông tin sau vào file:
-
-```env
-DATABASE_URL="postgresql://ctss_user:Ctss2024!SecurePass@localhost:5432/ctss_db?schema=public"
-NODE_ENV=production
-NEXT_PUBLIC_APP_URL=http://72.61.119.247:3000
-JWT_SECRET=your-super-secret-jwt-key-change-this-min-32-chars-random
-OPENAI_API_KEY=sk-proj-your-openai-api-key-here
-OPENAI_MODEL=gpt-4o-mini
-```
-
-**Lưu ý:**
-- Thay `Ctss2024!SecurePass` bằng password bạn đã set ở Bước 6.3
-- Thay `your-super-secret-jwt-key-change-this-min-32-chars-random` bằng chuỗi ngẫu nhiên mạnh
-- Nếu không dùng OpenAI, có thể bỏ qua `OPENAI_API_KEY`
-
-**Để tạo JWT_SECRET ngẫu nhiên**, chạy:
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-```
-
-Copy kết quả và paste vào `JWT_SECRET=`
-
-### 8.4. Lưu file:
-
-- Nhấn `Ctrl + O` (lưu)
-- Nhấn `Enter` (xác nhận)
-- Nhấn `Ctrl + X` (thoát)
-
----
-
-## ✅ BƯỚC 9: Cài Đặt Dependencies
-
-```bash
+cd /root/ctss
 npm install
 ```
 
-**Nếu gặp lỗi peer dependencies**, chạy:
+**Nếu có lỗi vulnerabilities:**
 ```bash
 npm install --legacy-peer-deps
 ```
 
-**Chờ hoàn thành** (có thể mất 3-5 phút)
+**Kiểm tra:**
+```bash
+ls node_modules | head -5
+# Phải thấy các thư mục packages
+```
 
 ---
 
-## ✅ BƯỚC 10: Setup Database
+## 🗄️ BƯỚC 4: Setup Database
 
-### 10.1. Generate Prisma Client:
+### 4.1. Kiểm tra Prisma schema
+```bash
+ls -la prisma/schema.prisma
+# File phải tồn tại
+```
 
+### 4.2. Kiểm tra DATABASE_URL trong .env
+```bash
+cat .env | grep DATABASE_URL
+# Phải có dòng: DATABASE_URL="postgresql://..."
+```
+
+Nếu chưa có file `.env`:
+```bash
+cp .env.example .env
+nano .env
+# Sửa DATABASE_URL
+```
+
+### 4.3. Generate Prisma Client (QUAN TRỌNG!)
 ```bash
 npx prisma generate
 ```
 
-### 10.2. Push schema vào database:
-
+**Kiểm tra:**
 ```bash
-npx prisma db push --accept-data-loss
+ls node_modules/.prisma/client
+# Phải có thư mục này
 ```
 
-**Kết quả mong đợi:** Thấy message "Your database is now in sync with your schema"
+### 4.4. Push schema vào database
+```bash
+# Option 1: Dùng db push (nhanh, không cần migrations)
+npx prisma db push
+
+# Option 2: Dùng migrate deploy (nếu có migrations)
+# npx prisma migrate deploy
+```
+
+**Nếu lỗi permission:**
+```bash
+# Xem hướng dẫn trong QUICK_FIX_DATABASE.md
+# Hoặc grant permissions:
+psql -U postgres -d ctss_db
+# Trong psql:
+GRANT USAGE ON SCHEMA public TO "user";
+GRANT CREATE ON SCHEMA public TO "user";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "user";
+\q
+```
 
 ---
 
-## ✅ BƯỚC 11: Build Application
+## 🏗️ BƯỚC 5: Build Application
 
+### 5.1. Build
 ```bash
 npm run build
 ```
 
-**Chờ hoàn thành** (có thể mất 2-5 phút)
+**Nếu có lỗi TypeScript:**
+```bash
+# Option 1: Fix lỗi (khuyến nghị)
+# Xem lỗi và sửa
 
-**Kết quả mong đợi:** Thấy "✓ Compiled successfully"
+# Option 2: Tạm thời ignore (không khuyến nghị)
+# Sửa next.config.mjs:
+# typescript: { ignoreBuildErrors: true }
+```
+
+**Kiểm tra:**
+```bash
+ls -la .next
+# Phải có thư mục .next với các file build
+```
 
 ---
 
-## ✅ BƯỚC 12: Start với PM2
+## 🚀 BƯỚC 6: Setup PM2
 
-### 12.1. Start app:
-
+### 6.1. Cài PM2 (nếu chưa có)
 ```bash
+npm install -g pm2
+```
+
+**Kiểm tra:**
+```bash
+pm2 --version
+# Phải hiển thị version
+```
+
+### 6.2. Stop app cũ (nếu có)
+```bash
+pm2 stop ctss
+pm2 delete ctss
+```
+
+### 6.3. Start app mới
+```bash
+cd /root/ctss
 pm2 start npm --name "ctss" -- start
 ```
 
-### 12.2. Kiểm tra status:
-
-```bash
-pm2 status
-```
-
-Bạn sẽ thấy `ctss` với status `online`
-
-### 12.3. Lưu PM2 process list:
-
+### 6.4. Lưu PM2 process list
 ```bash
 pm2 save
 ```
 
-### 12.4. Setup auto-start khi reboot:
-
+### 6.5. Setup PM2 auto-start khi reboot
 ```bash
 pm2 startup
+# Copy và chạy lệnh mà PM2 hiển thị
 ```
 
-PM2 sẽ hiển thị một lệnh, **copy và chạy lệnh đó**. Ví dụ:
+**Kiểm tra:**
 ```bash
-sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u root --hp /root
+pm2 status
+# Phải thấy ctss với status "online"
+pm2 logs ctss --lines 50
+# Xem logs để đảm bảo app chạy OK
 ```
 
 ---
 
-## ✅ BƯỚC 13: Kiểm Tra
+## ✅ BƯỚC 7: Kiểm tra
 
-### 13.1. Test app:
-
+### 7.1. Kiểm tra app chạy
 ```bash
-curl http://localhost:3000
-```
-
-Nếu thấy HTML response → **Thành công!** ✅
-
-### 13.2. Xem logs:
-
-```bash
-pm2 logs ctss
-```
-
-Nhấn `Ctrl + C` để thoát logs
-
-### 13.3. Kiểm tra port:
-
-```bash
+# Check port 3000
 netstat -tulpn | grep 3000
+# hoặc
+ss -tulpn | grep 3000
+```
+
+### 7.2. Test API
+```bash
+curl http://localhost:3000/api/health
+# hoặc
+curl http://localhost:3000/api/dashboard/stats
+```
+
+### 7.3. Kiểm tra PM2
+```bash
+pm2 status
+pm2 logs ctss --lines 20
 ```
 
 ---
 
-## 🎉 HOÀN TẤT!
+## 🔄 BƯỚC 8: Update (Khi có code mới)
 
-App của bạn đã chạy tại: **http://72.61.119.247:3000**
-
-**Mở browser và truy cập:** `http://72.61.119.247:3000`
-
----
-
-## 🔄 Nếu Cần Update Code Sau Này
+Khi có code mới trên GitHub:
 
 ```bash
-cd /root/projects/ctss
-git pull
+# 1. Pull code
+cd /root/ctss
+git pull origin main
+
+# 2. Install dependencies (nếu có thay đổi)
 npm install
-npx prisma db push
-npx prisma generate
-npm run build
-pm2 restart ctss
-```
 
-Hoặc chạy script tự động:
-```bash
-cd /root/projects/ctss
-./deploy-hostinger.sh
+# 3. Generate Prisma Client (nếu có schema changes)
+npx prisma generate
+npx prisma db push  # hoặc migrate deploy
+
+# 4. Rebuild
+npm run build
+
+# 5. Restart app
+pm2 restart ctss
+
+# 6. Kiểm tra
+pm2 logs ctss --lines 20
 ```
 
 ---
 
-## 🐛 Nếu Gặp Lỗi
-
-### Lỗi: "Cannot connect to database"
-→ Kiểm tra lại `DATABASE_URL` trong `.env` và password
+## 🐛 Troubleshooting
 
 ### Lỗi: "Port 3000 already in use"
 ```bash
+# Tìm process đang dùng port 3000
+lsof -i :3000
+# Kill process
+kill -9 <PID>
+# Hoặc
 pm2 stop ctss
-pm2 delete ctss
-pm2 start npm --name "ctss" -- start
 ```
 
-### Lỗi: Build failed
+### Lỗi: "Out of memory"
 ```bash
-rm -rf .next node_modules
-npm install
-npm run build
+# Tăng swap
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
 ```
 
-### Xem logs chi tiết:
+### Lỗi: "Database connection failed"
 ```bash
-pm2 logs ctss --lines 100
+# Kiểm tra PostgreSQL đang chạy
+systemctl status postgresql
+
+# Kiểm tra DATABASE_URL trong .env
+cat .env | grep DATABASE_URL
+
+# Test connection
+psql $DATABASE_URL
+```
+
+### Lỗi: "Prisma Client not generated"
+```bash
+# Xóa và generate lại
+rm -rf node_modules/.prisma
+npx prisma generate
 ```
 
 ---
 
-**Chúc bạn deploy thành công! 🚀**
+## 📝 Checklist Hoàn Thành
+
+- [ ] Git pull thành công
+- [ ] npm install hoàn tất
+- [ ] Prisma schema tồn tại
+- [ ] `npx prisma generate` thành công
+- [ ] `npx prisma db push` thành công
+- [ ] `npm run build` thành công
+- [ ] PM2 đã cài và start app
+- [ ] PM2 auto-start đã setup
+- [ ] App chạy được (port 3000)
+- [ ] API test thành công
+- [ ] PM2 logs không có lỗi
+
+---
+
+## 🎉 Hoàn tất!
+
+Sau khi hoàn thành tất cả các bước, app sẽ chạy tại:
+- **Local:** http://localhost:3000
+- **Public:** http://your-vps-ip:3000
+
+**Lưu ý:** Nếu muốn dùng domain, cần setup Nginx reverse proxy (xem `HUONG_DAN_DEPLOY_VPS.md`).
+
+---
+
+*Last updated: 2024*

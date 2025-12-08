@@ -32,13 +32,9 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        staff: {
-          include: {
-            branchStaff: {
+        branchAssignments: {
               include: {
                 branch: true,
-              },
-            },
           },
         },
       },
@@ -52,15 +48,6 @@ export async function GET(request: NextRequest) {
     if (user.role === "ADMIN") {
       const branches = await prisma.branch.findMany({
         where: { isActive: true },
-        include: {
-          manager: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
         orderBy: { name: "asc" },
       });
       return successResponse(branches);
@@ -73,35 +60,19 @@ export async function GET(request: NextRequest) {
           managerId: userId,
           isActive: true,
         },
-        include: {
-          manager: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
       });
       return successResponse(branch ? [branch] : []);
     }
 
     // Receptionist sees branches they work in
-    if (user.role === "RECEPTIONIST" && user.staff) {
-      const branchIds = user.staff.branchStaff.map((bs) => bs.branchId);
+    if (user.role === "RECEPTIONIST" && user.branchAssignments) {
+      const branchIds = user.branchAssignments
+        .filter((ba) => ba.isActive)
+        .map((ba) => ba.branchId);
       const branches = await prisma.branch.findMany({
         where: {
           id: { in: branchIds },
           isActive: true,
-        },
-        include: {
-          manager: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
         },
         orderBy: { name: "asc" },
       });
@@ -183,15 +154,6 @@ export async function POST(request: NextRequest) {
         phone,
         email,
         managerId,
-      },
-      include: {
-        manager: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
     });
 

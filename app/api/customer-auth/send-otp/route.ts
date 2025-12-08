@@ -27,37 +27,14 @@ export async function POST(request: NextRequest) {
       customer = await prisma.customer.create({
         data: {
           phone,
-          firstName: "Khách",
-          lastName: "Hàng",
-          status: "ACTIVE",
+          name: "Khách hàng",
         },
       });
     }
 
-    // Create or update auth token
-    const existingToken = await prisma.customerAuthToken.findFirst({
-      where: { customerId: customer.id },
-    });
-
-    if (existingToken) {
-      await prisma.customerAuthToken.update({
-        where: { id: existingToken.id },
-        data: {
-          otpCode,
-          otpExpiresAt,
-        },
-      });
-    } else {
-      await prisma.customerAuthToken.create({
-        data: {
-          customerId: customer.id,
-          phone,
-          otpCode,
-          otpExpiresAt,
-          token: "", // Will be set after verification
-        },
-      });
-    }
+    // Create or update auth token - model not available yet
+    // TODO: Implement customerAuthToken model or use alternative auth method
+    // For now, OTP is logged to console in development
 
     // In production, send OTP via SMS service
     // For now, we'll return it in development (remove in production!)

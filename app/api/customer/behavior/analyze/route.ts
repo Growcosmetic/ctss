@@ -66,8 +66,10 @@ export async function POST(req: Request) {
     const serviceCounts: Record<string, number> = {};
     for (const invoice of customer.invoices) {
       for (const item of invoice.items) {
-        const serviceName = item.service.name;
-        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+        if (item.service) {
+          const serviceName = item.service.name;
+          serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+        }
       }
     }
 
@@ -95,7 +97,7 @@ export async function POST(req: Request) {
       averageSpend,
       favoriteService,
       visitFrequency: Math.round(visitFrequency * 100) / 100,
-      lastVisit: lastVisit?.toISOString().split("T")[0] || null,
+      lastVisit: lastVisit?.toISOString().split("T")[0] || undefined,
       experiences: customer.experiences,
       touchpoints: customer.touchpoints,
     };

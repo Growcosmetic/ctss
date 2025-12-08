@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const existing = await prisma.customerTag.findFirst({
       where: {
         customerId,
-        label,
+        tag: label,
       },
     });
 
@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
     const tag = await prisma.customerTag.create({
       data: {
         customerId,
-        label,
-        color: color || "#3B82F6",
+        tag: label,
       },
     });
 

@@ -13,11 +13,11 @@ export async function GET(
       include: {
         bookings: {
           take: 5,
-          orderBy: { createdAt: "desc" },
+          orderBy: { date: "desc" },
         },
-        posOrders: {
+        invoices: {
           take: 5,
-          orderBy: { createdAt: "desc" },
+          orderBy: { date: "desc" },
         },
       },
     });
@@ -57,18 +57,11 @@ export async function PUT(
     const customer = await prisma.customer.update({
       where: { id: params.id },
       data: {
-        firstName,
-        lastName,
-        email,
+        name: `${firstName || ""} ${lastName || ""}`.trim() || undefined,
         phone,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
         gender,
-        address,
-        city,
-        province,
-        postalCode,
         notes,
-        status,
       },
     });
 

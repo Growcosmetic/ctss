@@ -73,9 +73,9 @@ export async function POST(req: Request) {
                 from: unified.platform,
                 message: unified.message,
                 timestamp: unified.timestamp,
-                attachments: unified.attachments,
+                ...(unified.attachments && { attachments: unified.attachments }),
               },
-            ],
+            ] as any,
           },
         });
       }
@@ -94,9 +94,9 @@ export async function POST(req: Request) {
               from: unified.platform,
               message: unified.message,
               timestamp: unified.timestamp,
-              attachments: unified.attachments,
+              ...(unified.attachments && { attachments: unified.attachments as any }),
             },
-          ],
+          ] as any,
           updatedAt: new Date(),
         },
       });

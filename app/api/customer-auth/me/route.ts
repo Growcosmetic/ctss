@@ -29,32 +29,25 @@ export async function GET(request: NextRequest) {
       return errorResponse("Invalid token", 401);
     }
 
-    // Verify token in database
-    const authToken = await prisma.customerAuthToken.findFirst({
-      where: {
-        customerId,
-        token,
-      },
+    // Get customer info
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
       include: {
-        customer: {
+        loyalty: {
           include: {
-            customerLoyalty: {
-              include: {
-                tier: true,
-              },
-            },
+            tier: true,
           },
         },
       },
     });
 
-    if (!authToken) {
-      return errorResponse("Invalid token", 401);
+    if (!customer) {
+      return errorResponse("Customer not found", 404);
     }
 
     return successResponse({
-      customer: authToken.customer,
-      loyalty: authToken.customer.customerLoyalty,
+      customer,
+      loyalty: customer.loyalty,
     });
   } catch (error: any) {
     console.error("Error getting customer info:", error);

@@ -27,7 +27,7 @@ export async function GET(req: Request) {
         ? { customerId }
         : phone
         ? { phone }
-        : undefined,
+        : { customerId: "" }, // Fallback - should not happen
     });
 
     if (!profile) {

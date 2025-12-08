@@ -37,12 +37,12 @@ export async function GET(request: NextRequest) {
         status: {
           in: ["PENDING", "CONFIRMED"],
         },
-        bookingTime: {
+        date: {
           gte: new Date(),
         },
       },
       orderBy: {
-        bookingTime: "asc",
+        date: "asc",
       },
       take: 5,
     });
@@ -51,11 +51,11 @@ export async function GET(request: NextRequest) {
       id: `booking-${booking.id}`,
       type: "BOOKING_REMINDER",
       title: "Nhắc nhở lịch hẹn",
-      message: `Bạn có lịch hẹn vào ${booking.bookingTime.toLocaleString("vi-VN")}`,
+        message: `Bạn có lịch hẹn vào ${booking.date.toLocaleString("vi-VN")}`,
       data: {
         bookingId: booking.id,
       },
-      createdAt: booking.createdAt,
+      createdAt: booking.date, // Use booking date as createdAt
       isRead: false,
     }));
 

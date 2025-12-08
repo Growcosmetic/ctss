@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const customer = await prisma.customer.findUnique({
       where: { id: customerId },
       include: {
-        customerLoyalty: {
+        loyalty: {
           include: {
             tier: true,
           },
@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
     const promotions: any[] = [];
 
     // 1. Tier-based promotions
-    if (customer.customerLoyalty?.tier) {
-      const tier = customer.customerLoyalty.tier;
-      const discountPercent = Number(tier.discountPercent);
+    if (customer.loyalty?.tier) {
+      const tier = customer.loyalty.tier;
+      const discountPercent = Number(tier.discount);
       if (discountPercent > 0) {
         promotions.push({
           id: `tier-${tier.id}`,
@@ -80,8 +80,8 @@ export async function GET(request: NextRequest) {
         (!isPast(thisYearBirthday) && thisYearBirthday <= addDays(today, 7))
       ) {
         const baseDiscount =
-          customer.customerLoyalty?.tier
-            ? Number(customer.customerLoyalty.tier.discountPercent)
+          customer.loyalty?.tier
+            ? Number(customer.loyalty.tier.discount)
             : 0;
         const birthdayDiscount = Math.max(10, baseDiscount + 5);
 
@@ -98,13 +98,13 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Points redemption promotion
-    if (customer.customerLoyalty && customer.customerLoyalty.totalPoints > 0) {
+    if (customer.loyalty && customer.loyalty.totalPoints > 0) {
       promotions.push({
         id: `points-${customer.id}`,
-        title: `Đổi ${customer.customerLoyalty.totalPoints.toLocaleString("vi-VN")} điểm tích lũy`,
+        title: `Đổi ${customer.loyalty.totalPoints.toLocaleString("vi-VN")} điểm tích lũy`,
         description: "Sử dụng điểm tích lũy để giảm giá cho đơn hàng tiếp theo",
         type: "PERSONALIZED",
-        points: customer.customerLoyalty.totalPoints,
+        points: customer.loyalty.totalPoints,
         validFrom: new Date().toISOString(),
         validTo: addDays(new Date(), 90).toISOString(),
       });

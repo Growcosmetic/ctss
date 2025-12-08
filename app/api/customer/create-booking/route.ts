@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { serviceIds, staffId, bookingDate, bookingTime, notes } = body;
+    const { serviceIds, staffId, bookingDate, bookingTime, notes, branchId } = body;
 
     if (!serviceIds || !Array.isArray(serviceIds) || serviceIds.length === 0) {
       return errorResponse("Service IDs are required", 400);
@@ -46,17 +46,6 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: serviceIds },
       },
-      include: {
-        servicePrices: {
-          where: {
-            isActive: true,
-          },
-          orderBy: {
-            effectiveFrom: "desc",
-          },
-          take: 1,
-        },
-      },
     });
 
     if (services.length !== serviceIds.length) {
@@ -69,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     for (const service of services) {
       totalDuration += service.duration;
-      const price = service.servicePrices[0]?.price || 0;
+      const price = service.price || 0;
       totalAmount += Number(price);
     }
 
@@ -77,49 +66,23 @@ export async function POST(request: NextRequest) {
     const bookingDateTime = parseISO(`${bookingDate}T${bookingTime}`);
     const bookingDateOnly = new Date(bookingDate);
 
-    // Get system user for createdBy (or use a default system user)
-    const systemUser = await prisma.user.findFirst({
-      where: { role: "ADMIN" },
-    });
-
-    if (!systemUser) {
-      return errorResponse("System user not found", 500);
-    }
-
     // Create booking
     const booking = await prisma.booking.create({
       data: {
         customerId,
-        staffId: staffId || null,
-        bookingDate: bookingDateOnly,
-        bookingTime: bookingDateTime,
-        duration: totalDuration,
+        stylistId: staffId || null,
+        date: bookingDateTime,
         status: "PENDING",
         notes: notes || null,
-        totalAmount,
-        createdById: systemUser.id,
-        bookingServices: {
-          create: services.map((service) => ({
-            serviceId: service.id,
-            price: service.servicePrices[0]?.price || 0,
-            duration: service.duration,
-          })),
-        },
+        branchId: branchId || (await prisma.branch.findFirst({ where: { isActive: true } }))?.id || "", // Get first active branch or require branchId
+        serviceId: services[0]?.id || null, // Only first service, Booking model doesn't support multiple services
       },
       include: {
-        bookingServices: {
-          include: {
-            service: true,
-          },
-        },
-        staff: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+        service: true,
+        stylist: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },

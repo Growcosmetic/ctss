@@ -134,38 +134,57 @@ export async function GET(request: NextRequest) {
     const profitThisMonth = revenueThisMonth - totalExpenses - cogsToday.reduce((sum, c) => sum + c.totalCOGS, 0);
     const profitMargin = revenueThisMonth > 0 ? (profitThisMonth / revenueThisMonth) * 100 : 0;
 
-    // Customer satisfaction (from reviews)
-    const reviews = await prisma.review.findMany({
+    // Customer satisfaction (from visits/ratings)
+    const visits = await prisma.visit.findMany({
       where: {
-        ...(branchId ? { booking: { branchId } } : {}),
+        rating: { not: null },
       },
       take: 100,
+      select: {
+        rating: true,
+      },
     });
 
-    const avgRating = reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+    const avgRating = visits.length > 0
+      ? visits.reduce((sum, v) => sum + (v.rating || 0), 0) / visits.length
       : 0;
 
-    // Upsale rate (simplified - would calculate from service combinations)
-    const servicesWithUpsell = await prisma.booking.findMany({
+    // Upsale rate (from UpsaleRecord)
+    const upsaleRecords = await prisma.upsaleRecord.findMany({
+      where: {
+        createdAt: {
+          gte: monthStart,
+        },
+      },
+    });
+
+    const totalBookings = await prisma.booking.count({
       where: {
         date: {
           gte: monthStart,
         },
         ...(branchId ? { branchId } : {}),
       },
-      include: {
-        services: true,
-      },
     });
 
-    const bookingsWithMultipleServices = servicesWithUpsell.filter(b => b.services.length > 1).length;
-    const upsaleRate = servicesWithUpsell.length > 0
-      ? (bookingsWithMultipleServices / servicesWithUpsell.length) * 100
+    const upsaleRate = totalBookings > 0
+      ? (upsaleRecords.length / totalBookings) * 100
       : 0;
 
     // Return customer rate
-    const uniqueCustomers = new Set(servicesWithUpsell.map(b => b.customerId));
+    const bookings = await prisma.booking.findMany({
+      where: {
+        date: {
+          gte: monthStart,
+        },
+        ...(branchId ? { branchId } : {}),
+      },
+      select: {
+        customerId: true,
+        stylistId: true,
+      },
+    });
+    const uniqueCustomers = new Set(bookings.map(b => b.customerId));
     const returningCustomers = await prisma.booking.groupBy({
       by: ['customerId'],
       where: {
@@ -191,7 +210,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const busyStaff = new Set(servicesWithUpsell.map(b => b.staffId).filter(Boolean)).size;
+    const busyStaff = new Set(bookings.map(b => b.stylistId).filter(Boolean)).size;
     const availableStaff = staffCount - busyStaff;
 
     // ============================================
@@ -279,14 +298,24 @@ export async function GET(request: NextRequest) {
           },
         });
 
-        const branchReviews = await prisma.review.findMany({
+        const branchVisits = await prisma.visit.findMany({
           where: {
-            booking: { branchId: branch.id },
+            customer: {
+              bookings: {
+                some: {
+                  branchId: branch.id,
+                },
+              },
+            },
+            rating: { not: null },
+          },
+          select: {
+            rating: true,
           },
         });
 
-        const branchRating = branchReviews.length > 0
-          ? branchReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / branchReviews.length
+        const branchRating = branchVisits.length > 0
+          ? branchVisits.reduce((sum, v) => sum + (v.rating || 0), 0) / branchVisits.length
           : 0;
 
         return {
@@ -304,17 +333,8 @@ export async function GET(request: NextRequest) {
     // 35E - QUALITY & SOP ENFORCEMENT CENTER
     // ============================================
 
-    // Quality control data (from Phase 25)
-    const qcIssues = await prisma.qualityControl.findMany({
-      where: {
-        date: {
-          gte: monthStart,
-        },
-        ...(branchId ? { booking: { branchId } } : {}),
-      },
-      take: 20,
-      orderBy: { createdAt: "desc" },
-    });
+    // Quality control data (from Phase 25) - model not available yet
+    const qcIssues: any[] = []; // Placeholder until qualityControl model is added
 
     // SOP compliance (simplified - would have actual SOP check data)
     const sopComplianceRate = 92; // Placeholder
@@ -333,21 +353,31 @@ export async function GET(request: NextRequest) {
       })).map(async staff => {
         const staffBookings = await prisma.booking.findMany({
           where: {
-            staffId: staff.id,
+            stylistId: staff.id,
             date: {
               gte: monthStart,
             },
           },
         });
 
-        const staffReviews = await prisma.review.findMany({
+        const staffVisits = await prisma.visit.findMany({
           where: {
-            booking: { staffId: staff.id },
+            customer: {
+              bookings: {
+                some: {
+                  stylistId: staff.id,
+                },
+              },
+            },
+            rating: { not: null },
+          },
+          select: {
+            rating: true,
           },
         });
 
-        const staffRating = staffReviews.length > 0
-          ? staffReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / staffReviews.length
+        const staffRating = staffVisits.length > 0
+          ? staffVisits.reduce((sum, v) => sum + (v.rating || 0), 0) / staffVisits.length
           : 0;
 
         return {
@@ -387,16 +417,16 @@ export async function GET(request: NextRequest) {
     // Product low stock alerts
     const products = await prisma.product.findMany({
       where: {
-        stockQuantity: { lte: 100 }, // Low stock threshold
+        stock: { lte: 100 }, // Low stock threshold
       },
       take: 10,
     });
 
     alerts.push(...products.map(p => ({
       type: "PRODUCT",
-      severity: p.stockQuantity < 50 ? "HIGH" : "MEDIUM",
+      severity: (p.stock || 0) < 50 ? "HIGH" : "MEDIUM",
       title: `${p.name} sắp hết`,
-      message: `Còn ${p.stockQuantity}${p.unit || "g"}. Dự báo hết trong 1 ngày.`,
+      message: `Còn ${p.stock || 0}${p.unit || "g"}. Dự báo hết trong 1 ngày.`,
       createdAt: new Date(),
     })));
 

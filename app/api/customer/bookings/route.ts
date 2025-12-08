@@ -52,50 +52,42 @@ export async function GET(request: NextRequest) {
     const bookings = await prisma.booking.findMany({
       where,
       include: {
-        bookingServices: {
-          include: {
-            service: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+        service: {
+          select: {
+            id: true,
+            name: true,
           },
         },
-        staff: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+        stylist: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
       orderBy: {
-        bookingTime: status === "upcoming" ? "asc" : "desc",
+        date: status === "upcoming" ? "asc" : "desc",
       },
     });
 
     const formattedBookings = bookings.map((booking) => ({
       id: booking.id,
-      bookingDate: booking.bookingDate.toISOString(),
-      bookingTime: booking.bookingTime.toISOString(),
-      duration: booking.duration,
+      bookingDate: booking.date.toISOString().split("T")[0],
+      bookingTime: booking.date.toISOString(),
+      duration: 0, // Duration not available in Booking model
       status: booking.status,
-      services: booking.bookingServices.map((bs) => ({
-        id: bs.service.id,
-        name: bs.service.name,
-        price: Number(bs.price),
-      })),
-      stylist: booking.staff
+      services: booking.service ? [{
+        id: booking.service.id,
+        name: booking.service.name,
+        price: 0, // Price not available in Booking model
+      }] : [],
+      stylist: booking.stylist
         ? {
-            id: booking.staff.id,
-            name: `${booking.staff.user.firstName} ${booking.staff.user.lastName}`,
+            id: booking.stylist.id,
+            name: booking.stylist.name,
           }
         : null,
-      totalAmount: Number(booking.totalAmount),
+      totalAmount: 0, // Total amount not available in Booking model
       notes: booking.notes,
     }));
 

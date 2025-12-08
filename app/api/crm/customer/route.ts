@@ -28,25 +28,21 @@ export async function GET(request: NextRequest) {
         },
         bookings: {
           take: 10,
-          orderBy: { bookingDate: "desc" },
+          orderBy: { date: "desc" },
           include: {
-            bookingServices: {
-              include: {
-                service: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
+            service: {
+              select: {
+                id: true,
+                name: true,
               },
             },
           },
         },
         invoices: {
           take: 10,
-          orderBy: { createdAt: "desc" },
+          orderBy: { date: "desc" },
           include: {
-            invoiceItems: {
+            items: {
               include: {
                 service: {
                   select: {
@@ -82,15 +78,15 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
-        invoice: {
-          select: {
-            createdAt: true,
-          },
-        },
+         invoice: {
+           select: {
+             date: true,
+           },
+         },
       },
       orderBy: {
         invoice: {
-          createdAt: "desc",
+          date: "desc",
         },
       },
     });
@@ -102,16 +98,18 @@ export async function GET(request: NextRequest) {
       if (item.service) {
         const existing = serviceMap.get(item.serviceId || "");
         if (existing) {
-          existing.count += item.quantity;
-          if (item.invoice.createdAt > existing.lastUsed) {
-            existing.lastUsed = item.invoice.createdAt.toISOString();
+          existing.count += 1; // InvoiceItem doesn't have quantity, count by item
+          const invoiceDate = new Date(item.invoice.date);
+          const lastUsedDate = new Date(existing.lastUsed);
+          if (invoiceDate > lastUsedDate) {
+            existing.lastUsed = item.invoice.date.toISOString();
           }
         } else {
           serviceMap.set(item.serviceId || "", {
             serviceId: item.service.id,
             serviceName: item.service.name,
-            count: item.quantity,
-            lastUsed: item.invoice.createdAt.toISOString(),
+            count: 1, // InvoiceItem doesn't have quantity, count by item
+            lastUsed: item.invoice.date.toISOString(),
           });
         }
       }

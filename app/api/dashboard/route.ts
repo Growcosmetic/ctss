@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     // Recent bookings
     const recentBookings = await prisma.booking.findMany({
       take: 5,
-      orderBy: { createdAt: "desc" },
+          orderBy: { date: "desc" },
       include: {
         customer: {
           select: {

@@ -16,9 +16,7 @@ export async function GET(request: NextRequest) {
     const where: any = {};
     if (search) {
       where.OR = [
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
+        { name: { contains: search, mode: "insensitive" } },
         { phone: { contains: search, mode: "insensitive" } },
       ];
     }
@@ -26,7 +24,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    let customers, total;
+    let customers: any[], total: number;
     try {
       [customers, total] = await Promise.all([
         prisma.customer.findMany({
@@ -63,6 +61,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     // Fallback to mock data if database is not available
     console.warn("Database connection failed, using mock data:", error.message);
+    const searchParams = request.nextUrl.searchParams;
     return successResponse({
       customers: [],
       pagination: {
@@ -80,35 +79,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      firstName,
-      lastName,
-      email,
+      name,
       phone,
       dateOfBirth,
       gender,
-      address,
-      city,
-      province,
-      postalCode,
       notes,
     } = body;
 
-    if (!firstName || !lastName || !phone) {
-      return errorResponse("First name, last name, and phone are required", 400);
+    if (!name || !phone) {
+      return errorResponse("Name and phone are required", 400);
     }
 
     const customer = await prisma.customer.create({
       data: {
-        firstName,
-        lastName,
-        email,
+        name: `${firstName || ""} ${lastName || ""}`.trim() || "Khách hàng",
         phone,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
         gender,
-        address,
-        city,
-        province,
-        postalCode,
         notes,
       },
     });
@@ -121,16 +108,10 @@ export async function POST(request: NextRequest) {
       return successResponse(
         {
           id: `mock-${Date.now()}`,
-          firstName,
-          lastName,
-          email,
+          name,
           phone,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
           gender,
-          address,
-          city,
-          province,
-          postalCode,
           notes,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -140,7 +121,7 @@ export async function POST(request: NextRequest) {
       );
     }
     if (error.code === "P2002") {
-      return errorResponse("Email or phone already exists", 409);
+      return errorResponse("Phone already exists", 409);
     }
     return errorResponse(error.message || "Failed to create customer", 500);
   }

@@ -19,17 +19,13 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           { phone: { contains: query, mode: "insensitive" } },
-          { firstName: { contains: query, mode: "insensitive" } },
-          { lastName: { contains: query, mode: "insensitive" } },
-          { email: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
         ],
       },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         phone: true,
-        email: true,
       },
       take: 20,
       orderBy: { createdAt: "desc" },

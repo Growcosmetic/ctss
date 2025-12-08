@@ -168,9 +168,13 @@ export async function GET(req: Request) {
     for (const tp of touchpoints) {
       stats.byType[tp.type] = (stats.byType[tp.type] || 0) + 1;
       if (tp.channel) {
-        stats.byChannel[tp.channel] = (stats.byChannel[tp.channel] || 0) + 1;
+        if (tp.channel) {
+          stats.byChannel[tp.channel] = (stats.byChannel[tp.channel] || 0) + 1;
+        }
       }
-      stats.byOutcome[tp.outcome] = (stats.byOutcome[tp.outcome] || 0) + 1;
+      if (tp.outcome) {
+        stats.byOutcome[tp.outcome] = (stats.byOutcome[tp.outcome] || 0) + 1;
+      }
       if (tp.responseTime) {
         totalResponseTime += tp.responseTime;
         responseTimeCount++;

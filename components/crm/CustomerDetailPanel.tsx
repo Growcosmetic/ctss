@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { Gender } from "@/features/crm/types";
 import { saveCustomer } from "@/features/crm/services/crmApi";

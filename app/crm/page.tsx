@@ -34,6 +34,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
+  Users,
+  FileSpreadsheet,
+  Printer,
+  ShoppingCart,
+  BarChart3,
+  Lock,
+  Download,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
@@ -236,11 +243,97 @@ export default function CRMPage() {
     return colors[status] || colors.ACTIVE;
   };
 
+  // Calculate stats
+  const stats = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    const newToday = customers.filter((c) => {
+      const created = new Date(c.createdAt);
+      return created.toISOString().split('T')[0] === todayStr;
+    }).length;
+
+    const birthdaysToday = customers.filter((c) => {
+      if (!c.dateOfBirth) return false;
+      const dob = new Date(c.dateOfBirth);
+      return dob.getMonth() === today.getMonth() && dob.getDate() === today.getDate();
+    }).length;
+
+    const birthdaysThisMonth = customers.filter((c) => {
+      if (!c.dateOfBirth) return false;
+      const dob = new Date(c.dateOfBirth);
+      return dob.getMonth() === today.getMonth();
+    }).length;
+
+    return {
+      total: customers.length,
+      newToday,
+      birthdaysToday,
+      birthdaysThisMonth,
+      active: customers.filter((c) => c.status === "ACTIVE").length,
+      totalRevenue: customers.reduce((sum, c) => sum + Number(c.totalSpent), 0),
+      totalPoints: customers.reduce((sum, c) => sum + c.loyaltyPoints, 0),
+    };
+  }, [customers]);
+
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST]}>
       <MainLayout>
-        {/* 3-Column Layout */}
-        <div className="flex h-[calc(100vh-72px)] overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-72px)]">
+          {/* Header với Action Buttons */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">
+                  <Users size={16} className="mr-2" />
+                  Quản lý nhóm
+                </Button>
+                <Button variant="outline" size="sm">
+                  <User size={16} className="mr-2" />
+                  Khách hàng gần đây
+                </Button>
+                <Button variant="outline" size="sm" className="bg-red-50 text-red-700 border-red-200">
+                  <BarChart3 size={16} className="mr-2" />
+                  Thống kê khách hàng
+                </Button>
+                <Button variant="outline" size="sm">
+                  <FileSpreadsheet size={16} className="mr-2" />
+                  Nhập từ tệp excel
+                </Button>
+                <Button size="sm" onClick={() => setIsFormOpen(true)}>
+                  <Plus size={16} className="mr-2" />
+                  Thêm mới
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Tổng số khách hàng</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Khách hàng mới hôm nay</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.newToday}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Khách hàng sinh nhật hôm nay</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.birthdaysToday}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Khách hàng sinh nhật tháng này</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.birthdaysThisMonth}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3-Column Layout */}
+          <div className="flex flex-1 overflow-hidden">
           {/* Left Panel - Customer List */}
           <CustomerListPanel
             customers={sortedCustomers.map((c) => ({

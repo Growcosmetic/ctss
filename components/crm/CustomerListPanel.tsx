@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Search, Download, Filter } from "lucide-react";
+import { Search, Download, Filter, FileSpreadsheet } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -72,7 +72,7 @@ export default function CustomerListPanel({
             <Filter size={14} className="mr-1" />
             Tìm nâng cao
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" title="Xuất dữ liệu">
             <Download size={14} />
           </Button>
         </div>

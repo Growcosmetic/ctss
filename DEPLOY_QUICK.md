@@ -6,10 +6,26 @@
 ./deploy.sh
 ```
 
-**Hoặc:**
+**Script sẽ tự động:**
+1. Pull code mới từ GitHub
+2. Push code lên GitHub
+3. Deploy lên VPS
+
+---
+
+## 🔧 **Nếu gặp lỗi conflict:**
 
 ```bash
-git push origin main && ssh root@72.61.119.247 'cd ~/ctss && git pull && npm install && npx prisma db push --accept-data-loss && npx prisma generate && npm run build && pm2 restart ctss'
+# Pull code mới trước
+git pull origin main
+
+# Nếu có conflict, resolve rồi:
+git add .
+git commit -m "Merge conflicts resolved"
+git push origin main
+
+# Sau đó deploy
+./deploy.sh
 ```
 
 ---
@@ -23,4 +39,3 @@ curl http://72.61.119.247/api/health
 ---
 
 *Xong!*
-

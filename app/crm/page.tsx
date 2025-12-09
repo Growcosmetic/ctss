@@ -149,6 +149,11 @@ export default function CRMPage() {
             firstName,
             lastName,
             dateOfBirth: c.dateOfBirth || c.birthday, // Support cả 2 field
+            email: c.email || c.profile?.preferences?.email, // Get email from profile if not in customer
+            address: c.address || c.profile?.preferences?.address,
+            city: c.city || c.profile?.preferences?.city,
+            province: c.province || c.profile?.preferences?.province,
+            profile: c.profile || { preferences: {} }, // Ensure profile exists
           };
         });
         setCustomers(mappedCustomers);

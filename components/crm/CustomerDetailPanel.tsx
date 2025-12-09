@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock } from "lucide-react";
+import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock, Plus, Facebook, Globe, CreditCard, Briefcase, Building, Hash } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Gender } from "@/features/crm/types";
 import { saveCustomer } from "@/features/crm/services/crmApi";
@@ -29,6 +29,28 @@ interface Customer {
   status: string;
   createdAt: string;
   notes?: string;
+  profile?: {
+    preferences?: {
+      email?: string;
+      address?: string;
+      city?: string;
+      province?: string;
+      rank?: string;
+      customerGroup?: string;
+      referralSource?: string;
+      facebook?: string;
+      zaloPhone?: string;
+      zaloAccount?: string;
+      website?: string;
+      height?: string;
+      weight?: string;
+      cardId?: string;
+      occupation?: string;
+      company?: string;
+      taxId?: string;
+      country?: string;
+    };
+  };
 }
 
 interface CustomerDetailPanelProps {
@@ -63,18 +85,33 @@ export default function CustomerDetailPanel({
       const fullName = customer.name || `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Khách hàng";
       const dob = customer.dateOfBirth ? new Date(customer.dateOfBirth) : 
                    customer.birthday ? new Date(customer.birthday) : null;
+      const prefs = customer.profile?.preferences || {};
       setFormData({
         fullName,
         phone: customer.phone || "",
-        email: customer.email || "",
+        email: customer.email || prefs.email || "",
         dayOfBirth: dob ? dob.getDate().toString() : "",
         monthOfBirth: dob ? (dob.getMonth() + 1).toString() : "",
         yearOfBirth: dob ? dob.getFullYear().toString() : "",
         gender: customer.gender || Gender.FEMALE,
-        address: customer.address || "",
-        province: customer.province || "TP Hồ Chí Minh",
-        district: customer.city || "Quận 1",
+        address: customer.address || prefs.address || "",
+        province: customer.province || prefs.province || "TP Hồ Chí Minh",
+        district: customer.city || prefs.city || "Quận 1",
         notes: customer.notes || "",
+        // Extended fields from preferences
+        customerGroup: prefs.customerGroup || "",
+        referralSource: prefs.referralSource || "",
+        facebook: prefs.facebook || "",
+        zaloPhone: prefs.zaloPhone || "",
+        zaloAccount: prefs.zaloAccount || "",
+        website: prefs.website || "",
+        height: prefs.height || "",
+        weight: prefs.weight || "",
+        cardId: prefs.cardId || "",
+        occupation: prefs.occupation || "",
+        company: prefs.company || "",
+        taxId: prefs.taxId || "",
+        country: prefs.country || "VN",
       });
       setIsEditing(false);
     }
@@ -134,6 +171,24 @@ export default function CustomerDetailPanel({
         city: formData.district || undefined,
         province: formData.province || undefined,
         notes: formData.notes || undefined,
+        preferences: {
+          email: formData.email || undefined,
+          address: formData.address || undefined,
+          city: formData.district || undefined,
+          province: formData.province || undefined,
+          country: formData.country || undefined,
+          facebook: formData.facebook || undefined,
+          zaloPhone: formData.zaloPhone || undefined,
+          zaloAccount: formData.zaloAccount || undefined,
+          website: formData.website || undefined,
+          height: formData.height || undefined,
+          weight: formData.weight || undefined,
+          cardId: formData.cardId || undefined,
+          occupation: formData.occupation || undefined,
+          company: formData.company || undefined,
+          taxId: formData.taxId || undefined,
+          referralSource: formData.referralSource || undefined,
+        },
       };
 
       await saveCustomer(requestData);
@@ -245,13 +300,17 @@ export default function CustomerDetailPanel({
                   </p>
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-4">
+              <div className="mt-3 flex items-center gap-4 flex-wrap">
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                  Hạng Thường
+                  {customer.profile?.preferences?.rank || "Hạng Thường"}
                 </span>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <Plus size={14} className="mr-1" />
+                  Thêm nhóm khách hàng
+                </Button>
                 <div className="flex items-center gap-1">
                   <Gift size={16} className="text-red-500" />
-                  <span className="text-lg font-bold text-red-600">0</span>
+                  <span className="text-lg font-bold text-red-600">{customer.loyaltyPoints || 0}</span>
                   <span className="text-sm text-gray-600">Điểm thưởng</span>
                 </div>
               </div>
@@ -262,21 +321,29 @@ export default function CustomerDetailPanel({
           <div className="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
             <div>
               <p className="text-sm text-gray-600">Tổng số lần đặt trước</p>
-              <p className="text-lg font-bold">{customer.totalVisits || 0} lần</p>
+              <p className="text-lg font-bold">{customer.totalVisits || 0} (lần)</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Tổng số lần đặt từ app</p>
+              <p className="text-lg font-bold">0 (lần)</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Tổng số lần đến trực tiếp</p>
-              <p className="text-lg font-bold">0 lần</p>
+              <p className="text-lg font-bold">0 (lần)</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Tổng số lần hủy đặt / không đến</p>
-              <p className="text-lg font-bold">0 lần</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Tổng chi tiêu</p>
-              <p className="text-lg font-bold">{customer.totalSpent?.toLocaleString() || 0} ₫</p>
+              <p className="text-lg font-bold">0 (lần)</p>
             </div>
           </div>
+          
+          {/* Referral Source */}
+          {customer.profile?.preferences?.referralSource && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600">Nguồn giới thiệu:</p>
+              <p className="text-base font-medium text-gray-900">{customer.profile.preferences.referralSource}</p>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -406,6 +473,159 @@ export default function CustomerDetailPanel({
                       placeholder="Nhập địa chỉ"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Quận</label>
+                      <Input
+                        value={formData?.district || ""}
+                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                        placeholder="Quận 1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                      <Input
+                        value={formData?.province || ""}
+                        onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                        placeholder="TP Hồ Chí Minh"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+                    <div className="relative">
+                      <Facebook size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600" />
+                      <Input
+                        value={formData?.facebook || ""}
+                        onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                        placeholder="Facebook ID"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Số ĐT Zalo</label>
+                    <Input
+                      type="tel"
+                      value={formData?.zaloPhone || ""}
+                      onChange={(e) => setFormData({ ...formData, zaloPhone: e.target.value })}
+                      placeholder="0900000000"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">T.khoản liên kết Zalo</label>
+                    <Input
+                      value={formData?.zaloAccount || ""}
+                      onChange={(e) => setFormData({ ...formData, zaloAccount: e.target.value })}
+                      placeholder="Zalo account"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <div className="relative">
+                      <Globe size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        value={formData?.website || ""}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        placeholder="https://..."
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Chiều cao</label>
+                      <Input
+                        value={formData?.height || ""}
+                        onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                        placeholder="cm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Cân nặng</label>
+                      <Input
+                        value={formData?.weight || ""}
+                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                        placeholder="kg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mã thẻ</label>
+                    <div className="relative">
+                      <CreditCard size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        value={formData?.cardId || ""}
+                        onChange={(e) => setFormData({ ...formData, cardId: e.target.value })}
+                        placeholder="Mã thẻ"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nghề nghiệp</label>
+                    <div className="relative">
+                      <Briefcase size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        value={formData?.occupation || ""}
+                        onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                        placeholder="Nghề nghiệp"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Công ty</label>
+                    <div className="relative">
+                      <Building size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        value={formData?.company || ""}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        placeholder="Tên công ty"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                    <div className="relative">
+                      <Hash size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        value={formData?.taxId || ""}
+                        onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                        placeholder="Mã số thuế"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quốc gia</label>
+                    <Input
+                      value={formData?.country || "VN"}
+                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                      placeholder="VN"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nguồn giới thiệu</label>
+                    <Input
+                      value={formData?.referralSource || ""}
+                      onChange={(e) => setFormData({ ...formData, referralSource: e.target.value })}
+                      placeholder="Nguồn giới thiệu"
+                    />
+                  </div>
                 </div>
               </>
             ) : (
@@ -427,10 +647,10 @@ export default function CustomerDetailPanel({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    {customer.email ? (
+                    {customer.email || customer.profile?.preferences?.email ? (
                       <div className="flex items-center gap-2">
                         <Mail size={16} className="text-gray-400" />
-                        <p className="text-base text-gray-900">{customer.email}</p>
+                        <p className="text-base text-gray-900">{customer.email || customer.profile?.preferences?.email}</p>
                       </div>
                     ) : (
                       <p className="text-base text-gray-400">Chưa có</p>
@@ -444,23 +664,148 @@ export default function CustomerDetailPanel({
                     </p>
                   </div>
 
-                  {customer.dateOfBirth && (
+                  {(customer.dateOfBirth || customer.birthday) && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
                       <div className="flex items-center gap-2">
                         <Calendar size={16} className="text-gray-400" />
-                        <p className="text-base text-gray-900">{formatDate(customer.dateOfBirth)}</p>
+                        <p className="text-base text-gray-900">
+                          {formatDate(customer.dateOfBirth || customer.birthday || "")}
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  {customer.address && (
+                  {(customer.profile?.preferences?.height || customer.profile?.preferences?.weight) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {customer.profile?.preferences?.height && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Chiều cao</label>
+                          <p className="text-base text-gray-900">{customer.profile.preferences.height} cm</p>
+                        </div>
+                      )}
+                      {customer.profile?.preferences?.weight && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Cân nặng</label>
+                          <p className="text-base text-gray-900">{customer.profile.preferences.weight} kg</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.cardId && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mã thẻ</label>
+                      <div className="flex items-center gap-2">
+                        <CreditCard size={16} className="text-gray-400" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.cardId}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(customer.address || customer.profile?.preferences?.address) && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
                       <div className="flex items-center gap-2">
                         <MapPin size={16} className="text-gray-400" />
-                        <p className="text-base text-gray-900">{customer.address}</p>
+                        <p className="text-base text-gray-900">
+                          {customer.address || customer.profile?.preferences?.address}
+                        </p>
                       </div>
+                    </div>
+                  )}
+
+                  {(customer.profile?.preferences?.city || customer.city) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Quận</label>
+                      <p className="text-base text-gray-900">
+                        {customer.profile?.preferences?.city || customer.city}
+                      </p>
+                    </div>
+                  )}
+
+                  {(customer.profile?.preferences?.province || customer.province) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                      <p className="text-base text-gray-900">
+                        {customer.profile?.preferences?.province || customer.province}
+                      </p>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.facebook && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+                      <div className="flex items-center gap-2">
+                        <Facebook size={16} className="text-blue-600" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.facebook}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.zaloPhone && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Số ĐT Zalo</label>
+                      <div className="flex items-center gap-2">
+                        <Phone size={16} className="text-gray-400" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.zaloPhone}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.zaloAccount && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">T.khoản liên kết Zalo</label>
+                      <p className="text-base text-gray-900">{customer.profile.preferences.zaloAccount}</p>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.website && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                      <div className="flex items-center gap-2">
+                        <Globe size={16} className="text-gray-400" />
+                        <a href={customer.profile.preferences.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {customer.profile.preferences.website}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.occupation && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nghề nghiệp</label>
+                      <div className="flex items-center gap-2">
+                        <Briefcase size={16} className="text-gray-400" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.occupation}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.company && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Công ty</label>
+                      <div className="flex items-center gap-2">
+                        <Building size={16} className="text-gray-400" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.company}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.taxId && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                      <div className="flex items-center gap-2">
+                        <Hash size={16} className="text-gray-400" />
+                        <p className="text-base text-gray-900">{customer.profile.preferences.taxId}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {customer.profile?.preferences?.country && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quốc gia</label>
+                      <p className="text-base text-gray-900">{customer.profile.preferences.country}</p>
                     </div>
                   )}
                 </div>

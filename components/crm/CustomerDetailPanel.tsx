@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock, Plus, Facebook, Globe, CreditCard, Briefcase, Building, Hash } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock, Plus, Facebook, Globe, CreditCard, Briefcase, Building, Hash, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Gender } from "@/features/crm/types";
 import { saveCustomer } from "@/features/crm/services/crmApi";

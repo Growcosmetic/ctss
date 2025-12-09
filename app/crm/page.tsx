@@ -39,6 +39,9 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
 import { Customer360Layout } from "@/features/customer360/components/Customer360Layout";
 import CustomerFormModal from "@/components/crm/CustomerFormModal";
+import CustomerListPanel from "@/components/crm/CustomerListPanel";
+import CustomerDetailPanel from "@/components/crm/CustomerDetailPanel";
+import CustomerActivityPanel from "@/components/crm/CustomerActivityPanel";
 
 interface Customer {
   id: string;
@@ -99,6 +102,7 @@ export default function CRMPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [listSearchTerm, setListSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -189,6 +193,30 @@ export default function CRMPage() {
     fetchCustomers();
     setIsFormOpen(false);
     setEditingCustomer(null);
+    // Refresh selected customer if editing
+    if (selectedCustomer && editingCustomer) {
+      fetchCustomers().then(() => {
+        const updated = customers.find((c) => c.id === selectedCustomer.id);
+        if (updated) {
+          setSelectedCustomer(updated);
+        }
+      });
+    }
+  };
+
+  const handleCustomerUpdate = () => {
+    fetchCustomers().then(() => {
+      if (selectedCustomer) {
+        const updated = customers.find((c) => c.id === selectedCustomer.id);
+        if (updated) {
+          setSelectedCustomer(updated);
+        }
+      }
+    });
+  };
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
   };
 
   const handleCall = (phone: string) => {

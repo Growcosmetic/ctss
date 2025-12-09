@@ -78,6 +78,10 @@ export function useAuth(): UseAuthReturn {
       const response = await login(request);
       setUser(response.user);
       // Token is stored in cookie by server
+      // Wait a bit for cookie to be set, then refresh user
+      setTimeout(() => {
+        refreshUser();
+      }, 100);
     } catch (err: any) {
       setError(err.message || "Login failed");
       throw err;

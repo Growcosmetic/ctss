@@ -110,6 +110,34 @@ export default function CustomerFormModal({
     setLoading(true);
 
     try {
+      // Validate required fields
+      if (!formData.fullName || !formData.fullName.trim()) {
+        setError("Họ tên là bắt buộc");
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.phone || !formData.phone.trim()) {
+        setError("Số điện thoại là bắt buộc");
+        setLoading(false);
+        return;
+      }
+
+      // Validate phone format
+      const phoneClean = formData.phone.replace(/\s/g, "");
+      if (!/^[0-9]{10,11}$/.test(phoneClean)) {
+        setError("Số điện thoại không hợp lệ (10-11 chữ số)");
+        setLoading(false);
+        return;
+      }
+
+      // Validate email format if provided
+      if (formData.email && formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setError("Email không hợp lệ");
+        setLoading(false);
+        return;
+      }
+
       // Parse full name to firstName and lastName
       const nameParts = formData.fullName.trim().split(" ");
       const lastName = nameParts.pop() || "";

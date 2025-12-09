@@ -150,7 +150,46 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!phone) {
-      return errorResponse("Phone is required", 400);
+      return errorResponse("Số điện thoại là bắt buộc", 400);
+    }
+
+    // Validate phone format (basic)
+    if (!/^[0-9]{10,11}$/.test(phone.replace(/\s/g, ""))) {
+      return errorResponse("Số điện thoại không hợp lệ (10-11 chữ số)", 400);
+    }
+
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return errorResponse("Email không hợp lệ", 400);
+    }
+
+    // Check if phone already exists (for new customers or when phone changes)
+    if (!id || (id && phone)) {
+      const existingByPhone = await prisma.customer.findUnique({
+        where: { phone },
+      });
+      if (existingByPhone && existingByPhone.id !== id) {
+        return errorResponse("Số điện thoại này đã được sử dụng bởi khách hàng khác", 400);
+      }
+    }
+
+    // Check if email already exists (if provided)
+    if (email) {
+      // Note: Email is stored in CustomerProfile, so we need to check there
+      const existingByEmail = await prisma.customerProfile.findFirst({
+        where: {
+          preferences: {
+            path: ["email"],
+            equals: email,
+          },
+        },
+        include: {
+          customer: true,
+        },
+      });
+      if (existingByEmail && existingByEmail.customerId !== id) {
+        return errorResponse("Email này đã được sử dụng bởi khách hàng khác", 400);
+      }
     }
 
     // Combine firstName and lastName into name

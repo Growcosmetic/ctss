@@ -145,7 +145,7 @@ export default function RecentCustomersModal({
         <div className="border border-gray-200 rounded-lg overflow-hidden max-h-[500px] overflow-y-auto">
           {paginatedCustomers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              <User size={48} className="mx-auto mb-4 text-gray-300" />
+              <UserIcon size={48} className="mx-auto mb-4 text-gray-300" />
               <p>Không có khách hàng gần đây</p>
             </div>
           ) : (

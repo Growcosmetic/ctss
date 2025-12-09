@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     const customer = await prisma.customer.create({
       data: {
-        name: `${firstName || ""} ${lastName || ""}`.trim() || "Khách hàng",
+        name: name || "Khách hàng",
         phone,
         birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
         gender,

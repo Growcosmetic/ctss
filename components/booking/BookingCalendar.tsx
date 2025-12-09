@@ -218,39 +218,64 @@ export default function BookingCalendar({
 
           {/* HEADER */}
           <div className="flex border-b sticky top-0 bg-white z-10">
+            {/* Time column header */}
             <div className="w-24 border-r"></div>
 
+            {/* Day headers - không hiển thị nhân viên dưới ngày */}
             {weekDays.map((day) => (
               <div key={day.toISOString()} className="flex-1 border-r">
                 <div className="p-4 text-center">
                   <p className="text-sm text-gray-500">{format(day, "EEE")}</p>
                   <p className="text-lg font-semibold">{format(day, "dd")}</p>
                 </div>
-                
-                {/* Hiển thị nhân viên rows nếu viewMode = "staff" */}
-                {viewMode === "staff" && (
-                  <>
-                    {stylists.map((st: any) => (
-                      <div key={st.id} className="border-t text-xs p-2 text-center bg-gray-50">
-                        {st.name}
-                      </div>
-                    ))}
-                  </>
-                )}
               </div>
             ))}
           </div>
 
           {/* BODY */}
           <div className="flex">
-            {/* TIME COLUMN */}
-            <div className="w-24 border-r">
-              {timeSlots.map((t, i) => (
-                <div key={t} className="h-[60px] border-b flex justify-end pr-2 pt-1">
-                  {i % 2 === 0 && <span className="text-xs text-gray-400">{t}</span>}
+            {/* TIME COLUMN + STAFF COLUMN (nếu viewMode = "staff") */}
+            {viewMode === "staff" ? (
+              <>
+                {/* Staff names column - bên trái */}
+                <div className="w-32 border-r bg-gray-50">
+                  {/* Empty space for header */}
+                  <div className="h-[72px] border-b"></div>
+                  {/* Staff names */}
+                  {stylists.map((st: any) => {
+                    const rowHeight = timeSlots.length * 60;
+                    return (
+                      <div
+                        key={st.id}
+                        className="border-b flex items-center justify-center p-2"
+                        style={{ height: `${rowHeight}px` }}
+                      >
+                        <span className="text-sm font-medium text-gray-900 text-center">
+                          {st.name}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+                {/* Time column */}
+                <div className="w-24 border-r">
+                  {timeSlots.map((t, i) => (
+                    <div key={t} className="h-[60px] border-b flex justify-end pr-2 pt-1">
+                      {i % 2 === 0 && <span className="text-xs text-gray-400">{t}</span>}
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              /* TIME COLUMN - chỉ khi viewMode = "time" */
+              <div className="w-24 border-r">
+                {timeSlots.map((t, i) => (
+                  <div key={t} className="h-[60px] border-b flex justify-end pr-2 pt-1">
+                    {i % 2 === 0 && <span className="text-xs text-gray-400">{t}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* DAYS GRID */}
             {weekDays.map((day) => {
@@ -260,65 +285,72 @@ export default function BookingCalendar({
                 // Chế độ "Nhân viên": Mỗi nhân viên một hàng
                 return (
                   <div key={dayStr} className="flex-1 border-r relative">
-                    {stylists.map((st: any) => (
-                      <div key={st.id} className="relative border-t">
-                        {/* Tạo slots cho nhân viên này */}
-                        {timeSlots.map((__, rowIndex) => {
-                          const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
-                          return (
-                            <DroppableSlot
-                              key={id}
-                              id={id}
-                              rowIndex={rowIndex}
-                              stylistId={st.id}
-                              date={dayStr}
-                            />
-                          );
-                        })}
+                    {stylists.map((st: any, staffIndex: number) => {
+                      const rowHeight = timeSlots.length * 60;
+                      return (
+                        <div
+                          key={st.id}
+                          className="relative border-t"
+                          style={{ height: `${rowHeight}px` }}
+                        >
+                          {/* Tạo slots cho nhân viên này */}
+                          {timeSlots.map((__, rowIndex) => {
+                            const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
+                            return (
+                              <DroppableSlot
+                                key={id}
+                                id={id}
+                                rowIndex={rowIndex}
+                                stylistId={st.id}
+                                date={dayStr}
+                              />
+                            );
+                          })}
 
-                        {/* BOOKINGS cho nhân viên này */}
-                        <div className="absolute inset-0 pointer-events-none">
-                          {filteredBookings
-                            .filter((b: any) => b.date === dayStr && b.stylistId === st.id)
-                            .map((b: any) => {
-                              const position = getTimePosition(b.start);
-                              const k = `${b.id}-${b.start}-${b.end}`;
+                          {/* BOOKINGS cho nhân viên này */}
+                          <div className="absolute inset-0 pointer-events-none">
+                            {filteredBookings
+                              .filter((b: any) => b.date === dayStr && b.stylistId === st.id)
+                              .map((b: any) => {
+                                const position = getTimePosition(b.start);
+                                const k = `${b.id}-${b.start}-${b.end}`;
 
-                              return (
-                                <div
-                                  key={k}
-                                  className="absolute left-0 right-0 pointer-events-none"
-                                  style={{ top: position }}
-                                >
-                                  <div className="pointer-events-auto">
-                                    <DraggableBooking
-                                      booking={b}
-                                      onClick={() => {
-                                        setSelectedBooking(b);
-                                        if (onBookingClick) onBookingClick(b);
-                                      }}
-                                      isDragging={isDragging && (activeBooking as any)?.id === b.id}
-                                      onCheckIn={onCheckIn || ((id: string) => {
-                                        setBookingList((prev: any[]) =>
-                                          prev.map((booking: any) =>
-                                            booking.id === id
-                                              ? { ...booking, status: "IN_PROGRESS" }
-                                              : booking
-                                          )
-                                        );
-                                      })}
-                                      onCall={onCall || ((phone: string) => {
-                                        window.location.href = `tel:${phone}`;
-                                      })}
-                                      stylists={stylists}
-                                    />
+                                return (
+                                  <div
+                                    key={k}
+                                    className="absolute left-0 right-0 pointer-events-none"
+                                    style={{ top: position }}
+                                  >
+                                    <div className="pointer-events-auto">
+                                      <DraggableBooking
+                                        booking={b}
+                                        onClick={() => {
+                                          setSelectedBooking(b);
+                                          if (onBookingClick) onBookingClick(b);
+                                        }}
+                                        isDragging={isDragging && (activeBooking as any)?.id === b.id}
+                                        onCheckIn={onCheckIn || ((id: string) => {
+                                          setBookingList((prev: any[]) =>
+                                            prev.map((booking: any) =>
+                                              booking.id === id
+                                                ? { ...booking, status: "IN_PROGRESS" }
+                                                : booking
+                                            )
+                                          );
+                                        })}
+                                        onCall={onCall || ((phone: string) => {
+                                          window.location.href = `tel:${phone}`;
+                                        })}
+                                        stylists={stylists}
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               } else {

@@ -105,14 +105,15 @@ export async function POST(request: NextRequest) {
     // Fallback to mock response if database is not available
     if (error.message?.includes("denied access") || error.message?.includes("ECONNREFUSED")) {
       console.warn("Database connection failed, returning mock response:", error.message);
+      const body = await request.json().catch(() => ({}));
       return successResponse(
         {
           id: `mock-${Date.now()}`,
-          name: name || "Khách hàng",
-          phone: phone || "",
-          birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          gender: gender || null,
-          notes: notes || null,
+          name: body.name || "Khách hàng",
+          phone: body.phone || "",
+          birthday: body.dateOfBirth ? new Date(body.dateOfBirth) : undefined,
+          gender: body.gender || null,
+          notes: body.notes || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

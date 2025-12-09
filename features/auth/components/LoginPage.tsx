@@ -43,7 +43,7 @@ export default function LoginPage() {
           <p className="text-gray-600">Chi Tam Salon System</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           {/* Error Message */}
           {(error || localError) && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
@@ -63,6 +63,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0900000001 hoặc admin@ctss.com"
+              pattern=".*"
               required
             />
           </div>

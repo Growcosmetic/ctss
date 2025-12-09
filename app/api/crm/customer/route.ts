@@ -130,8 +130,14 @@ export async function GET(request: NextRequest) {
 
 // POST /api/crm/customer
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch (parseError) {
+    return errorResponse("Invalid JSON body", 400);
+  }
+
+  try {
     const {
       id,
       firstName,

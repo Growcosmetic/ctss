@@ -189,12 +189,15 @@ async function seedCustomers() {
         console.log(`✅ Đã tạo: ${customerData.firstName} ${customerData.lastName} - ${customerData.phone}`);
         successCount++;
       } else {
-        const errorMsg = result.error || result.message || 'Unknown error';
+        const errorMsg = result.error || result.message || `HTTP ${response.status}: ${response.statusText}`;
         if (errorMsg.includes('already exists') || errorMsg.includes('đã được sử dụng')) {
           console.log(`⏭️  Đã tồn tại: ${customerData.firstName} ${customerData.lastName} - ${customerData.phone}`);
           skipCount++;
         } else {
           console.log(`❌ Lỗi: ${customerData.firstName} ${customerData.lastName} - ${errorMsg}`);
+          if (response.status === 500) {
+            console.log(`   💡 Có thể database chưa kết nối. Kiểm tra DATABASE_URL trong .env`);
+          }
           errorCount++;
         }
       }

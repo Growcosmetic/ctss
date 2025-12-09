@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import RoleGuard from "@/features/auth/components/RoleGuard";
 import { CTSSRole } from "@/features/auth/types";
@@ -31,6 +31,9 @@ import {
   User,
   Star,
   X,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
@@ -98,16 +101,24 @@ export default function CRMPage() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"createdAt" | "totalSpent" | "totalVisits" | "lastVisitDate">("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCustomers();
-  }, [activeTab]);
+  }, [activeTab, sortBy, sortOrder]);
 
   const fetchCustomers = async () => {
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
       if (activeTab !== "all") params.append("status", activeTab.toUpperCase());
+      params.append("page", currentPage.toString());
+      params.append("limit", itemsPerPage.toString());
+      params.append("sortBy", sortBy);
+      params.append("sortOrder", sortOrder);
 
       const response = await fetch(`/api/customers?${params.toString()}`);
       const result = await response.json();
@@ -120,6 +131,39 @@ export default function CRMPage() {
       setLoading(false);
     }
   };
+
+  // Sort customers locally
+  const sortedCustomers = useMemo(() => {
+    const sorted = [...customers];
+    sorted.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case "totalSpent":
+          aValue = a.totalSpent;
+          bValue = b.totalSpent;
+          break;
+        case "totalVisits":
+          aValue = a.totalVisits;
+          bValue = b.totalVisits;
+          break;
+        case "lastVisitDate":
+          aValue = a.lastVisitDate ? new Date(a.lastVisitDate).getTime() : 0;
+          bValue = b.lastVisitDate ? new Date(b.lastVisitDate).getTime() : 0;
+          break;
+        default:
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+      }
+
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+    return sorted;
+  }, [customers, sortBy, sortOrder]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc muốn xóa khách hàng này?")) return;
@@ -285,11 +329,28 @@ export default function CRMPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Sắp xếp theo
                       </label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as any)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      >
                         <option value="createdAt">Ngày tạo</option>
                         <option value="totalSpent">Tổng chi tiêu</option>
                         <option value="totalVisits">Lượt đến</option>
                         <option value="lastVisitDate">Lần đến cuối</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Thứ tự
+                      </label>
+                      <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      >
+                        <option value="desc">Giảm dần</option>
+                        <option value="asc">Tăng dần</option>
                       </select>
                     </div>
                   </div>
@@ -313,12 +374,72 @@ export default function CRMPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Khách hàng</TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => {
+                          if (sortBy === "createdAt") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("createdAt");
+                            setSortOrder("desc");
+                          }
+                        }}
+                        className="flex items-center gap-1 hover:text-gray-900"
+                      >
+                        Khách hàng
+                        {sortBy === "createdAt" && <ArrowUpDown size={14} />}
+                      </button>
+                    </TableHead>
                     <TableHead>Liên hệ</TableHead>
-                    <TableHead>Lượt đến</TableHead>
-                    <TableHead>Tổng chi tiêu</TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => {
+                          if (sortBy === "totalVisits") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("totalVisits");
+                            setSortOrder("desc");
+                          }
+                        }}
+                        className="flex items-center gap-1 hover:text-gray-900"
+                      >
+                        Lượt đến
+                        {sortBy === "totalVisits" && <ArrowUpDown size={14} />}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => {
+                          if (sortBy === "totalSpent") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("totalSpent");
+                            setSortOrder("desc");
+                          }
+                        }}
+                        className="flex items-center gap-1 hover:text-gray-900"
+                      >
+                        Tổng chi tiêu
+                        {sortBy === "totalSpent" && <ArrowUpDown size={14} />}
+                      </button>
+                    </TableHead>
                     <TableHead>Điểm tích lũy</TableHead>
-                    <TableHead>Lần đến cuối</TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => {
+                          if (sortBy === "lastVisitDate") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("lastVisitDate");
+                            setSortOrder("desc");
+                          }
+                        }}
+                        className="flex items-center gap-1 hover:text-gray-900"
+                      >
+                        Lần đến cuối
+                        {sortBy === "lastVisitDate" && <ArrowUpDown size={14} />}
+                      </button>
+                    </TableHead>
                     <TableHead>Trạng thái</TableHead>
                     <TableHead>Thao tác</TableHead>
                   </TableRow>
@@ -337,7 +458,7 @@ export default function CRMPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    customers.map((customer) => (
+                    sortedCustomers.map((customer) => (
                       <TableRow key={customer.id}>
                         <TableCell>
                           <div>
@@ -438,6 +559,34 @@ export default function CRMPage() {
               </Table>
             </TabsContent>
           </Tabs>
+
+          {/* Pagination */}
+          {sortedCustomers.length > 0 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600">
+                Hiển thị {sortedCustomers.length} khách hàng
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span className="text-sm text-gray-700">
+                  Trang {currentPage}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={sortedCustomers.length < itemsPerPage}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Customer 360 Detail Drawer */}

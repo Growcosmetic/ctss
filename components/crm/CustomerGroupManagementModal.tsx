@@ -123,16 +123,14 @@ export default function CustomerGroupManagementModal({
         throw new Error(result.error || "Failed to update customer group");
       }
 
-      // Refresh customers from parent first
-      if (onUpdate) {
-        await onUpdate();
-      }
-      
-      // Close modal
+      // Close modal first
       setAddCustomerModalOpen(false);
       setSelectedGroupName("");
       
-      // Note: Groups will be refreshed automatically via useEffect when customers prop updates
+      // Refresh customers from parent - this will trigger useEffect to update groups
+      if (onUpdate) {
+        await onUpdate();
+      }
     } catch (error: any) {
       console.error("Error adding customers to group:", error);
       alert(error.message || "Có lỗi xảy ra khi thêm khách hàng vào nhóm");

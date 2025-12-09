@@ -477,6 +477,32 @@ export default function CustomerDetailPanel({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Bottom Action Bar */}
+        {customer && (
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex items-center justify-center gap-3 mt-auto">
+            <Button variant="outline" size="sm">
+              <Printer size={16} className="mr-2" />
+              In phiếu
+            </Button>
+            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+              <ShoppingCart size={16} className="mr-2" />
+              Tạo Đơn Hàng
+            </Button>
+            <Button variant="outline" size="sm">
+              <Calendar size={16} className="mr-2" />
+              Đặt lịch
+            </Button>
+            <Button variant="outline" size="sm">
+              <BarChart3 size={16} className="mr-2" />
+              Điểm
+            </Button>
+            <Button variant="outline" size="sm">
+              <Lock size={16} className="mr-2" />
+              Khoá gửi Zalo
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

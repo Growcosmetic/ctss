@@ -112,6 +112,10 @@ export default function CRMPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [listSearchTerm, setListSearchTerm] = useState("");
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [isRecentCustomersModalOpen, setIsRecentCustomersModalOpen] = useState(false);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isImportExcelModalOpen, setIsImportExcelModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -268,19 +272,23 @@ export default function CRMPage() {
 
   // Header action handlers
   const handleManageGroups = () => {
-    alert("Tính năng Quản lý nhóm đang được phát triển");
+    setIsGroupModalOpen(true);
   };
 
   const handleRecentCustomers = () => {
-    alert("Tính năng Khách hàng gần đây đang được phát triển");
+    setIsRecentCustomersModalOpen(true);
   };
 
   const handleCustomerStats = () => {
-    alert("Tính năng Thống kê khách hàng đang được phát triển");
+    setIsStatsModalOpen(true);
   };
 
   const handleImportExcel = () => {
-    alert("Tính năng Nhập từ tệp excel đang được phát triển");
+    setIsImportExcelModalOpen(true);
+  };
+
+  const handleImportSuccess = () => {
+    fetchCustomers();
   };
 
   // Bottom action handlers

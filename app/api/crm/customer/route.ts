@@ -148,23 +148,21 @@ export async function POST(request: NextRequest) {
       preferences,
     } = body;
 
-    if (!firstName || !lastName || !phone) {
-      return errorResponse("firstName, lastName, and phone are required", 400);
+    // Validate required fields
+    if (!phone) {
+      return errorResponse("Phone is required", 400);
     }
 
-    const data: any = {
-      firstName,
-      lastName,
+    // Combine firstName and lastName into name
+    const fullName = [firstName, lastName].filter(Boolean).join(" ").trim() || "Khách hàng";
+
+    // Prepare Customer data (matching schema)
+    const customerData: any = {
+      name: fullName,
       phone,
-      email: email || null,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      birthday: dateOfBirth ? new Date(dateOfBirth) : null,
       gender: gender || null,
-      address: address || null,
-      city: city || null,
-      province: province || null,
-      postalCode: postalCode || null,
       notes: notes || null,
-      preferences: preferences || null,
     };
 
     let customer;
@@ -172,7 +170,7 @@ export async function POST(request: NextRequest) {
       // Update existing customer
       customer = await prisma.customer.update({
         where: { id },
-        data,
+        data: customerData,
         include: {
           tags: true,
         },
@@ -187,21 +185,64 @@ export async function POST(request: NextRequest) {
         // Update existing customer
         customer = await prisma.customer.update({
           where: { id: existing.id },
-          data,
+          data: customerData,
           include: {
             tags: true,
           },
         });
+        // Use existing ID for profile update
+        finalCustomerId = existing.id;
       } else {
         // Create new customer
         customer = await prisma.customer.create({
-          data,
+          data: customerData,
           include: {
             tags: true,
           },
         });
       }
     }
+
+    // Prepare CustomerProfile data (for extended fields)
+    const profilePreferences: any = {
+      ...(preferences || {}),
+      // Store additional fields in preferences
+      email: email || null,
+      address: address || null,
+      city: city || null,
+      province: province || null,
+      postalCode: postalCode || null,
+      // Store form-specific fields
+      customerCode: preferences?.customerCode || null,
+      occupation: preferences?.occupation || null,
+      rank: preferences?.rank || null,
+      website: preferences?.website || null,
+      customerGroup: preferences?.customerGroup || null,
+      country: preferences?.country || null,
+      cardId: preferences?.cardId || null,
+      zaloPhone: preferences?.zaloPhone || null,
+      facebook: preferences?.facebook || null,
+      company: preferences?.company || null,
+      referralSource: preferences?.referralSource || null,
+    };
+
+    // Upsert CustomerProfile
+    const customerId = finalCustomerId || customer.id;
+    await prisma.customerProfile.upsert({
+      where: { customerId },
+      update: {
+        name: fullName,
+        phone: phone,
+        preferences: profilePreferences,
+        updatedAt: new Date(),
+      },
+      create: {
+        customerId,
+        name: fullName,
+        phone: phone,
+        preferences: profilePreferences,
+      },
+    });
 
     return successResponse(customer, id ? "Customer updated successfully" : "Customer created successfully");
   } catch (error: any) {

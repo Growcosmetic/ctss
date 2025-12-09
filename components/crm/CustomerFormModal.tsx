@@ -123,6 +123,11 @@ export default function CustomerFormModal({
         dateOfBirth = `${formData.yearOfBirth}-${formData.monthOfBirth.padStart(2, "0")}-${formData.dayOfBirth.padStart(2, "0")}`;
       }
 
+      // Split fullName into firstName and lastName
+      const nameParts = formData.fullName.trim().split(" ");
+      const lastName = nameParts.pop() || "";
+      const firstName = nameParts.join(" ") || lastName;
+
       const requestData: any = {
         firstName,
         lastName,
@@ -135,6 +140,7 @@ export default function CustomerFormModal({
         province: formData.province || undefined,
         notes: formData.notes || undefined,
         preferences: {
+          customerCode: formData.customerCode,
           occupation: formData.occupation,
           rank: formData.rank,
           website: formData.website,

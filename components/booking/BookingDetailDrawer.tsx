@@ -9,17 +9,19 @@ import {
   Calendar,
   Clock,
   Edit,
-  Trash2,
-  Sparkles,
-  RefreshCw,
-  History,
-  Eye,
+  Save,
+  Printer,
+  MessageCircle,
+  MapPin,
+  Info,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Loader,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fakeStylists } from "@/lib/data/fakeStylists";
-import { fakeBookings } from "@/lib/data/fakeBookings";
-import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
-import { Customer360Layout } from "@/features/customer360/components/Customer360Layout";
+import { fakeServices } from "@/lib/data/fakeServices";
 import { getCustomer } from "@/features/crm/services/crmApi";
 
 interface BookingDetailDrawerProps {
@@ -35,7 +37,7 @@ interface BookingDetailDrawerProps {
     date: string;
     time: string;
     duration: number;
-    status: "CONFIRMED" | "PENDING" | "CANCELLED" | "IN_PROGRESS" | "COMPLETED" | "confirmed" | "pending" | "cancelled";
+    status: "CONFIRMED" | "PENDING" | "CANCELLED" | "IN_PROGRESS" | "COMPLETED" | "WAITING" | "NO_SHOW" | "confirmed" | "pending" | "cancelled";
     notes?: string;
   } | null;
   bookingList: Array<{
@@ -49,85 +51,21 @@ interface BookingDetailDrawerProps {
     [key: string]: any;
   }>;
   setBookingList: (bookings: any[]) => void;
-  onEdit: () => void;
-  onCancel: () => void;
+  onEdit?: () => void;
+  onCancel?: () => void;
   onChangeStylist?: (newStylistId: string) => void;
   onViewHistory?: () => void;
 }
 
-// AI Suggestion logic
-function getAISuggestions(
-  booking: BookingDetailDrawerProps["booking"],
-  bookingList: BookingDetailDrawerProps["bookingList"] = []
-) {
-  if (!booking) return [];
-
-  const suggestions = [];
-
-  // 1. Find stylists who have worked with this customer before
-  const customerHistory = bookingList.filter(
-    (b) => b.phone === booking.phone && b.id !== booking.id
-  );
-  const previousStylists = new Set(
-    customerHistory.map((b) => b.stylistId)
-  );
-
-  if (previousStylists.size > 0) {
-    const stylistNames = Array.from(previousStylists)
-      .map((id) => fakeStylists.find((s) => s.id === id)?.name)
-      .filter(Boolean);
-    suggestions.push({
-      type: "history",
-      message: `Khách hàng này đã từng làm với: ${stylistNames.join(", ")}. Có thể đề xuất lại các stylist này.`,
-      priority: "high",
-    });
-  }
-
-  // 2. Find available stylists at the same time
-  const [bookingHour, bookingMinute] = booking.time.split(":").map(Number);
-  const bookingStart = bookingHour * 60 + bookingMinute;
-  const bookingEnd = bookingStart + booking.duration;
-
-  const availableStylists = fakeStylists.filter((stylist) => {
-    // Check if stylist has any booking at the same time
-    const hasConflict = bookingList.some((b) => {
-      if (b.stylistId !== stylist.id) return false;
-      if (b.date !== booking.date) return false;
-      if (b.id === booking.id) return false;
-
-      const [bHour, bMinute] = b.start.split(":").map(Number);
-      const bStart = bHour * 60 + bMinute;
-      const [bEndHour, bEndMinute] = b.end.split(":").map(Number);
-      const bEnd = bEndHour * 60 + bEndMinute;
-
-      return (
-        (bookingStart >= bStart && bookingStart < bEnd) ||
-        (bookingEnd > bStart && bookingEnd <= bEnd) ||
-        (bookingStart <= bStart && bookingEnd >= bEnd)
-      );
-    });
-
-    return !hasConflict;
-  });
-
-  if (availableStylists.length > 0) {
-    suggestions.push({
-      type: "available",
-      message: `Các stylist rảnh vào thời điểm này: ${availableStylists.map((s) => s.name).join(", ")}.`,
-      priority: "medium",
-    });
-  }
-
-  // 3. Suggest high-rated stylists (mock data - in real app would come from database)
-  const highRatedStylists = fakeStylists.slice(0, 2); // Mock: first 2 are high-rated
-  suggestions.push({
-    type: "rating",
-    message: `Stylist có rating cao: ${highRatedStylists.map((s) => s.name).join(", ")}. Có thể đề xuất cho khách hàng VIP.`,
-    priority: "low",
-  });
-
-  return suggestions;
-}
+const STATUS_OPTIONS = [
+  { value: "PENDING", label: "Chưa xác nhận", color: "bg-yellow-500" },
+  { value: "CONFIRMED", label: "Đã xác nhận", color: "bg-blue-500" },
+  { value: "WAITING", label: "Chờ phục vụ", color: "bg-orange-500" },
+  { value: "IN_PROGRESS", label: "Đang phục vụ", color: "bg-green-500" },
+  { value: "CANCELLED", label: "Hủy lịch", color: "bg-red-500" },
+  { value: "NO_SHOW", label: "Không đến", color: "bg-red-500" },
+  { value: "COMPLETED", label: "Hoàn thành", color: "bg-gray-500" },
+];
 
 export default function BookingDetailDrawer({
   isOpen,
@@ -140,71 +78,60 @@ export default function BookingDetailDrawer({
   onChangeStylist,
   onViewHistory,
 }: BookingDetailDrawerProps) {
-  const [open360, setOpen360] = useState(false);
-  const [customerId, setCustomerId] = useState<string | null>(null);
-  const { data: customer360Data, loading: customer360Loading } = useCustomer360(
-    customerId || ""
-  );
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
+  const [appointmentType, setAppointmentType] = useState<"advance" | "walkin">("advance");
 
-  // Fetch customerId from phone when booking changes
   useEffect(() => {
-    if (booking?.phone && !customerId) {
-      getCustomer(booking.phone)
-        .then((customer) => {
-          if (customer?.id) {
-            setCustomerId(customer.id);
-          }
-        })
-        .catch(() => {
-          // Customer not found, ignore
-        });
+    if (booking) {
+      const [hour, minute] = booking.time.split(":").map(Number);
+      setFormData({
+        customerName: booking.customerName,
+        phone: booking.phone,
+        date: booking.date,
+        hour: hour,
+        minute: minute,
+        duration: booking.duration,
+        notes: booking.notes || "",
+        guestCount: 1,
+        serviceId: fakeServices.find((s) => s.name === booking.serviceName)?.id || "",
+        stylistId: booking.stylistId || "",
+        roomId: "",
+        branchId: "",
+      });
     }
-  }, [booking?.phone, customerId]);
+  }, [booking]);
 
-  const aiSuggestions = useMemo(
-    () => getAISuggestions(booking, bookingList),
-    [booking, bookingList]
-  );
+  if (!isOpen || !booking || !formData) return null;
 
-  if (!isOpen || !booking) return null;
+  const handleSave = () => {
+    const updatedBooking = {
+      ...booking,
+      customerName: formData.customerName,
+      phone: formData.phone,
+      date: formData.date,
+      time: `${formData.hour.toString().padStart(2, "0")}:${formData.minute.toString().padStart(2, "0")}`,
+      duration: formData.duration,
+      notes: formData.notes,
+      serviceName: fakeServices.find((s) => s.id === formData.serviceId)?.name || booking.serviceName,
+      stylistId: formData.stylistId,
+    };
 
-  const getStatusColor = () => {
-    const status = booking.status.toUpperCase();
-    switch (status) {
-      case "CONFIRMED":
-      case "IN_PROGRESS":
-      case "COMPLETED":
-        return "bg-green-100 text-green-700";
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700";
-      case "CANCELLED":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+    setBookingList(
+      bookingList.map((b) => (b.id === booking.id ? updatedBooking : b))
+    );
+    setIsEditing(false);
   };
 
-  const getStatusLabel = () => {
-    const status = booking.status.toUpperCase();
-    switch (status) {
-      case "CONFIRMED":
-        return "Đã xác nhận";
-      case "PENDING":
-        return "Chờ xác nhận";
-      case "CANCELLED":
-        return "Đã hủy";
-      case "IN_PROGRESS":
-        return "Đang thực hiện";
-      case "COMPLETED":
-        return "Hoàn thành";
-      default:
-        return booking.status;
-    }
+  const handleStatusChange = (newStatus: string) => {
+    setBookingList(
+      bookingList.map((b) =>
+        b.id === booking.id ? { ...b, status: newStatus.toUpperCase() as any } : b
+      )
+    );
   };
 
-  const isCancelledOrCompleted =
-    booking.status.toUpperCase() === "CANCELLED" ||
-    booking.status.toUpperCase() === "COMPLETED";
+  const currentStatus = booking.status.toUpperCase();
 
   return (
     <div
@@ -218,19 +145,27 @@ export default function BookingDetailDrawer({
         onClick={onClose}
       />
 
-      {/* Drawer */}
+      {/* Drawer - 2 columns */}
       <div
         className={`absolute right-0 top-0 h-full bg-white transition-transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{
-          width: "420px",
+          width: "900px",
           boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold text-gray-900">Chi tiết lịch hẹn</h2>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Lịch hẹn (Mã đặt lịch: {booking.id.slice(0, 10).toUpperCase()})
+            </h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Tạo bởi lúc {format(new Date(), "HH:mm dd/MM/yyyy")} Tạo bởi: Admin
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -239,256 +174,396 @@ export default function BookingDetailDrawer({
           </button>
         </div>
 
-        {/* Content */}
-        <div
-          className="p-6 space-y-6 overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 280px)" }}
-        >
-          {/* Status Badge */}
-          <div className="flex items-center justify-between">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor()}`}>
-              {getStatusLabel()}
-            </span>
-          </div>
-
-          {/* Customer Info */}
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <User className="w-5 h-5" style={{ color: "#A4E3E3" }} />
+        {/* Content - 2 columns */}
+        <div className="flex h-[calc(100vh-180px)] overflow-hidden">
+          {/* Left Column - Form */}
+          <div className="flex-1 overflow-y-auto p-6 border-r border-gray-200">
+            <div className="space-y-6">
+              {/* Booking ID */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Mã đặt lịch
+                </label>
+                <p className="text-sm text-gray-900 font-mono">{booking.id.slice(0, 10).toUpperCase()}</p>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Khách hàng</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-lg font-semibold text-gray-900">{booking.customerName}</p>
-                  {customerId && (
-                    <button
-                      onClick={() => setOpen360(true)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Xem hồ sơ 360°
+
+              {/* Customer Info */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Khách hàng
+                </label>
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-6 h-6 text-gray-500" />
+                  </div>
+                  <div className="flex-1">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={formData.customerName}
+                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <p className="text-base font-semibold text-gray-900">{booking.customerName}</p>
+                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                          Khách quay lại
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="flex-1 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3] text-sm"
+                        />
+                      ) : (
+                        <span className="text-sm text-gray-700">{booking.phone}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">Quận 1 - TP Hồ Chí Minh</span>
+                    </div>
+                    <button className="flex items-center gap-1 mt-2 text-sm text-blue-600 hover:underline">
+                      <Info className="w-4 h-4" />
+                      Xem chi tiết
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Time */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Giờ hẹn
+                </label>
+                <div className="flex items-center gap-2">
+                  {isEditing ? (
+                    <>
+                      <select
+                        value={formData.hour}
+                        onChange={(e) => setFormData({ ...formData, hour: Number(e.target.value) })}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i} giờ
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={formData.minute}
+                        onChange={(e) => setFormData({ ...formData, minute: Number(e.target.value) })}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                      >
+                        {[0, 15, 30, 45].map((m) => (
+                          <option key={m} value={m}>
+                            {m} phút
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  ) : (
+                    <span className="text-base font-semibold text-gray-900">
+                      {booking.time}
+                    </span>
+                  )}
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                    />
+                  ) : (
+                    <span className="text-base font-semibold text-gray-900 ml-2">
+                      {format(new Date(booking.date), "dd-MM-yyyy")}
+                    </span>
                   )}
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <Phone className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Số điện thoại</p>
-                <p className="text-lg font-semibold text-gray-900">{booking.phone}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Service & Stylist Info */}
-          <div className="border-t border-gray-200 pt-4 space-y-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <Scissors className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Dịch vụ</p>
-                <p className="text-lg font-semibold text-gray-900">{booking.serviceName}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <User className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Stylist</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {booking.stylistName || "Chưa chọn"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Time Info */}
-          <div className="border-t border-gray-200 pt-4 space-y-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <Calendar className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Ngày</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {format(new Date(booking.date), "dd/MM/yyyy")}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div
-                className="p-2 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-              >
-                <Clock className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-1">Thời gian</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {booking.time} ({booking.duration} phút)
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          {booking.notes && (
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-sm text-gray-500 mb-2">Ghi chú</p>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-gray-900 text-sm">{booking.notes}</p>
-              </div>
-            </div>
-          )}
-
-          {/* AI Suggestions */}
-          {aiSuggestions.length > 0 && (
-            <div
-              className="border-t border-gray-200 pt-4 p-4 rounded-lg"
-              style={{ backgroundColor: "rgba(164, 227, 227, 0.1)" }}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-5 h-5" style={{ color: "#A4E3E3" }} />
-                <h3 className="font-semibold text-gray-900">AI Gợi ý</h3>
-              </div>
-              <div className="space-y-2">
-                {aiSuggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-white rounded-lg border border-gray-200"
-                  >
-                    <p className="text-sm text-gray-700">{suggestion.message}</p>
-                    {suggestion.priority === "high" && (
-                      <span className="inline-block mt-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                        Quan trọng
-                      </span>
-                    )}
+              {/* Duration */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Thời gian dự kiến
+                </label>
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={formData.duration}
+                      onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3] w-24"
+                    />
+                    <span className="text-sm text-gray-600">phút</span>
                   </div>
-                ))}
+                ) : (
+                  <p className="text-base font-semibold text-gray-900">{booking.duration} phút</p>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Ghi chú
+                </label>
+                {isEditing ? (
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                    rows={3}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                    {booking.notes || "Không có ghi chú"}
+                  </p>
+                )}
+              </div>
+
+              {/* Guest Count */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Số lượng khách
+                </label>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={formData.guestCount}
+                    onChange={(e) => setFormData({ ...formData, guestCount: Number(e.target.value) })}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3] w-24"
+                    min={1}
+                  />
+                ) : (
+                  <p className="text-base font-semibold text-gray-900">1</p>
+                )}
+              </div>
+
+              {/* Service */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Dịch vụ
+                </label>
+                {isEditing ? (
+                  <select
+                    value={formData.serviceId}
+                    onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                  >
+                    <option value="">Chọn các dịch vụ</option>
+                    {fakeServices.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-base font-semibold text-gray-900">{booking.serviceName}</p>
+                )}
+              </div>
+
+              {/* Staff */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Nhân viên phục vụ
+                </label>
+                {isEditing ? (
+                  <select
+                    value={formData.stylistId}
+                    onChange={(e) => setFormData({ ...formData, stylistId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                  >
+                    <option value="">Chọn nhân viên</option>
+                    {fakeStylists.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-base font-semibold text-gray-900">
+                    {booking.stylistName || "Chưa chọn"}
+                  </p>
+                )}
+              </div>
+
+              {/* Room/Seat */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Phòng/Chỗ ngồi
+                </label>
+                {isEditing ? (
+                  <select
+                    value={formData.roomId}
+                    onChange={(e) => setFormData({ ...formData, roomId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                  >
+                    <option value="">Chọn vị trí</option>
+                    <option value="room-1">Phòng 1</option>
+                    <option value="room-2">Phòng 2</option>
+                    <option value="seat-1">Chỗ ngồi 1</option>
+                    <option value="seat-2">Chỗ ngồi 2</option>
+                  </select>
+                ) : (
+                  <p className="text-sm text-gray-600">Chưa chọn</p>
+                )}
+              </div>
+
+              {/* Branch */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Tại chi nhánh
+                </label>
+                {isEditing ? (
+                  <select
+                    value={formData.branchId}
+                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A4E3E3]"
+                  >
+                    <option value="branch-1">Hair Salon Chí Tâm</option>
+                  </select>
+                ) : (
+                  <p className="text-sm text-gray-900">Hair Salon Chí Tâm</p>
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Right Column - Status Sidebar */}
+          <div className="w-80 bg-gray-50 p-6 overflow-y-auto">
+            <div className="space-y-6">
+              {/* Appointment Type */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Loại đặt lịch
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setAppointmentType("advance")}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      appointmentType === "advance"
+                        ? "bg-blue-500 text-white"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Đặt lịch trước
+                  </button>
+                  <button
+                    onClick={() => setAppointmentType("walkin")}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      appointmentType === "walkin"
+                        ? "bg-blue-500 text-white"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Đến trực tiếp
+                  </button>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Trạng thái
+                </label>
+                <div className="space-y-2">
+                  {STATUS_OPTIONS.map((status) => (
+                    <label
+                      key={status.value}
+                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                        currentStatus === status.value
+                          ? "bg-white border-2 border-blue-500 shadow-sm"
+                          : "bg-white border border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="status"
+                        value={status.value}
+                        checked={currentStatus === status.value}
+                        onChange={() => handleStatusChange(status.value)}
+                        className="sr-only"
+                      />
+                      <div className={`w-4 h-4 rounded-full ${status.color} flex-shrink-0`}></div>
+                      <span className="text-sm font-medium text-gray-900 flex-1">
+                        {status.label}
+                      </span>
+                      {currentStatus === status.value && (
+                        <CheckCircle className="w-5 h-5 text-blue-500" />
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Đặt lịch từ
+                </label>
+                <button className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Gọi điện
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 space-y-3">
-          {/* Primary Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            {!isCancelledOrCompleted && (
+        {/* Bottom Actions */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            Đóng
+          </button>
+          <div className="flex items-center gap-3">
+            {isEditing ? (
               <>
                 <button
-                  onClick={onEdit}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <Edit className="w-4 h-4" />
-                  Sửa lịch
+                  Hủy
                 </button>
                 <button
-                  onClick={onCancel}
-                  className="px-4 py-2 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
-                  style={{ backgroundColor: "#ef4444" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#dc2626";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#ef4444";
-                  }}
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Hủy lịch
+                  <Save className="w-4 h-4" />
+                  Lưu thông tin
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Sửa
+                </button>
+                <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  Gửi tin Zalo
+                </button>
+                <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
+                  <Printer className="w-4 h-4" />
+                  In lịch hẹn
                 </button>
               </>
             )}
           </div>
-
-          {/* Secondary Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            {!isCancelledOrCompleted && onChangeStylist && (
-              <button
-                onClick={() => {
-                  // Find available stylist
-                  const availableStylist = fakeStylists.find(
-                    (s) => s.id !== booking.stylistId
-                  );
-                  if (availableStylist) {
-                    onChangeStylist(availableStylist.id);
-                  }
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Đổi stylist
-              </button>
-            )}
-            {onViewHistory && (
-              <button
-                onClick={onViewHistory}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <History className="w-4 h-4" />
-                Lịch sử
-              </button>
-            )}
-          </div>
         </div>
       </div>
-
-      {/* Customer360 Drawer */}
-      {open360 && customerId && (
-        <div className="fixed inset-0 bg-black/40 flex justify-end z-[60]" onClick={() => setOpen360(false)}>
-          <div
-            className="bg-white w-full max-w-6xl h-full overflow-y-auto shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {booking.customerName} - 360° View
-              </h2>
-              <button
-                onClick={() => setOpen360(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              {customer360Loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-500">Đang tải dữ liệu 360°...</div>
-                </div>
-              ) : customer360Data ? (
-                <Customer360Layout data={customer360Data} />
-              ) : (
-                <div className="text-gray-500 text-center py-12">Không có dữ liệu</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

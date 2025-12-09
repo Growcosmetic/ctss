@@ -115,18 +115,13 @@ export default function CustomerFormModal({
       // Parse full name to firstName and lastName
       const nameParts = formData.fullName.trim().split(" ");
       const lastName = nameParts.pop() || "";
-      const firstName = nameParts.join(" ") || "";
+      const firstName = nameParts.join(" ") || lastName;
 
       // Build date of birth
       let dateOfBirth = "";
       if (formData.yearOfBirth && formData.monthOfBirth && formData.dayOfBirth) {
         dateOfBirth = `${formData.yearOfBirth}-${formData.monthOfBirth.padStart(2, "0")}-${formData.dayOfBirth.padStart(2, "0")}`;
       }
-
-      // Split fullName into firstName and lastName
-      const nameParts = formData.fullName.trim().split(" ");
-      const lastName = nameParts.pop() || "";
-      const firstName = nameParts.join(" ") || lastName;
 
       const requestData: any = {
         firstName,

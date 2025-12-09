@@ -49,6 +49,10 @@ import CustomerFormModal from "@/components/crm/CustomerFormModal";
 import CustomerListPanel from "@/components/crm/CustomerListPanel";
 import CustomerDetailPanel from "@/components/crm/CustomerDetailPanel";
 import CustomerActivityPanel from "@/components/crm/CustomerActivityPanel";
+import CustomerGroupManagementModal from "@/components/crm/CustomerGroupManagementModal";
+import RecentCustomersModal from "@/components/crm/RecentCustomersModal";
+import CustomerStatsModal from "@/components/crm/CustomerStatsModal";
+import ImportExcelModal from "@/components/crm/ImportExcelModal";
 
 interface Customer {
   id: string;

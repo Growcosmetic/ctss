@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { X, Search, Download, Calendar, Phone, FileText } from "lucide-react";
+import { X, Search, Download, Calendar, Phone, FileText, User as UserIcon } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface RecentCustomer {

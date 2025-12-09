@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Calendar, ShoppingBag, CreditCard, Heart, Bell, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import CustomerPhotosTab from "./CustomerPhotosTab";
 
 interface CustomerActivityPanelProps {
   customerId: string | null;
@@ -212,9 +213,7 @@ export default function CustomerActivityPanel({ customerId }: CustomerActivityPa
         </TabsContent>
 
         <TabsContent value="photos" className="flex-1 overflow-y-auto p-4">
-          <div className="text-center py-8 text-gray-500">
-            <p>Chưa có ảnh khách hàng</p>
-          </div>
+          <CustomerPhotosTab customerId={customerId} />
         </TabsContent>
       </Tabs>
     </div>

@@ -354,16 +354,22 @@ export default function CustomerDetailPanel({
                             availableGroups.map((group) => (
                               <button
                                 key={group}
-                                onClick={async () => {
+                                type="button"
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   if (onAddToGroup && customer) {
                                     try {
+                                      setIsGroupDropdownOpen(false);
                                       await onAddToGroup(customer.id, group);
                                       await onUpdate();
-                                    } catch (error) {
+                                    } catch (error: any) {
                                       console.error("Error adding to group:", error);
+                                      alert(error.message || "Có lỗi xảy ra khi thêm khách hàng vào nhóm");
                                     }
+                                  } else {
+                                    setIsGroupDropdownOpen(false);
                                   }
-                                  setIsGroupDropdownOpen(false);
                                 }}
                                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
                                   customer?.profile?.preferences?.customerGroup === group ? "bg-blue-50 text-blue-700" : "text-gray-700"

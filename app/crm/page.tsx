@@ -281,6 +281,9 @@ export default function CRMPage() {
 
   const handleAddCustomerToGroup = async (customerId: string, groupName: string) => {
     try {
+      // If groupName is empty, set to empty string (will be converted to "Chưa phân nhóm" by API)
+      const finalGroupName = groupName === "Chưa phân nhóm" || groupName === "" ? "" : groupName;
+      
       const response = await fetch("/api/crm/customers/update-group", {
         method: "POST",
         headers: {
@@ -288,7 +291,7 @@ export default function CRMPage() {
         },
         body: JSON.stringify({
           customerIds: [customerId],
-          groupName: groupName === "Chưa phân nhóm" ? "" : groupName,
+          groupName: finalGroupName,
         }),
       });
 
@@ -297,8 +300,29 @@ export default function CRMPage() {
         throw new Error(result.error || "Failed to update customer group");
       }
 
-      // Refresh customers
+      // Refresh customers to get updated data
       await fetchCustomers();
+      
+      // Also update selected customer if it's the one being updated
+      if (selectedCustomer && selectedCustomer.id === customerId) {
+        const updatedCustomers = await fetch(`/api/customers?search=&page=1&limit=100`).then(r => r.json());
+        if (updatedCustomers.success) {
+          const updatedCustomer = updatedCustomers.data.customers.find((c: any) => c.id === customerId);
+          if (updatedCustomer) {
+            const fullName = updatedCustomer.name || `${updatedCustomer.firstName || ""} ${updatedCustomer.lastName || ""}`.trim() || "Khách hàng";
+            const nameParts = fullName.trim().split(" ");
+            const lastName = nameParts.pop() || "";
+            const firstName = nameParts.join(" ") || lastName;
+            setSelectedCustomer({
+              ...updatedCustomer,
+              name: fullName,
+              firstName,
+              lastName,
+              profile: updatedCustomer.profile || { preferences: {} },
+            });
+          }
+        }
+      }
     } catch (error: any) {
       console.error("Error adding customer to group:", error);
       throw error;

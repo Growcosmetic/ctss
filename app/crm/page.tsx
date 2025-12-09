@@ -859,12 +859,13 @@ export default function CRMPage() {
           onSuccess={handleFormSuccess}
         />
 
-        {/* Customer Group Management Modal */}
-        <CustomerGroupManagementModal
-          isOpen={isGroupModalOpen}
-          onClose={() => setIsGroupModalOpen(false)}
-          customers={customers}
-        />
+            {/* Customer Group Management Modal */}
+            <CustomerGroupManagementModal
+              isOpen={isGroupModalOpen}
+              onClose={() => setIsGroupModalOpen(false)}
+              customers={customers}
+              onUpdate={fetchCustomers}
+            />
 
         {/* Recent Customers Modal */}
         <RecentCustomersModal

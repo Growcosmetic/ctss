@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { X, Plus, Edit, Trash2, Users, Search } from "lucide-react";
+import AddCustomerToGroupModal from "./AddCustomerToGroupModal";
 
 interface CustomerGroup {
   id: string;
@@ -16,12 +17,14 @@ interface CustomerGroupManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   customers: any[];
+  onUpdate?: () => void;
 }
 
 export default function CustomerGroupManagementModal({
   isOpen,
   onClose,
   customers,
+  onUpdate,
 }: CustomerGroupManagementModalProps) {
   const [groups, setGroups] = useState<CustomerGroup[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +32,8 @@ export default function CustomerGroupManagementModal({
   const [editingGroup, setEditingGroup] = useState<CustomerGroup | null>(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
+  const [selectedGroupName, setSelectedGroupName] = useState("");
 
   // Extract unique groups from customers
   useEffect(() => {
@@ -92,8 +97,47 @@ export default function CustomerGroupManagementModal({
   };
 
   const handleAddCustomer = (groupId: string) => {
-    // TODO: Implement add customer to group
-    alert(`Tính năng thêm khách hàng vào nhóm đang được phát triển`);
+    const group = groups.find((g) => g.id === groupId);
+    if (group) {
+      setSelectedGroupName(group.name);
+      setAddCustomerModalOpen(true);
+    }
+  };
+
+  const handleAddCustomersToGroup = async (customerIds: string[], groupName: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/crm/customers/update-group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerIds,
+          groupName,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update customer group");
+      }
+
+      // Refresh groups
+      if (onUpdate) {
+        onUpdate();
+      }
+      
+      // Close modal and refresh
+      setAddCustomerModalOpen(false);
+      setSelectedGroupName("");
+    } catch (error: any) {
+      console.error("Error adding customers to group:", error);
+      alert(error.message || "Có lỗi xảy ra khi thêm khách hàng vào nhóm");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -225,6 +269,18 @@ export default function CustomerGroupManagementModal({
           Tổng số khách hàng: <span className="font-medium text-gray-900">{customers.length}</span>
         </div>
       </div>
+
+      {/* Add Customer to Group Modal */}
+      <AddCustomerToGroupModal
+        isOpen={addCustomerModalOpen}
+        onClose={() => {
+          setAddCustomerModalOpen(false);
+          setSelectedGroupName("");
+        }}
+        groupName={selectedGroupName}
+        customers={customers}
+        onAdd={handleAddCustomersToGroup}
+      />
     </Modal>
   );
 }

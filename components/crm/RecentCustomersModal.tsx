@@ -71,8 +71,47 @@ export default function RecentCustomersModal({
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
 
   const handleExportExcel = () => {
-    // TODO: Implement Excel export
-    alert("Tính năng xuất Excel đang được phát triển");
+    try {
+      // Prepare data for export
+      const exportData = filteredCustomers.map((c, index) => ({
+        "STT": index + 1,
+        "Tên khách hàng": c.name,
+        "Số điện thoại": c.phone,
+        "Ngày đến cuối": formatDate(c.lastVisitDate),
+        "Mã hóa đơn": c.invoiceCode || "",
+        "Tổng chi tiêu": c.totalSpent,
+      }));
+
+      // Convert to CSV (simple Excel format)
+      const headers = Object.keys(exportData[0] || {});
+      const csvRows = [
+        headers.join(","),
+        ...exportData.map((row) =>
+          headers.map((header) => {
+            const value = row[header as keyof typeof row];
+            // Escape commas and quotes
+            if (typeof value === "string" && (value.includes(",") || value.includes('"'))) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          }).join(",")
+        ),
+      ];
+
+      const csv = csvRows.join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); // BOM for Excel
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `khach_hang_gan_day_${new Date().toISOString().split("T")[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+      alert("Có lỗi xảy ra khi xuất Excel");
+    }
   };
 
   const getInitials = (name: string) => {

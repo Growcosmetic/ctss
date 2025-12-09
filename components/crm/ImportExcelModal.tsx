@@ -80,18 +80,102 @@ export default function ImportExcelModal({
 
     setLoading(true);
     try {
-      // TODO: Implement actual Excel import
-      // For now, simulate import
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Read file as text (CSV format)
+      const text = await file.text();
+      const lines = text.split("\n").filter((line) => line.trim());
       
+      if (lines.length < 2) {
+        alert("File không hợp lệ. Vui lòng kiểm tra lại.");
+        setLoading(false);
+        return;
+      }
+
+      // Parse CSV
+      const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+      const customers = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+        const customer: any = {};
+
+        headers.forEach((header, index) => {
+          const value = values[index] || "";
+          switch (header.toLowerCase()) {
+            case "họ tên":
+            case "tên":
+            case "name":
+              customer.name = value;
+              break;
+            case "số điện thoại":
+            case "phone":
+            case "điện thoại":
+              customer.phone = value;
+              break;
+            case "email":
+              customer.email = value;
+              break;
+            case "ngày sinh":
+            case "dateofbirth":
+            case "birthday":
+              customer.dateOfBirth = value;
+              break;
+            case "giới tính":
+            case "gender":
+              customer.gender = value === "Nam" || value === "MALE" ? "MALE" : value === "Nữ" || value === "FEMALE" ? "FEMALE" : null;
+              break;
+            case "địa chỉ":
+            case "address":
+              customer.address = value;
+              break;
+            case "quận/huyện":
+            case "city":
+            case "district":
+              customer.city = value;
+              break;
+            case "tỉnh/thành phố":
+            case "province":
+              customer.province = value;
+              break;
+          }
+        });
+
+        if (customer.name && customer.phone) {
+          customers.push(customer);
+        }
+      }
+
+      if (customers.length === 0) {
+        alert("Không tìm thấy dữ liệu khách hàng hợp lệ trong file.");
+        setLoading(false);
+        return;
+      }
+
+      // Send to API
+      const response = await fetch("/api/crm/customers/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customers,
+          groupName: customerGroup || undefined,
+          overwrite,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to import customers");
+      }
+
       setUploaded(true);
       setTimeout(() => {
         onSuccess?.();
         handleClose();
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Import error:", error);
-      alert("Có lỗi xảy ra khi nhập dữ liệu");
+      alert(error.message || "Có lỗi xảy ra khi nhập dữ liệu");
     } finally {
       setLoading(false);
     }

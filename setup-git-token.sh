@@ -10,12 +10,19 @@ cd ~/ctss || exit 1
 TOKEN="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"
 USERNAME="Growcosmetic"
 
-# Option 1: Đổi remote URL để include token
+# Đổi remote URL để include token (không hỏi username/password nữa)
 echo ""
-echo "📝 Option 1: Updating remote URL with token..."
+echo "📝 Updating remote URL with token..."
 git remote set-url origin https://${USERNAME}:${TOKEN}@github.com/${USERNAME}/ctss.git
 
-# Test pull
+echo ""
+echo "✅ Remote URL updated!"
+echo ""
+
+# Kiểm tra remote URL
+echo "📋 Current remote URL:"
+git remote -v
+
 echo ""
 echo "🧪 Testing git pull..."
 git pull origin main
@@ -23,8 +30,9 @@ git pull origin main
 echo ""
 echo "✅ Setup completed!"
 echo ""
-echo "💡 Note: Token is now saved in git config"
-echo "   To view: git remote -v"
+echo "💡 Token is now saved in git config"
+echo "   You can pull/push without entering credentials"
 echo ""
-echo "⚠️  Security: Consider using SSH key instead for better security"
+echo "⚠️  Security: Token is visible in .git/config"
+echo "   Consider using SSH key for better security"
 

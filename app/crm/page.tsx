@@ -279,6 +279,32 @@ export default function CRMPage() {
     setIsGroupModalOpen(true);
   };
 
+  const handleAddCustomerToGroup = async (customerId: string, groupName: string) => {
+    try {
+      const response = await fetch("/api/crm/customers/update-group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerIds: [customerId],
+          groupName: groupName === "Chưa phân nhóm" ? "" : groupName,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update customer group");
+      }
+
+      // Refresh customers
+      await fetchCustomers();
+    } catch (error: any) {
+      console.error("Error adding customer to group:", error);
+      throw error;
+    }
+  };
+
   const handleRecentCustomers = () => {
     setIsRecentCustomersModalOpen(true);
   };
@@ -454,6 +480,7 @@ export default function CRMPage() {
                     onLockZalo={handleLockZalo}
                     onManageGroups={handleManageGroups}
                     allCustomers={customers}
+                    onAddToGroup={handleAddCustomerToGroup}
                   />
 
           {/* Right Panel - Customer Activity */}

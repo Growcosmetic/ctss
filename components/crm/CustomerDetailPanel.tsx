@@ -64,6 +64,7 @@ interface CustomerDetailPanelProps {
   onLockZalo?: (customerId: string) => void;
   onManageGroups?: () => void;
   allCustomers?: Customer[]; // Pass all customers to extract groups
+  onAddToGroup?: (customerId: string, groupName: string) => Promise<void>; // Handler to add/move customer to group
 }
 
 export default function CustomerDetailPanel({
@@ -77,11 +78,13 @@ export default function CustomerDetailPanel({
   onLockZalo,
   onManageGroups,
   allCustomers = [],
+  onAddToGroup,
 }: CustomerDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSelectGroupModalOpen, setIsSelectGroupModalOpen] = useState(false);
 
   // Extract available groups from all customers
   const availableGroups = React.useMemo(() => {
@@ -326,7 +329,9 @@ export default function CustomerDetailPanel({
                   size="sm" 
                   className="text-xs flex items-center gap-1 text-blue-700"
                   onClick={() => {
-                    if (onManageGroups) {
+                    if (onAddToGroup && customer) {
+                      setIsSelectGroupModalOpen(true);
+                    } else if (onManageGroups) {
                       onManageGroups();
                     } else {
                       alert("Tính năng quản lý nhóm khách hàng");
@@ -334,7 +339,7 @@ export default function CustomerDetailPanel({
                   }}
                 >
                   <Plus size={14} />
-                  Thêm nhóm khách hàng
+                  {customer?.profile?.preferences?.customerGroup ? "Di chuyển nhóm" : "Thêm nhóm khách hàng"}
                 </Button>
                 <div className="flex items-center gap-1">
                   <Gift size={16} className="text-red-500" />

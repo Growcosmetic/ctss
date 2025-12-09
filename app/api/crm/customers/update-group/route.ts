@@ -34,9 +34,10 @@ export async function POST(request: NextRequest) {
         const currentPreferences = (customer.profile?.preferences as any) || {};
         
         // Update customerGroup in preferences
+        // If groupName is empty, set to "Chưa phân nhóm"
         const updatedPreferences = {
           ...currentPreferences,
-          customerGroup: groupName,
+          customerGroup: groupName || "Chưa phân nhóm",
         };
 
         // Upsert CustomerProfile

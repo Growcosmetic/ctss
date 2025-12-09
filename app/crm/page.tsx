@@ -234,6 +234,46 @@ export default function CRMPage() {
     window.location.href = `sms:${phone}`;
   };
 
+  // Header action handlers
+  const handleManageGroups = () => {
+    alert("Tính năng Quản lý nhóm đang được phát triển");
+  };
+
+  const handleRecentCustomers = () => {
+    alert("Tính năng Khách hàng gần đây đang được phát triển");
+  };
+
+  const handleCustomerStats = () => {
+    alert("Tính năng Thống kê khách hàng đang được phát triển");
+  };
+
+  const handleImportExcel = () => {
+    alert("Tính năng Nhập từ tệp excel đang được phát triển");
+  };
+
+  // Bottom action handlers
+  const handlePrintReceipt = (customerId: string) => {
+    window.open(`/api/customers/${customerId}/receipt`, '_blank');
+  };
+
+  const handleCreateOrder = (customerId: string) => {
+    window.location.href = `/pos?customerId=${customerId}`;
+  };
+
+  const handleBookAppointment = (customerId: string) => {
+    window.location.href = `/booking?customerId=${customerId}`;
+  };
+
+  const handleViewPoints = (customerId: string) => {
+    alert(`Xem điểm tích lũy của khách hàng ${customerId}`);
+  };
+
+  const handleLockZalo = (customerId: string) => {
+    if (confirm("Bạn có chắc muốn khóa gửi Zalo cho khách hàng này?")) {
+      alert("Đã khóa gửi Zalo");
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       ACTIVE: "bg-green-100 text-green-800",
@@ -286,19 +326,19 @@ export default function CRMPage() {
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleManageGroups}>
                   <Users size={16} className="mr-2" />
                   Quản lý nhóm
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleRecentCustomers}>
                   <User size={16} className="mr-2" />
                   Khách hàng gần đây
                 </Button>
-                <Button variant="outline" size="sm" className="bg-red-50 text-red-700 border-red-200">
+                <Button variant="outline" size="sm" className="bg-red-50 text-red-700 border-red-200" onClick={handleCustomerStats}>
                   <BarChart3 size={16} className="mr-2" />
                   Thống kê khách hàng
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleImportExcel}>
                   <FileSpreadsheet size={16} className="mr-2" />
                   Nhập từ tệp excel
                 </Button>
@@ -355,6 +395,11 @@ export default function CRMPage() {
             customer={selectedCustomer}
             onUpdate={handleCustomerUpdate}
             onDelete={handleDelete}
+            onPrintReceipt={handlePrintReceipt}
+            onCreateOrder={handleCreateOrder}
+            onBookAppointment={handleBookAppointment}
+            onViewPoints={handleViewPoints}
+            onLockZalo={handleLockZalo}
           />
 
           {/* Right Panel - Customer Activity */}

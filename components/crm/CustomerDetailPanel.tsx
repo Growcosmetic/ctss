@@ -33,12 +33,22 @@ interface CustomerDetailPanelProps {
   customer: Customer | null;
   onUpdate: () => void;
   onDelete: (id: string) => void;
+  onPrintReceipt?: (customerId: string) => void;
+  onCreateOrder?: (customerId: string) => void;
+  onBookAppointment?: (customerId: string) => void;
+  onViewPoints?: (customerId: string) => void;
+  onLockZalo?: (customerId: string) => void;
 }
 
 export default function CustomerDetailPanel({
   customer,
   onUpdate,
   onDelete,
+  onPrintReceipt,
+  onCreateOrder,
+  onBookAppointment,
+  onViewPoints,
+  onLockZalo,
 }: CustomerDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);
@@ -480,23 +490,23 @@ export default function CustomerDetailPanel({
         {/* Bottom Action Bar */}
         {customer && (
           <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex items-center justify-center gap-3 mt-auto">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => onPrintReceipt?.(customer.id)}>
               <Printer size={16} className="mr-2" />
               In phiếu
             </Button>
-            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => onCreateOrder?.(customer.id)}>
               <ShoppingCart size={16} className="mr-2" />
               Tạo Đơn Hàng
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => onBookAppointment?.(customer.id)}>
               <Calendar size={16} className="mr-2" />
               Đặt lịch
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => onViewPoints?.(customer.id)}>
               <BarChart3 size={16} className="mr-2" />
               Điểm
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => onLockZalo?.(customer.id)}>
               <Lock size={16} className="mr-2" />
               Khoá gửi Zalo
             </Button>

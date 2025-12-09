@@ -858,6 +858,36 @@ export default function CRMPage() {
           customer={editingCustomer}
           onSuccess={handleFormSuccess}
         />
+
+        {/* Customer Group Management Modal */}
+        <CustomerGroupManagementModal
+          isOpen={isGroupModalOpen}
+          onClose={() => setIsGroupModalOpen(false)}
+          customers={customers}
+        />
+
+        {/* Recent Customers Modal */}
+        <RecentCustomersModal
+          isOpen={isRecentCustomersModalOpen}
+          onClose={() => setIsRecentCustomersModalOpen(false)}
+          customers={customers}
+        />
+
+        {/* Customer Stats Modal */}
+        <CustomerStatsModal
+          isOpen={isStatsModalOpen}
+          onClose={() => setIsStatsModalOpen(false)}
+          customers={customers}
+        />
+
+        {/* Import Excel Modal */}
+        <ImportExcelModal
+          isOpen={isImportExcelModalOpen}
+          onClose={() => setIsImportExcelModalOpen(false)}
+          onSuccess={() => {
+            fetchCustomers();
+          }}
+        />
       </MainLayout>
     </RoleGuard>
   );

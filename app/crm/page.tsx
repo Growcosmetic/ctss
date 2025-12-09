@@ -35,6 +35,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
 import { Customer360Layout } from "@/features/customer360/components/Customer360Layout";
+import CustomerFormModal from "@/components/crm/CustomerFormModal";
 
 interface Customer {
   id: string;
@@ -94,7 +95,9 @@ export default function CRMPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -131,6 +134,25 @@ export default function CRMPage() {
     } catch (error) {
       console.error("Failed to delete customer:", error);
     }
+  };
+
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    fetchCustomers();
+    setIsFormOpen(false);
+    setEditingCustomer(null);
+  };
+
+  const handleCall = (phone: string) => {
+    window.location.href = `tel:${phone}`;
+  };
+
+  const handleSMS = (phone: string) => {
+    window.location.href = `sms:${phone}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -225,10 +247,55 @@ export default function CRMPage() {
                 />
               </div>
             </div>
-            <Button variant="outline">
-              <Filter size={18} className="mr-2" />
-              Lọc
-            </Button>
+            <div className="relative">
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+              >
+                <Filter size={18} className="mr-2" />
+                Lọc
+              </Button>
+              {showAdvancedFilter && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Lọc theo doanh thu
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Tất cả</option>
+                        <option value="0-1000000">0 - 1 triệu</option>
+                        <option value="1000000-5000000">1 - 5 triệu</option>
+                        <option value="5000000+">Trên 5 triệu</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Lọc theo lượt đến
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Tất cả</option>
+                        <option value="0">Chưa đến</option>
+                        <option value="1-5">1 - 5 lần</option>
+                        <option value="6-10">6 - 10 lần</option>
+                        <option value="10+">Trên 10 lần</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Sắp xếp theo
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="createdAt">Ngày tạo</option>
+                        <option value="totalSpent">Tổng chi tiêu</option>
+                        <option value="totalVisits">Lượt đến</option>
+                        <option value="lastVisitDate">Lần đến cuối</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
 
@@ -335,14 +402,30 @@ export default function CRMPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <button
+                              onClick={() => handleCall(customer.phone)}
+                              className="text-blue-600 hover:text-blue-700"
+                              title="Gọi điện"
+                            >
+                              <Phone size={18} />
+                            </button>
+                            <button
                               onClick={() => setSelectedCustomer(customer)}
                               className="text-primary-600 hover:text-primary-700"
+                              title="Xem chi tiết 360°"
+                            >
+                              <User size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(customer)}
+                              className="text-green-600 hover:text-green-700"
+                              title="Sửa"
                             >
                               <Edit size={18} />
                             </button>
                             <button
                               onClick={() => handleDelete(customer.id)}
                               className="text-red-600 hover:text-red-700"
+                              title="Xóa"
                             >
                               <Trash2 size={18} />
                             </button>
@@ -365,6 +448,17 @@ export default function CRMPage() {
             onClose={() => setSelectedCustomer(null)}
           />
         )}
+
+        {/* Customer Form Modal */}
+        <CustomerFormModal
+          isOpen={isFormOpen}
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingCustomer(null);
+          }}
+          customer={editingCustomer}
+          onSuccess={handleFormSuccess}
+        />
       </div>
       </MainLayout>
     </RoleGuard>

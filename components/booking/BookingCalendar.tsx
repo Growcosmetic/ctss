@@ -35,7 +35,7 @@ for (let hour = 8; hour < 22; hour++) {
 // =======================================================
 // DRAGGABLE BOOKING
 // =======================================================
-function DraggableBooking({ booking, onClick, isDragging }: any) {
+function DraggableBooking({ booking, onClick, isDragging, onCheckIn, onCall, stylists }: any) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: booking.id,
     data: booking,
@@ -50,7 +50,13 @@ function DraggableBooking({ booking, onClick, isDragging }: any) {
 
   return (
     <div ref={setNodeRef} {...listeners} {...attributes} style={style} className="cursor-move">
-      <BookingEvent booking={booking} onClick={onClick} />
+      <BookingEvent 
+        booking={booking} 
+        onClick={onClick}
+        onCheckIn={onCheckIn}
+        onCall={onCall}
+        stylists={stylists}
+      />
     </div>
   );
 }
@@ -80,6 +86,19 @@ function DroppableSlot({ id, rowIndex, stylistId, date }: any) {
 // =======================================================
 // MAIN COMPONENT
 // =======================================================
+interface BookingCalendarProps {
+  bookingList: any[];
+  setBookingList: (list: any[] | ((prev: any[]) => any[])) => void;
+  stylists: Array<{ id: string; name: string }>;
+  selectedDate: Date;
+  onBookingClick?: (booking: any) => void;
+  selectedStylists?: string[];
+  selectedService?: string;
+  selectedStatus?: string;
+  onCheckIn?: (id: string) => void;
+  onCall?: (phone: string) => void;
+}
+
 export default function BookingCalendar({
   bookingList,
   setBookingList,
@@ -89,7 +108,9 @@ export default function BookingCalendar({
   selectedStylists = [],
   selectedService = "all",
   selectedStatus = "all",
-}: any) {
+  onCheckIn,
+  onCall,
+}: BookingCalendarProps) {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const { getAvailableSlots } = useBestSlot();
 
@@ -267,6 +288,20 @@ export default function BookingCalendar({
                                       if (onBookingClick) onBookingClick(b);
                                     }}
                                     isDragging={isDragging && (activeBooking as any)?.id === b.id}
+                                    onCheckIn={onCheckIn || ((id: string) => {
+                                      // Update booking status to IN_PROGRESS
+                                      setBookingList((prev: any[]) =>
+                                        prev.map((booking: any) =>
+                                          booking.id === id
+                                            ? { ...booking, status: "IN_PROGRESS" }
+                                            : booking
+                                        )
+                                      );
+                                    })}
+                                    onCall={onCall || ((phone: string) => {
+                                      window.location.href = `tel:${phone}`;
+                                    })}
+                                    stylists={stylists}
                                   />
                                 </div>
                               </div>

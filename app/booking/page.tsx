@@ -115,6 +115,21 @@ export default function BookingPage() {
     }
   };
 
+  const handleCheckIn = (bookingId: string) => {
+    // Update booking status to IN_PROGRESS
+    setBookingList(
+      bookingList.map((b) =>
+        b.id === bookingId ? { ...b, status: "IN_PROGRESS" as const } : b
+      )
+    );
+    // TODO: Call API to update booking status
+    // await fetch(`/api/bookings/${bookingId}`, { method: 'PATCH', body: JSON.stringify({ status: 'IN_PROGRESS' }) });
+  };
+
+  const handleCall = (phone: string) => {
+    window.location.href = `tel:${phone}`;
+  };
+
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST, CTSSRole.ASSISTANT]}>
       <div className="flex min-h-screen bg-[#FAFAFA]">
@@ -144,6 +159,8 @@ export default function BookingPage() {
             selectedStylists={selectedStylists}
             selectedService={selectedService}
             selectedStatus={selectedStatus}
+            onCheckIn={handleCheckIn}
+            onCall={handleCall}
           />
         </main>
       </div>

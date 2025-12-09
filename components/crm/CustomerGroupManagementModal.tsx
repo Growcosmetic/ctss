@@ -27,6 +27,7 @@ export default function CustomerGroupManagementModal({
   onUpdate,
 }: CustomerGroupManagementModalProps) {
   const [groups, setGroups] = useState<CustomerGroup[]>([]);
+  const [createdGroups, setCreatedGroups] = useState<Set<string>>(new Set()); // Track created groups
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [editingGroup, setEditingGroup] = useState<CustomerGroup | null>(null);
@@ -38,27 +39,36 @@ export default function CustomerGroupManagementModal({
 
   // Extract unique groups from customers
   useEffect(() => {
-    if (customers.length > 0) {
-      const groupMap = new Map<string, number>();
-      
-      customers.forEach((customer) => {
-        const groupName = customer.profile?.preferences?.customerGroup || "Chưa phân nhóm";
-        groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
-      });
+    const groupMap = new Map<string, number>();
+    
+    // Count customers in each group
+    customers.forEach((customer) => {
+      const groupName = customer.profile?.preferences?.customerGroup || "Chưa phân nhóm";
+      groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
+    });
 
-      const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries())
-        .sort((a, b) => b[1] - a[1]) // Sort by count descending
-        .map(([name, count], index) => ({
-          id: `group-${name}-${count}-${index}`, // Use name, count, and index for unique ID
-          name,
-          customerCount: count,
-        }));
+    // Add created groups that might not have customers yet
+    createdGroups.forEach((groupName) => {
+      if (!groupMap.has(groupName)) {
+        groupMap.set(groupName, 0); // Set count to 0 for empty groups
+      }
+    });
 
-      setGroups(extractedGroups);
-    } else {
-      setGroups([]);
-    }
-  }, [customers, refreshKey]); // Add refreshKey to dependencies
+    const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries())
+      .sort((a, b) => {
+        // Sort: groups with customers first, then by count descending
+        if (a[1] === 0 && b[1] > 0) return 1;
+        if (a[1] > 0 && b[1] === 0) return -1;
+        return b[1] - a[1];
+      })
+      .map(([name, count], index) => ({
+        id: `group-${name}-${count}-${index}`, // Use name, count, and index for unique ID
+        name,
+        customerCount: count,
+      }));
+
+    setGroups(extractedGroups);
+  }, [customers, createdGroups, refreshKey]); // Add createdGroups to dependencies
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -67,15 +77,14 @@ export default function CustomerGroupManagementModal({
   const handleCreateGroup = () => {
     if (!newGroupName.trim()) return;
     
-    const newGroup: CustomerGroup = {
-      id: `group-${Date.now()}`,
-      name: newGroupName.trim(),
-      customerCount: 0,
-    };
+    const groupName = newGroupName.trim();
     
-    setGroups([...groups, newGroup]);
+    // Add to created groups set
+    setCreatedGroups((prev) => new Set(prev).add(groupName));
+    
     setNewGroupName("");
     setIsCreating(false);
+    // Groups will be updated automatically via useEffect
   };
 
   const handleEditGroup = (group: CustomerGroup) => {
@@ -96,8 +105,19 @@ export default function CustomerGroupManagementModal({
   };
 
   const handleDeleteGroup = (groupId: string) => {
+    const group = groups.find((g) => g.id === groupId);
+    if (!group) return;
+    
     if (confirm("Bạn có chắc muốn xóa nhóm này? Khách hàng trong nhóm sẽ được chuyển về 'Chưa phân nhóm'.")) {
-      setGroups(groups.filter((g) => g.id !== groupId));
+      // Remove from created groups
+      setCreatedGroups((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(group.name);
+        return newSet;
+      });
+      
+      // TODO: Update customers in this group to "Chưa phân nhóm"
+      // For now, groups will be updated automatically via useEffect
     }
   };
 

@@ -26,13 +26,28 @@ export async function GET(request: NextRequest) {
 
     let customers: any[], total: number;
     try {
-      // Filter out placeholder group customers
-      const whereWithFilter = {
+      // Filter out placeholder group customers (customers with phone starting with "GROUP_")
+      // Also exclude customers with isGroupPlaceholder flag in preferences
+      const whereWithFilter: any = {
         ...where,
-        status: {
-          not: "INACTIVE", // Exclude inactive placeholder customers
-        },
+        AND: [
+          ...(where.AND || []),
+          {
+            OR: [
+              { phone: { not: { startsWith: "GROUP_" } } },
+              { phone: null },
+            ],
+          },
+        ],
       };
+
+      // If status filter exists, merge it properly
+      if (where.status) {
+        whereWithFilter.status = where.status;
+      } else {
+        // Only exclude INACTIVE if no status filter is provided
+        whereWithFilter.status = { not: "INACTIVE" };
+      }
 
       [customers, total] = await Promise.all([
         prisma.customer.findMany({
@@ -46,6 +61,13 @@ export async function GET(request: NextRequest) {
         }),
         prisma.customer.count({ where: whereWithFilter }),
       ]);
+
+      // Also filter out placeholder customers in memory (double check)
+      customers = customers.filter((c: any) => {
+        const isPlaceholder = c.phone?.startsWith("GROUP_") || 
+                              (c.profile?.preferences as any)?.isGroupPlaceholder === true;
+        return !isPlaceholder;
+      });
     } catch (dbError: any) {
       // If database connection fails, use mock data
       if (dbError.message?.includes("denied access") || 

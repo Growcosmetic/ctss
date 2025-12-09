@@ -11,12 +11,14 @@ const API_BASE = "/api/auth";
  */
 export async function login(request: LoginRequest): Promise<LoginResponse> {
   try {
+    // Support both email and phone - API accepts both
     let response = await fetch(`${API_BASE}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(request),
+      credentials: "include", // Important: include cookies
     });
 
     if (!response.ok) {

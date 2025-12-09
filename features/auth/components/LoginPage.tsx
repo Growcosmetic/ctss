@@ -17,12 +17,18 @@ export default function LoginPage() {
     setLocalError(null);
 
     if (!email || !password) {
-      setLocalError("Vui lòng nhập email và mật khẩu");
+      setLocalError("Vui lòng nhập số điện thoại/email và mật khẩu");
       return;
     }
 
     try {
-      await login({ email, password });
+      // Support both email and phone - if it looks like email, use as email, otherwise use as phone
+      const isEmail = email.includes("@");
+      if (isEmail) {
+        await login({ email, password });
+      } else {
+        await login({ phone: email, password });
+      }
       router.push("/dashboard");
     } catch (err: any) {
       setLocalError(err.message || "Đăng nhập thất bại");
@@ -46,17 +52,17 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Email */}
+          {/* Email/Phone */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              Số điện thoại / Email
             </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="admin@ctss.com"
+              placeholder="0900000001 hoặc admin@ctss.com"
               required
             />
           </div>
@@ -100,12 +106,15 @@ export default function LoginPage() {
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-xs font-medium text-gray-700 mb-2">Tài khoản demo:</p>
           <div className="space-y-1 text-xs text-gray-600">
-            <p>admin@ctss.com / 123456</p>
-            <p>manager@ctss.com / 123456</p>
-            <p>reception@ctss.com / 123456</p>
-            <p>stylist@ctss.com / 123456</p>
-            <p>assistant@ctss.com / 123456</p>
+            <p>0900000001 / 123456 (Admin)</p>
+            <p>0900000002 / 123456 (Manager)</p>
+            <p>0900000003 / 123456 (Reception)</p>
+            <p>0900000004 / 123456 (Stylist)</p>
+            <p>0900000005 / 123456 (Assistant)</p>
           </div>
+          <p className="text-xs text-gray-500 mt-2">
+            💡 Bạn cũng có thể dùng email: admin@ctss.com / 123456
+          </p>
         </div>
       </div>
     </div>

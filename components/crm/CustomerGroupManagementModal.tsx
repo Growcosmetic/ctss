@@ -25,6 +25,7 @@ export default function CustomerGroupManagementModal({
   onClose,
   customers,
   onUpdate,
+  onGroupCreated,
 }: CustomerGroupManagementModalProps) {
   const [groups, setGroups] = useState<CustomerGroup[]>([]);
   const [createdGroups, setCreatedGroups] = useState<Set<string>>(new Set()); // Track created groups
@@ -79,8 +80,19 @@ export default function CustomerGroupManagementModal({
     
     const groupName = newGroupName.trim();
     
+    // Check if group already exists
+    if (createdGroups.has(groupName)) {
+      alert("Nhóm này đã tồn tại!");
+      return;
+    }
+    
     // Add to created groups set
     setCreatedGroups((prev) => new Set(prev).add(groupName));
+    
+    // Notify parent component
+    if (onGroupCreated) {
+      onGroupCreated(groupName);
+    }
     
     setNewGroupName("");
     setIsCreating(false);

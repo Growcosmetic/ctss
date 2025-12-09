@@ -63,6 +63,7 @@ interface CustomerDetailPanelProps {
   onViewPoints?: (customerId: string) => void;
   onLockZalo?: (customerId: string) => void;
   onManageGroups?: () => void;
+  allCustomers?: Customer[]; // Pass all customers to extract groups
 }
 
 export default function CustomerDetailPanel({
@@ -75,11 +76,24 @@ export default function CustomerDetailPanel({
   onViewPoints,
   onLockZalo,
   onManageGroups,
+  allCustomers = [],
 }: CustomerDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Extract available groups from all customers
+  const availableGroups = React.useMemo(() => {
+    const groupSet = new Set<string>();
+    allCustomers.forEach((c) => {
+      const groupName = c.profile?.preferences?.customerGroup;
+      if (groupName && groupName !== "Chưa phân nhóm") {
+        groupSet.add(groupName);
+      }
+    });
+    return Array.from(groupSet).sort();
+  }, [allCustomers]);
 
   useEffect(() => {
     if (customer) {

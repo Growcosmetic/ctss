@@ -453,6 +453,7 @@ export default function CRMPage() {
                     onViewPoints={handleViewPoints}
                     onLockZalo={handleLockZalo}
                     onManageGroups={handleManageGroups}
+                    allCustomers={customers}
                   />
 
           {/* Right Panel - Customer Activity */}

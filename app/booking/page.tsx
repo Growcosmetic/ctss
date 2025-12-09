@@ -13,6 +13,7 @@ import BookingDetailDrawer from "@/components/booking/BookingDetailDrawer";
 import { fakeStylists } from "@/lib/data/fakeStylists";
 import { fakeServices } from "@/lib/data/fakeServices";
 import { fakeBookings, getDuration } from "@/lib/data/fakeBookings";
+import { format, isToday, parse } from "date-fns";
 
 export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -25,6 +26,19 @@ export default function BookingPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+
+  // Calculate today's stats
+  const todayStats = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const todayBookings = bookingList.filter((b) => b.date === todayStr);
+    
+    return {
+      todayTotal: todayBookings.length,
+      todayPending: todayBookings.filter((b) => b.status?.toUpperCase() === "PENDING").length,
+      todayInProgress: todayBookings.filter((b) => b.status?.toUpperCase() === "IN_PROGRESS").length,
+      todayCompleted: todayBookings.filter((b) => b.status?.toUpperCase() === "COMPLETED").length,
+    };
+  }, [bookingList]);
 
   const handleCreateBooking = () => {
     setIsCreateModalOpen(true);
@@ -149,6 +163,8 @@ export default function BookingPage() {
             onCreateBooking={handleCreateBooking}
             stylists={fakeStylists}
             services={fakeServices}
+            bookingList={bookingList}
+            stats={todayStats}
           />
           <BookingCalendar
             bookingList={bookingList}

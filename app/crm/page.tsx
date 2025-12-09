@@ -870,6 +870,10 @@ export default function CRMPage() {
                 await fetchCustomers();
                 // Force re-render by updating a key or state
               }}
+              onGroupCreated={(groupName) => {
+                // Refresh customers to update available groups
+                fetchCustomers();
+              }}
             />
 
         {/* Recent Customers Modal */}

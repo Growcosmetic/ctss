@@ -38,38 +38,88 @@ export default function CustomerGroupManagementModal({
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [refreshKey, setRefreshKey] = useState(0); // Force refresh key
 
-  // Extract unique groups from customers
+  // Load groups from API and merge with customers
   useEffect(() => {
-    const groupMap = new Map<string, number>();
-    
-    // Count customers in each group
-    customers.forEach((customer) => {
-      const groupName = customer.profile?.preferences?.customerGroup || "Chưa phân nhóm";
-      groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
-    });
+    const loadGroups = async () => {
+      try {
+        // Fetch groups from API (includes persisted groups)
+        const response = await fetch("/api/crm/groups");
+        const result = await response.json();
+        
+        const apiGroups = result.success ? result.data : [];
+        const apiGroupMap = new Map<string, number>();
+        apiGroups.forEach((g: any) => {
+          apiGroupMap.set(g.name, g.customerCount || 0);
+        });
 
-    // Add created groups that might not have customers yet
-    createdGroups.forEach((groupName) => {
-      if (!groupMap.has(groupName)) {
-        groupMap.set(groupName, 0); // Set count to 0 for empty groups
+        // Also count from current customers (to get accurate counts)
+        const customerGroupMap = new Map<string, number>();
+        customers.forEach((customer) => {
+          const groupName = customer.profile?.preferences?.customerGroup || "Chưa phân nhóm";
+          customerGroupMap.set(groupName, (customerGroupMap.get(groupName) || 0) + 1);
+        });
+
+        // Merge: use customer counts if available, otherwise use API counts
+        const mergedGroupMap = new Map<string, number>();
+        
+        // Add all groups from API (persisted groups)
+        apiGroupMap.forEach((count, name) => {
+          mergedGroupMap.set(name, count);
+        });
+        
+        // Update with actual customer counts
+        customerGroupMap.forEach((count, name) => {
+          mergedGroupMap.set(name, count);
+        });
+
+        // Add created groups that might not have customers yet
+        createdGroups.forEach((groupName) => {
+          if (!mergedGroupMap.has(groupName)) {
+            mergedGroupMap.set(groupName, 0);
+          }
+        });
+
+        const extractedGroups: CustomerGroup[] = Array.from(mergedGroupMap.entries())
+          .sort((a, b) => {
+            // Sort: "Chưa phân nhóm" always first, then groups with customers first, then by count descending
+            if (a[0] === "Chưa phân nhóm") return -1;
+            if (b[0] === "Chưa phân nhóm") return 1;
+            if (a[1] === 0 && b[1] > 0) return 1;
+            if (a[1] > 0 && b[1] === 0) return -1;
+            return b[1] - a[1];
+          })
+          .map(([name, count], index) => ({
+            id: `group-${name}-${count}-${index}`,
+            name,
+            customerCount: count,
+          }));
+
+        setGroups(extractedGroups);
+      } catch (error) {
+        console.error("Error loading groups:", error);
+        // Fallback to extracting from customers only
+        const groupMap = new Map<string, number>();
+        customers.forEach((customer) => {
+          const groupName = customer.profile?.preferences?.customerGroup || "Chưa phân nhóm";
+          groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
+        });
+        createdGroups.forEach((groupName) => {
+          if (!groupMap.has(groupName)) {
+            groupMap.set(groupName, 0);
+          }
+        });
+        const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries())
+          .map(([name, count], index) => ({
+            id: `group-${name}-${count}-${index}`,
+            name,
+            customerCount: count,
+          }));
+        setGroups(extractedGroups);
       }
-    });
+    };
 
-    const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries())
-      .sort((a, b) => {
-        // Sort: groups with customers first, then by count descending
-        if (a[1] === 0 && b[1] > 0) return 1;
-        if (a[1] > 0 && b[1] === 0) return -1;
-        return b[1] - a[1];
-      })
-      .map(([name, count], index) => ({
-        id: `group-${name}-${count}-${index}`, // Use name, count, and index for unique ID
-        name,
-        customerCount: count,
-      }));
-
-    setGroups(extractedGroups);
-  }, [customers, createdGroups, refreshKey]); // Add createdGroups to dependencies
+    loadGroups();
+  }, [customers, createdGroups, refreshKey, isOpen]); // Reload when modal opens
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())

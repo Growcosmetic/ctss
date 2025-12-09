@@ -86,16 +86,57 @@ export default function CustomerDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
 
-  // Extract available groups from all customers
-  const availableGroups = React.useMemo(() => {
-    const groupSet = new Set<string>();
-    allCustomers.forEach((c) => {
-      const groupName = c.profile?.preferences?.customerGroup;
-      if (groupName && groupName !== "Chưa phân nhóm") {
-        groupSet.add(groupName);
+  // Extract available groups from API and customers
+  const [availableGroups, setAvailableGroups] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        // Fetch groups from API (includes persisted groups)
+        const response = await fetch("/api/crm/groups");
+        const result = await response.json();
+        
+        if (result.success) {
+          const apiGroups = result.data.map((g: any) => g.name).filter((name: string) => name !== "Chưa phân nhóm");
+          
+          // Also extract from current customers
+          const customerGroups = new Set<string>();
+          allCustomers.forEach((c) => {
+            const groupName = c.profile?.preferences?.customerGroup;
+            if (groupName && groupName !== "Chưa phân nhóm") {
+              customerGroups.add(groupName);
+            }
+          });
+          
+          // Merge and sort
+          const mergedGroups = Array.from(new Set([...apiGroups, ...Array.from(customerGroups)])).sort();
+          setAvailableGroups(mergedGroups);
+        } else {
+          // Fallback: extract from customers only
+          const groupSet = new Set<string>();
+          allCustomers.forEach((c) => {
+            const groupName = c.profile?.preferences?.customerGroup;
+            if (groupName && groupName !== "Chưa phân nhóm") {
+              groupSet.add(groupName);
+            }
+          });
+          setAvailableGroups(Array.from(groupSet).sort());
+        }
+      } catch (error) {
+        console.error("Error loading groups:", error);
+        // Fallback: extract from customers only
+        const groupSet = new Set<string>();
+        allCustomers.forEach((c) => {
+          const groupName = c.profile?.preferences?.customerGroup;
+          if (groupName && groupName !== "Chưa phân nhóm") {
+            groupSet.add(groupName);
+          }
+        });
+        setAvailableGroups(Array.from(groupSet).sort());
       }
-    });
-    return Array.from(groupSet).sort();
+    };
+
+    loadGroups();
   }, [allCustomers]);
 
   useEffect(() => {

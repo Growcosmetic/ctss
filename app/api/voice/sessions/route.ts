@@ -6,6 +6,8 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
+export const dynamic = 'force-dynamic';
+
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCustomerAuth } from "@/features/customer-app/hooks/useCustomerAuth";
 import { getCustomerBookings } from "@/features/customer-app/services/customerApi";
@@ -10,7 +10,7 @@ import { Calendar, Clock, Scissors, User, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-export default function CustomerBookingsPage() {
+function BookingsContent() {
   const { authenticated, loading: authLoading } = useCustomerAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -178,6 +178,18 @@ export default function CustomerBookingsPage() {
       </div>
       <CustomerNavBar />
     </>
+  );
+}
+
+export default function CustomerBookingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+      </div>
+    }>
+      <BookingsContent />
+    </Suspense>
   );
 }
 

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo "🔍 Kiểm tra cấu hình .env trên VPS:"
+echo ""
+echo "📝 Chạy các lệnh sau trên VPS:"
+echo ""
+echo "1. Kiểm tra file .env có tồn tại:"
+echo "   ls -la .env"
+echo ""
+echo "2. Kiểm tra OPENAI_API_KEY có trong .env (ẩn một phần):"
+echo "   grep OPENAI_API_KEY .env | sed 's/sk-[^ ]*/sk-***HIDDEN***/'"
+echo ""
+echo "3. Kiểm tra format API key (phải bắt đầu bằng 'sk-'):"
+echo "   grep OPENAI_API_KEY .env | grep -o 'sk-[^ ]*' | head -c 10"
+echo ""
+echo "4. Nếu chưa có, thêm vào .env:"
+echo "   echo 'OPENAI_API_KEY=sk-your-actual-key-here' >> .env"
+echo ""
+echo "5. Sau đó build lại:"
+echo "   npm run build"
+

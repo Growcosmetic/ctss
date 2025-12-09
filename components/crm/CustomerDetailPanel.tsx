@@ -306,8 +306,19 @@ export default function CustomerDetailPanel({
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                   {customer.profile?.preferences?.rank || "Hạng Thường"}
                 </span>
-                <Button variant="outline" size="sm" className="text-xs">
-                  <Plus size={14} className="mr-1" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs flex items-center gap-1 text-blue-700"
+                  onClick={() => {
+                    if (onManageGroups) {
+                      onManageGroups();
+                    } else {
+                      alert("Tính năng quản lý nhóm khách hàng");
+                    }
+                  }}
+                >
+                  <Plus size={14} />
                   Thêm nhóm khách hàng
                 </Button>
                 <div className="flex items-center gap-1">

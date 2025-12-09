@@ -115,12 +115,20 @@ export default function BookingDetailDrawer({
       notes: formData.notes,
       serviceName: fakeServices.find((s) => s.id === formData.serviceId)?.name || booking.serviceName,
       stylistId: formData.stylistId,
+      start: `${formData.hour.toString().padStart(2, "0")}:${formData.minute.toString().padStart(2, "0")}`,
+      end: (() => {
+        const endMinutes = formData.hour * 60 + formData.minute + formData.duration;
+        const endHour = Math.floor(endMinutes / 60);
+        const endMinute = endMinutes % 60;
+        return `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
+      })(),
     };
 
     setBookingList(
       bookingList.map((b) => (b.id === booking.id ? updatedBooking : b))
     );
     setIsEditing(false);
+    if (onEdit) onEdit();
   };
 
   const handleStatusChange = (newStatus: string) => {
@@ -129,6 +137,44 @@ export default function BookingDetailDrawer({
         b.id === booking.id ? { ...b, status: newStatus.toUpperCase() as any } : b
       )
     );
+  };
+
+  const handleCall = () => {
+    if (booking.phone) {
+      window.location.href = `tel:${booking.phone}`;
+    }
+  };
+
+  const handleSendZalo = () => {
+    // TODO: Implement Zalo message sending
+    alert(`Gửi tin nhắn Zalo cho ${booking.customerName} (${booking.phone})`);
+  };
+
+  const handlePrint = () => {
+    // TODO: Implement print functionality
+    window.print();
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset form data
+    if (booking) {
+      const [hour, minute] = booking.time.split(":").map(Number);
+      setFormData({
+        customerName: booking.customerName,
+        phone: booking.phone,
+        date: booking.date,
+        hour: hour,
+        minute: minute,
+        duration: booking.duration,
+        notes: booking.notes || "",
+        guestCount: 1,
+        serviceId: fakeServices.find((s) => s.name === booking.serviceName)?.id || "",
+        stylistId: booking.stylistId || "",
+        roomId: "",
+        branchId: "",
+      });
+    }
   };
 
   const currentStatus = booking.status.toUpperCase();
@@ -507,7 +553,10 @@ export default function BookingDetailDrawer({
                 <label className="text-sm font-medium text-gray-700 mb-3 block">
                   Đặt lịch từ
                 </label>
-                <button className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleCall}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                >
                   <Phone className="w-4 h-4" />
                   Gọi điện
                 </button>
@@ -529,7 +578,7 @@ export default function BookingDetailDrawer({
             {isEditing ? (
               <>
                 <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCancelEdit}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Hủy
@@ -551,11 +600,17 @@ export default function BookingDetailDrawer({
                   <Edit className="w-4 h-4" />
                   Sửa
                 </button>
-                <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
+                <button
+                  onClick={handleSendZalo}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
+                >
                   <MessageCircle className="w-4 h-4" />
                   Gửi tin Zalo
                 </button>
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2">
+                <button
+                  onClick={handlePrint}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                >
                   <Printer className="w-4 h-4" />
                   In lịch hẹn
                 </button>

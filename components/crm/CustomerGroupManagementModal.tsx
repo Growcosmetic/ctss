@@ -130,18 +130,9 @@ export default function CustomerGroupManagementModal({
     
     const groupName = newGroupName.trim();
     
-    // Check if group already exists
-    if (createdGroups.has(groupName)) {
-      alert("Nhóm này đã tồn tại!");
-      return;
-    }
-
-    // Check if group exists in customers
-    const groupExists = customers.some((c) => {
-      const cGroup = c.profile?.preferences?.customerGroup;
-      return cGroup === groupName;
-    });
-
+    // Check if group already exists in current groups list
+    const groupExists = groups.some((g) => g.name.toLowerCase() === groupName.toLowerCase());
+    
     if (groupExists) {
       alert("Nhóm này đã tồn tại!");
       return;
@@ -165,6 +156,9 @@ export default function CustomerGroupManagementModal({
 
       // Add to created groups set
       setCreatedGroups((prev) => new Set(prev).add(groupName));
+      
+      // Force refresh groups list
+      setRefreshKey(prev => prev + 1);
       
       // Notify parent component to refresh
       if (onGroupCreated) {

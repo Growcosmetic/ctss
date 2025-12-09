@@ -26,26 +26,11 @@ export async function GET(request: NextRequest) {
 
     let customers: any[], total: number;
     try {
-      // Filter out placeholder group customers (customers with phone starting with "GROUP_")
-      // Also exclude customers with isGroupPlaceholder flag in preferences
-      const whereWithFilter: any = {
-        ...where,
-        AND: [
-          ...(where.AND || []),
-          {
-            OR: [
-              { phone: { not: { startsWith: "GROUP_" } } },
-              { phone: null },
-            ],
-          },
-        ],
-      };
-
-      // If status filter exists, merge it properly
-      if (where.status) {
-        whereWithFilter.status = where.status;
-      } else {
-        // Only exclude INACTIVE if no status filter is provided
+      // Build where clause
+      const whereWithFilter: any = { ...where };
+      
+      // If status filter exists, use it; otherwise exclude INACTIVE
+      if (!where.status) {
         whereWithFilter.status = { not: "INACTIVE" };
       }
 
@@ -62,12 +47,16 @@ export async function GET(request: NextRequest) {
         prisma.customer.count({ where: whereWithFilter }),
       ]);
 
-      // Also filter out placeholder customers in memory (double check)
+      // Filter out placeholder customers in memory (more reliable than Prisma query)
       customers = customers.filter((c: any) => {
         const isPlaceholder = c.phone?.startsWith("GROUP_") || 
+                              c.status === "INACTIVE" ||
                               (c.profile?.preferences as any)?.isGroupPlaceholder === true;
         return !isPlaceholder;
       });
+      
+      // Recalculate total after filtering
+      total = customers.length;
     } catch (dbError: any) {
       // If database connection fails, use mock data
       if (dbError.message?.includes("denied access") || 

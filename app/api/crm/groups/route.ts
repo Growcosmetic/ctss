@@ -6,45 +6,32 @@ import { successResponse, errorResponse } from "@/lib/api-response";
 export async function GET(request: NextRequest) {
   try {
     try {
-      // Get all unique groups from customers (excluding placeholder customers)
-      const customers = await prisma.customer.findMany({
-        where: {
-          OR: [
-            { phone: { not: { startsWith: "GROUP_" } } },
-            { phone: null },
-          ],
-          status: { not: "INACTIVE" },
-        },
+      // Get all customers (we'll filter in memory to avoid Prisma query issues)
+      const allCustomers = await prisma.customer.findMany({
         include: { profile: true },
       });
 
       const groupMap = new Map<string, number>();
-      customers.forEach((customer) => {
+      
+      // Count customers in each group (excluding placeholder customers)
+      allCustomers.forEach((customer) => {
         // Skip placeholder customers
-        if (customer.phone?.startsWith("GROUP_") || 
-            (customer.profile?.preferences as any)?.isGroupPlaceholder === true) {
+        const isPlaceholder = customer.phone?.startsWith("GROUP_") || 
+                              customer.status === "INACTIVE" ||
+                              (customer.profile?.preferences as any)?.isGroupPlaceholder === true;
+        
+        if (isPlaceholder) {
+          // This is a placeholder - extract group name for empty groups
+          const groupName = (customer.profile?.preferences as any)?.customerGroup;
+          if (groupName && !groupMap.has(groupName)) {
+            groupMap.set(groupName, 0); // Empty group
+          }
           return;
         }
+        
+        // Real customer - count in group
         const groupName = (customer.profile?.preferences as any)?.customerGroup || "Chưa phân nhóm";
         groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
-      });
-
-      // Also include groups from placeholder customers (empty groups)
-      const placeholderCustomers = await prisma.customer.findMany({
-        where: {
-          OR: [
-            { phone: { startsWith: "GROUP_" } },
-            { status: "INACTIVE" },
-          ],
-        },
-        include: { profile: true },
-      });
-
-      placeholderCustomers.forEach((customer) => {
-        const groupName = (customer.profile?.preferences as any)?.customerGroup;
-        if (groupName && !groupMap.has(groupName)) {
-          groupMap.set(groupName, 0); // Empty group
-        }
       });
 
       const groups = Array.from(groupMap.entries()).map(([name, count]) => ({

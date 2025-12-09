@@ -157,6 +157,7 @@ const customers = [
 async function seedCustomers() {
   const baseUrl = process.env.API_URL || 'http://localhost:3000';
   console.log(`🌱 Bắt đầu tạo 10 khách hàng mẫu qua API: ${baseUrl}...\n`);
+  console.log(`⏳ Đang kết nối đến server...\n`);
 
   let successCount = 0;
   let skipCount = 0;

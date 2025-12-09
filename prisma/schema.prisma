@@ -132,6 +132,7 @@ model Customer {
   points   LoyaltyPoint[]
   marketingLogs MarketingLog[]
   profile  CustomerProfile?
+  photos   CustomerPhoto[] // Customer photos
   followUps FollowUpMessage[]
   operationLogs OperationLog[]
   visits   Visit[]                   // Timeline visits
@@ -501,6 +502,26 @@ model CustomerProfile {
 
   // Relationship
   customer Customer @relation(fields: [customerId], references: [id])
+  photos   CustomerPhoto[] // Customer photos
+}
+
+///////////////////////////////////////////////////////////////
+// CUSTOMER PHOTOS (CRM)
+///////////////////////////////////////////////////////////////
+
+model CustomerPhoto {
+  id          String   @id @default(cuid())
+  customerId String
+  imageUrl    String   // URL của ảnh (có thể là local path hoặc cloud URL)
+  description String?  // Mô tả ảnh (optional)
+  uploadedBy  String?  // Người upload (staff name hoặc user ID)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([createdAt])
 }
 
 ///////////////////////////////////////////////////////////////

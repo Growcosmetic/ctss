@@ -136,7 +136,22 @@ export default function CRMPage() {
       const response = await fetch(`/api/customers?${params.toString()}`);
       const result = await response.json();
       if (result.success) {
-        setCustomers(result.data.customers);
+        // Map customers để đảm bảo có firstName và lastName
+        const mappedCustomers = result.data.customers.map((c: any) => {
+          const fullName = c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Khách hàng";
+          const nameParts = fullName.trim().split(" ");
+          const lastName = nameParts.pop() || "";
+          const firstName = nameParts.join(" ") || lastName;
+          
+          return {
+            ...c,
+            name: fullName,
+            firstName,
+            lastName,
+            dateOfBirth: c.dateOfBirth || c.birthday, // Support cả 2 field
+          };
+        });
+        setCustomers(mappedCustomers);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);

@@ -647,16 +647,17 @@ export default function CRMPage() {
           )}
         </Card>
 
-        {/* Customer 360 Detail Drawer */}
-        {selectedCustomer && (
+        {/* Customer 360 Detail Drawer - Keep for compatibility */}
+        {false && selectedCustomer && (
           <Customer360Drawer
             customerId={selectedCustomer.id}
             customerName={`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}
             onClose={() => setSelectedCustomer(null)}
           />
         )}
+        </div>
 
-        {/* Customer Form Modal */}
+        {/* Customer Form Modal - For adding new customers */}
         <CustomerFormModal
           isOpen={isFormOpen}
           onClose={() => {
@@ -666,7 +667,6 @@ export default function CRMPage() {
           customer={editingCustomer}
           onSuccess={handleFormSuccess}
         />
-      </div>
       </MainLayout>
     </RoleGuard>
   );

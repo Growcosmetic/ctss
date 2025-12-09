@@ -76,20 +76,27 @@ export async function GET(request: NextRequest) {
 
 // POST /api/customers - Create a new customer
 export async function POST(request: NextRequest) {
+  // Parse body once before try-catch
+  let body: any = {};
   try {
-    const body = await request.json();
-    const {
-      name,
-      phone,
-      dateOfBirth,
-      gender,
-      notes,
-    } = body;
+    body = await request.json();
+  } catch (parseError) {
+    return errorResponse("Invalid JSON body", 400);
+  }
 
-    if (!name || !phone) {
-      return errorResponse("Name and phone are required", 400);
-    }
+  const {
+    name,
+    phone,
+    dateOfBirth,
+    gender,
+    notes,
+  } = body;
 
+  if (!name || !phone) {
+    return errorResponse("Name and phone are required", 400);
+  }
+
+  try {
     const customer = await prisma.customer.create({
       data: {
         name: name || "Khách hàng",
@@ -105,15 +112,14 @@ export async function POST(request: NextRequest) {
     // Fallback to mock response if database is not available
     if (error.message?.includes("denied access") || error.message?.includes("ECONNREFUSED")) {
       console.warn("Database connection failed, returning mock response:", error.message);
-      const body = await request.json().catch(() => ({}));
       return successResponse(
         {
           id: `mock-${Date.now()}`,
-          name: body.name || "Khách hàng",
-          phone: body.phone || "",
-          birthday: body.dateOfBirth ? new Date(body.dateOfBirth) : undefined,
-          gender: body.gender || null,
-          notes: body.notes || null,
+          name: name || "Khách hàng",
+          phone: phone || "",
+          birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
+          gender: gender || null,
+          notes: notes || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

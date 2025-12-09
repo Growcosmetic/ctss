@@ -10,6 +10,7 @@ import { useUIStore } from "@/store/useUIStore";
 import BookingHeader from "@/components/booking/BookingHeader";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import BookingListPanel from "@/components/booking/BookingListPanel";
+import StaffFilterPanel from "@/components/booking/StaffFilterPanel";
 import CreateBookingModal, { BookingFormData } from "@/components/booking/CreateBookingModal";
 import BookingDetailDrawer from "@/components/booking/BookingDetailDrawer";
 import { fakeStylists } from "@/lib/data/fakeStylists";
@@ -177,7 +178,20 @@ export default function BookingPage() {
             bookingList={bookingList}
             stats={todayStats}
           />
-          <div className="flex gap-6">
+          <div className="flex gap-4">
+            {/* Staff Filter Panel - Left Side */}
+            <div className="hidden lg:block">
+              <div className="sticky top-24">
+                <StaffFilterPanel
+                  stylists={fakeStylists}
+                  selectedStylists={selectedStylists}
+                  onStylistsChange={setSelectedStylists}
+                  bookingList={bookingList}
+                  selectedDate={selectedDate}
+                />
+              </div>
+            </div>
+
             {/* Calendar - Main Content */}
             <div className="flex-1">
               <BookingCalendar

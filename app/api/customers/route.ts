@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
       return successResponse(
         {
           id: `mock-${Date.now()}`,
-          name,
-          phone,
+          name: name || "Khách hàng",
+          phone: phone || "",
           birthday: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          gender,
-          notes,
+          gender: gender || null,
+          notes: notes || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

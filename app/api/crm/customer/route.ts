@@ -166,6 +166,8 @@ export async function POST(request: NextRequest) {
     };
 
     let customer;
+    let finalCustomerId: string | undefined = id;
+    
     if (id) {
       // Update existing customer
       customer = await prisma.customer.update({
@@ -175,6 +177,7 @@ export async function POST(request: NextRequest) {
           tags: true,
         },
       });
+      finalCustomerId = id;
     } else {
       // Check if customer with phone already exists
       const existing = await prisma.customer.findUnique({
@@ -200,6 +203,7 @@ export async function POST(request: NextRequest) {
             tags: true,
           },
         });
+        finalCustomerId = customer.id;
       }
     }
 
@@ -227,7 +231,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Upsert CustomerProfile
-    const customerId = finalCustomerId || customer.id;
+    const customerId = finalCustomerId!;
     await prisma.customerProfile.upsert({
       where: { customerId },
       update: {

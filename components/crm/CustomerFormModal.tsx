@@ -53,7 +53,6 @@ export default function CustomerFormModal({
       // Parse date of birth
       const dob = customer.dateOfBirth ? new Date(customer.dateOfBirth) : null;
       setFormData({
-        customerCode: customer.id || "",
         fullName: `${customer.firstName || ""} ${customer.lastName || ""}`.trim(),
         phone: customer.phone || "",
         email: customer.email || "",
@@ -79,7 +78,6 @@ export default function CustomerFormModal({
     } else {
       // Reset form for new customer
       setFormData({
-        customerCode: "",
         fullName: "",
         phone: "",
         email: "",
@@ -135,7 +133,6 @@ export default function CustomerFormModal({
         province: formData.province || undefined,
         notes: formData.notes || undefined,
         preferences: {
-          customerCode: formData.customerCode,
           occupation: formData.occupation,
           rank: formData.rank,
           website: formData.website,
@@ -202,10 +199,10 @@ export default function CustomerFormModal({
                 Mã khách hàng
               </label>
               <Input
-                value={formData.customerCode}
-                onChange={(e) => setFormData({ ...formData, customerCode: e.target.value })}
+                value={customer ? customer.id.slice(0, 8).toUpperCase() : "Tự động tạo"}
                 placeholder="Tự động tạo"
-                disabled={!!customer}
+                disabled={true}
+                className="bg-gray-100 cursor-not-allowed"
               />
             </div>
 

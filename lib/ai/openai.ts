@@ -1,9 +1,22 @@
 import OpenAI from "openai";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client lazily (only when needed)
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+  return new OpenAI({ apiKey });
+}
+
+// Lazy initialization - only create when needed
+let openai: OpenAI | null = null;
+function getClient(): OpenAI {
+  if (!openai) {
+    openai = getOpenAIClient();
+  }
+  return openai;
+}
 
 /**
  * Map AI type string to AiLogType enum
@@ -47,7 +60,8 @@ export async function callOpenAI(
       };
     }
 
-    const response = await openai.chat.completions.create({
+    const client = getClient();
+    const response = await client.chat.completions.create({
       model: model,
       messages: [
         ...(systemPrompt ? [{ role: "system" as const, content: systemPrompt }] : []),

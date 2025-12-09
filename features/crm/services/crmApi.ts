@@ -54,13 +54,40 @@ export async function saveCustomer(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to save customer");
+      // Try to parse error response
+      let errorMessage = "Failed to save customer";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch (e) {
+        // If response is not JSON, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
+    // Check if response has content
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Invalid response format from server");
+    }
+
+    // Parse JSON response
+    const text = await response.text();
+    if (!text || text.trim() === "") {
+      throw new Error("Empty response from server");
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON:", text);
+      throw new Error("Invalid JSON response from server");
+    }
+
     return data.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error saving customer:", error);
     throw error;
   }

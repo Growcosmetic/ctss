@@ -16,6 +16,9 @@ module.exports = {
     merge_logs: true,
     autorestart: true,
     max_memory_restart: '1G',
-    watch: false
+    watch: false,
+    kill_timeout: 5000,
+    wait_ready: true,
+    listen_timeout: 10000
   }]
 };

@@ -26,9 +26,17 @@ export async function GET(request: NextRequest) {
 
     let customers: any[], total: number;
     try {
+      // Filter out placeholder group customers
+      const whereWithFilter = {
+        ...where,
+        status: {
+          not: "INACTIVE", // Exclude inactive placeholder customers
+        },
+      };
+
       [customers, total] = await Promise.all([
         prisma.customer.findMany({
-          where,
+          where: whereWithFilter,
           skip,
           take: limit,
           orderBy: { createdAt: "desc" },
@@ -36,7 +44,7 @@ export async function GET(request: NextRequest) {
             profile: true, // Include profile để lấy preferences
           },
         }),
-        prisma.customer.count({ where }),
+        prisma.customer.count({ where: whereWithFilter }),
       ]);
     } catch (dbError: any) {
       // If database connection fails, use mock data

@@ -75,7 +75,7 @@ export default function CustomerGroupManagementModal({
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!newGroupName.trim()) return;
     
     const groupName = newGroupName.trim();
@@ -85,18 +85,54 @@ export default function CustomerGroupManagementModal({
       alert("Nhóm này đã tồn tại!");
       return;
     }
-    
-    // Add to created groups set
-    setCreatedGroups((prev) => new Set(prev).add(groupName));
-    
-    // Notify parent component
-    if (onGroupCreated) {
-      onGroupCreated(groupName);
+
+    // Check if group exists in customers
+    const groupExists = customers.some((c) => {
+      const cGroup = c.profile?.preferences?.customerGroup;
+      return cGroup === groupName;
+    });
+
+    if (groupExists) {
+      alert("Nhóm này đã tồn tại!");
+      return;
     }
     
-    setNewGroupName("");
-    setIsCreating(false);
-    // Groups will be updated automatically via useEffect
+    setLoading(true);
+    try {
+      // Save to database via API
+      const response = await fetch("/api/crm/groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ groupName }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create group");
+      }
+
+      // Add to created groups set
+      setCreatedGroups((prev) => new Set(prev).add(groupName));
+      
+      // Notify parent component to refresh
+      if (onGroupCreated) {
+        onGroupCreated(groupName);
+      }
+      
+      if (onUpdate) {
+        await onUpdate();
+      }
+      
+      setNewGroupName("");
+      setIsCreating(false);
+    } catch (error: any) {
+      console.error("Error creating group:", error);
+      alert(error.message || "Có lỗi xảy ra khi tạo nhóm");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditGroup = (group: CustomerGroup) => {

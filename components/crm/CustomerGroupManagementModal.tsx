@@ -96,12 +96,20 @@ export default function CustomerGroupManagementModal({
   const handleSaveEdit = () => {
     if (!editingGroup || !newGroupName.trim()) return;
     
-    setGroups(groups.map((g) => 
-      g.id === editingGroup.id ? { ...g, name: newGroupName.trim() } : g
-    ));
+    const oldName = editingGroup.name;
+    const newName = newGroupName.trim();
+    
+    // Update createdGroups set
+    setCreatedGroups((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(oldName);
+      newSet.add(newName);
+      return newSet;
+    });
     
     setEditingGroup(null);
     setNewGroupName("");
+    // Groups will be updated automatically via useEffect
   };
 
   const handleDeleteGroup = (groupId: string) => {

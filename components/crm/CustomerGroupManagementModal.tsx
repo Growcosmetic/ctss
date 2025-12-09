@@ -34,6 +34,7 @@ export default function CustomerGroupManagementModal({
   const [loading, setLoading] = useState(false);
   const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0); // Force refresh key
 
   // Extract unique groups from customers
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function CustomerGroupManagementModal({
     } else {
       setGroups([]);
     }
-  }, [customers]);
+  }, [customers, refreshKey]); // Add refreshKey to dependencies
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -134,6 +135,8 @@ export default function CustomerGroupManagementModal({
       // Refresh customers from parent - this will trigger useEffect to update groups
       if (onUpdate) {
         await onUpdate();
+        // Force refresh groups by updating refreshKey
+        setRefreshKey((prev) => prev + 1);
       }
     } catch (error: any) {
       console.error("Error adding customers to group:", error);

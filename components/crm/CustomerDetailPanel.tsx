@@ -11,11 +11,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 
 interface Customer {
   id: string;
-  firstName: string;
-  lastName: string;
+  name?: string; // API có thể trả về name
+  firstName?: string;
+  lastName?: string;
   phone: string;
   email?: string;
   dateOfBirth?: string;
+  birthday?: string; // API có thể trả về birthday
   gender?: string;
   address?: string;
   city?: string;
@@ -57,9 +59,12 @@ export default function CustomerDetailPanel({
 
   useEffect(() => {
     if (customer) {
-      const dob = customer.dateOfBirth ? new Date(customer.dateOfBirth) : null;
+      // Parse name nếu có
+      const fullName = customer.name || `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Khách hàng";
+      const dob = customer.dateOfBirth ? new Date(customer.dateOfBirth) : 
+                   customer.birthday ? new Date(customer.birthday) : null;
       setFormData({
-        fullName: `${customer.firstName || ""} ${customer.lastName || ""}`.trim(),
+        fullName,
         phone: customer.phone || "",
         email: customer.email || "",
         dayOfBirth: dob ? dob.getDate().toString() : "",
@@ -163,8 +168,10 @@ export default function CustomerDetailPanel({
   };
 
   const getInitials = () => {
-    const first = customer.firstName?.[0]?.toUpperCase() || "";
-    const last = customer.lastName?.[0]?.toUpperCase() || "";
+    const fullName = customer.name || `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Khách hàng";
+    const nameParts = fullName.trim().split(" ");
+    const first = nameParts[0]?.[0]?.toUpperCase() || "";
+    const last = nameParts[nameParts.length - 1]?.[0]?.toUpperCase() || "";
     return `${first}${last}` || "?";
   };
 
@@ -224,7 +231,7 @@ export default function CustomerDetailPanel({
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {customer.firstName} {customer.lastName}
+                {customer.name || `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Khách hàng"}
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>

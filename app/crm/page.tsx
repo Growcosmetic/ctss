@@ -52,11 +52,13 @@ import CustomerActivityPanel from "@/components/crm/CustomerActivityPanel";
 
 interface Customer {
   id: string;
-  firstName: string;
-  lastName: string;
+  name?: string; // API trả về name
+  firstName?: string; // Có thể có hoặc không
+  lastName?: string; // Có thể có hoặc không
   email?: string;
   phone: string;
   dateOfBirth?: string;
+  birthday?: string; // API có thể trả về birthday
   gender?: string;
   address?: string;
   totalVisits: number;
@@ -222,8 +224,18 @@ export default function CRMPage() {
     });
   };
 
-  const handleSelectCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const handleSelectCustomer = (customer: any) => {
+    // Map từ CustomerListPanel format về Customer format
+    const fullName = `${customer.firstName} ${customer.lastName}`.trim();
+    const foundCustomer = sortedCustomers.find((c) => c.id === customer.id);
+    if (foundCustomer) {
+      setSelectedCustomer({
+        ...foundCustomer,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        name: fullName,
+      });
+    }
   };
 
   const handleCall = (phone: string) => {
@@ -376,14 +388,22 @@ export default function CRMPage() {
           <div className="flex flex-1 overflow-hidden">
           {/* Left Panel - Customer List */}
           <CustomerListPanel
-            customers={sortedCustomers.map((c) => ({
-              id: c.id,
-              firstName: c.firstName,
-              lastName: c.lastName,
-              phone: c.phone,
-              email: c.email,
-              customerCode: c.id.slice(0, 8).toUpperCase(),
-            }))}
+            customers={sortedCustomers.map((c) => {
+              // Parse name thành firstName và lastName
+              const fullName = c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Khách hàng";
+              const nameParts = fullName.trim().split(" ");
+              const lastName = nameParts.pop() || "";
+              const firstName = nameParts.join(" ") || lastName;
+              
+              return {
+                id: c.id,
+                firstName,
+                lastName,
+                phone: c.phone,
+                email: c.email,
+                customerCode: c.id.slice(0, 8).toUpperCase(),
+              };
+            })}
             selectedCustomerId={selectedCustomer?.id || null}
             onSelectCustomer={handleSelectCustomer}
             searchTerm={listSearchTerm}

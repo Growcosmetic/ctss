@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Clock, Phone, CheckCircle } from "lucide-react";
+import { Clock, Phone, CheckCircle, User, FileText } from "lucide-react";
 
 interface BookingEventProps {
   booking: any;
@@ -108,17 +108,25 @@ export default function BookingEvent({
       }}
     >
       <div className="flex items-start gap-2 h-full">
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
           {/* Time - Lớn và rõ ràng */}
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-gray-600" />
             <span className="text-sm font-bold text-gray-900">{booking.start}</span>
           </div>
 
-          {/* Customer Name - Nổi bật */}
-          <p className={`text-sm font-bold truncate ${statusColors.text}`}>
+          {/* Customer Name - LỚN HƠN, RÕ RÀNG HƠN */}
+          <p className={`text-base font-bold ${statusColors.text} leading-tight`}>
             {booking.customerName}
           </p>
+
+          {/* Stylist Name - Hiển thị trong card */}
+          {stylistName && (
+            <div className="flex items-center gap-1 text-xs text-purple-700 bg-white/70 rounded px-1.5 py-0.5 w-fit">
+              <User className="w-3 h-3" />
+              <span className="font-medium">{stylistName}</span>
+            </div>
+          )}
 
           {/* Phone - Clickable, dễ thấy */}
           {booking.phone && (
@@ -132,9 +140,19 @@ export default function BookingEvent({
           )}
 
           {/* Service - Gọn gàng */}
-          <p className="text-xs text-gray-600 truncate mt-0.5">
+          <p className="text-xs text-gray-600 truncate">
             {booking.serviceName}
           </p>
+
+          {/* Notes - GHI CHÚ */}
+          {booking.notes && (
+            <div className="flex items-start gap-1 mt-0.5">
+              <FileText className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-gray-600 line-clamp-2 leading-tight">
+                {booking.notes}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Quick Action: Check-in Button - Góc phải */}

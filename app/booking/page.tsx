@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import RoleGuard from "@/features/auth/components/RoleGuard";
 import { CTSSRole } from "@/features/auth/types";
 import AiInsightsPanel from "@/components/dashboard/AiInsightsPanel";
+import { useUIStore } from "@/store/useUIStore";
 import BookingHeader from "@/components/booking/BookingHeader";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import CreateBookingModal, { BookingFormData } from "@/components/booking/CreateBookingModal";
@@ -16,6 +17,7 @@ import { fakeBookings, getDuration } from "@/lib/data/fakeBookings";
 import { format, isToday, parse } from "date-fns";
 
 export default function BookingPage() {
+  const { sidebarOpen } = useUIStore();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedStylists, setSelectedStylists] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState("all");
@@ -148,7 +150,7 @@ export default function BookingPage() {
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST, CTSSRole.ASSISTANT]}>
       <div className="flex min-h-screen bg-[#FAFAFA]">
         <Sidebar />
-        <div className="flex-1 ml-[240px] flex flex-col">
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'lg:ml-[240px]' : 'lg:ml-0'}`}>
           <Header />
           <main className="flex-1 p-6 bg-[#FAFAFA]">
           <BookingHeader
@@ -180,7 +182,8 @@ export default function BookingPage() {
           />
         </main>
       </div>
-      <div className="hidden lg:block p-6">
+      {/* AI Insights Panel - Có thể ẩn/hiện */}
+      <div className={`hidden lg:block p-6 transition-all duration-300 ${sidebarOpen ? '' : ''}`}>
         <div className="sticky top-24">
           <AiInsightsPanel />
         </div>

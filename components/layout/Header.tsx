@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, Search, User, LogOut } from "lucide-react";
+import { Bell, Search, User, LogOut, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
+import { useUIStore } from "@/store/useUIStore";
 
 const roleLabels: Record<CTSSRole, string> = {
   ADMIN: "Quản trị viên",
@@ -17,6 +18,7 @@ const roleLabels: Record<CTSSRole, string> = {
 export default function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { sidebarOpen, toggleSidebar } = useUIStore();
 
   const handleLogout = async () => {
     await logout();
@@ -31,6 +33,15 @@ export default function Header() {
         borderBottom: "1px solid #E7E7E7",
       }}
     >
+      {/* Toggle Sidebar Button */}
+      <button
+        onClick={toggleSidebar}
+        className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
+        title={sidebarOpen ? "Ẩn menu" : "Hiện menu"}
+      >
+        {sidebarOpen ? <X size={20} className="text-gray-600" /> : <Menu size={20} className="text-gray-600" />}
+      </button>
+
       {/* Search */}
       <div className="flex-1 max-w-md">
         <div className="relative">

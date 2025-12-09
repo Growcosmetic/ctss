@@ -224,12 +224,7 @@ export default function BookingCalendar({
                   <p className="text-sm text-gray-500">{format(day, "EEE")}</p>
                   <p className="text-lg font-semibold">{format(day, "dd")}</p>
                 </div>
-
-                {stylists.map((st: any) => (
-                  <div key={st.id} className="border-t text-xs p-2 text-center">
-                    {st.name}
-                  </div>
-                ))}
+                {/* Bỏ stylist rows - chỉ hiển thị trong booking card */}
               </div>
             ))}
           </div>
@@ -251,65 +246,69 @@ export default function BookingCalendar({
 
               return (
                 <div key={dayStr} className="flex-1 border-r relative">
-                  {stylists.map((st: any) => (
-                    <div key={st.id} className="relative">
-                      {timeSlots.map((__, rowIndex) => {
-                        const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
-                        return (
-                          <DroppableSlot
-                            key={id}
-                            id={id}
-                            rowIndex={rowIndex}
-                            stylistId={st.id}
-                            date={dayStr}
-                          />
-                        );
-                      })}
-
-                      {/* BOOKINGS */}
-                      <div className="absolute inset-0 pointer-events-none">
-                        {filteredBookings
-                          .filter((b: any) => b.stylistId === st.id && b.date === dayStr)
-                          .map((b: any) => {
-                            const position = getTimePosition(b.start);
-                            const k = `${b.id}-${b.start}-${b.end}`;
-
-                            return (
-                              <div
-                                key={k}
-                                className="absolute left-0 right-0 pointer-events-none"
-                                style={{ top: position }}
-                              >
-                                <div className="pointer-events-auto">
-                                  <DraggableBooking
-                                    booking={b}
-                                    onClick={() => {
-                                      setSelectedBooking(b);
-                                      if (onBookingClick) onBookingClick(b);
-                                    }}
-                                    isDragging={isDragging && (activeBooking as any)?.id === b.id}
-                                    onCheckIn={onCheckIn || ((id: string) => {
-                                      // Update booking status to IN_PROGRESS
-                                      setBookingList((prev: any[]) =>
-                                        prev.map((booking: any) =>
-                                          booking.id === id
-                                            ? { ...booking, status: "IN_PROGRESS" }
-                                            : booking
-                                        )
-                                      );
-                                    })}
-                                    onCall={onCall || ((phone: string) => {
-                                      window.location.href = `tel:${phone}`;
-                                    })}
-                                    stylists={stylists}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
+                  {/* Single grid for all bookings - không chia theo stylist rows */}
+                  <div className="relative">
+                    {/* Tạo slots cho tất cả stylists - invisible nhưng vẫn có thể drop */}
+                    {stylists.map((st: any) => (
+                      <div key={st.id} className="relative">
+                        {timeSlots.map((__, rowIndex) => {
+                          const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
+                          return (
+                            <DroppableSlot
+                              key={id}
+                              id={id}
+                              rowIndex={rowIndex}
+                              stylistId={st.id}
+                              date={dayStr}
+                            />
+                          );
+                        })}
                       </div>
+                    ))}
+
+                    {/* BOOKINGS - Hiển thị tất cả bookings trong ngày, không chia theo stylist */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      {filteredBookings
+                        .filter((b: any) => b.date === dayStr)
+                        .map((b: any) => {
+                          const position = getTimePosition(b.start);
+                          const k = `${b.id}-${b.start}-${b.end}`;
+
+                          return (
+                            <div
+                              key={k}
+                              className="absolute left-0 right-0 pointer-events-none"
+                              style={{ top: position }}
+                            >
+                              <div className="pointer-events-auto">
+                                <DraggableBooking
+                                  booking={b}
+                                  onClick={() => {
+                                    setSelectedBooking(b);
+                                    if (onBookingClick) onBookingClick(b);
+                                  }}
+                                  isDragging={isDragging && (activeBooking as any)?.id === b.id}
+                                  onCheckIn={onCheckIn || ((id: string) => {
+                                    // Update booking status to IN_PROGRESS
+                                    setBookingList((prev: any[]) =>
+                                      prev.map((booking: any) =>
+                                        booking.id === id
+                                          ? { ...booking, status: "IN_PROGRESS" }
+                                          : booking
+                                      )
+                                    );
+                                  })}
+                                  onCall={onCall || ((phone: string) => {
+                                    window.location.href = `tel:${phone}`;
+                                  })}
+                                  stylists={stylists}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
-                  ))}
+                  </div>
                 </div>
               );
             })}

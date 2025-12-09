@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
+import { useUIStore } from "@/store/useUIStore";
 
 interface MenuItem {
   href: string;
@@ -45,6 +46,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, hasAnyRole } = useAuth();
+  const { sidebarOpen } = useUIStore();
 
   // Filter menu items based on user role
   const menuItems = allMenuItems.filter((item) => {
@@ -68,7 +70,8 @@ export default function Sidebar() {
         className={cn(
           "fixed left-0 top-0 h-full w-sidebar z-40 transform transition-transform duration-300 ease-in-out",
           "lg:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+          !sidebarOpen && "lg:-translate-x-full"
         )}
         style={{ backgroundColor: "#A4E3E3", width: "240px" }}
       >

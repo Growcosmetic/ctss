@@ -401,16 +401,22 @@ export default function CustomerDetailPanel({
                             
                             {customer?.profile?.preferences?.customerGroup && (
                               <button
-                                onClick={async () => {
+                                type="button"
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   if (onAddToGroup && customer) {
                                     try {
+                                      setIsGroupDropdownOpen(false);
                                       await onAddToGroup(customer.id, "");
                                       await onUpdate();
-                                    } catch (error) {
+                                    } catch (error: any) {
                                       console.error("Error removing from group:", error);
+                                      alert(error.message || "Có lỗi xảy ra khi xóa khách hàng khỏi nhóm");
                                     }
+                                  } else {
+                                    setIsGroupDropdownOpen(false);
                                   }
-                                  setIsGroupDropdownOpen(false);
                                 }}
                                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                               >

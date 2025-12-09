@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       return errorResponse("customerIds must be a non-empty array", 400);
     }
 
-    if (!groupName || typeof groupName !== "string") {
+    // Allow empty string for "Chưa phân nhóm"
+    if (groupName === undefined || groupName === null || typeof groupName !== "string") {
       return errorResponse("groupName is required", 400);
     }
 

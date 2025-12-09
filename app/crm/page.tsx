@@ -281,8 +281,8 @@ export default function CRMPage() {
 
   const handleAddCustomerToGroup = async (customerId: string, groupName: string) => {
     try {
-      // If groupName is empty, set to empty string (will be converted to "Chưa phân nhóm" by API)
-      const finalGroupName = groupName === "Chưa phân nhóm" || groupName === "" ? "" : groupName;
+      // Ensure groupName is a valid string (empty string is allowed for "Chưa phân nhóm")
+      const finalGroupName = groupName || "";
       
       const response = await fetch("/api/crm/customers/update-group", {
         method: "POST",
@@ -305,7 +305,11 @@ export default function CRMPage() {
       
       // Also update selected customer if it's the one being updated
       if (selectedCustomer && selectedCustomer.id === customerId) {
-        const updatedCustomers = await fetch(`/api/customers?search=&page=1&limit=100`).then(r => r.json());
+        // Wait a bit for the database to update
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const updatedCustomersResponse = await fetch(`/api/customers?search=&page=1&limit=100`);
+        const updatedCustomers = await updatedCustomersResponse.json();
         if (updatedCustomers.success) {
           const updatedCustomer = updatedCustomers.data.customers.find((c: any) => c.id === customerId);
           if (updatedCustomer) {
@@ -318,6 +322,11 @@ export default function CRMPage() {
               name: fullName,
               firstName,
               lastName,
+              dateOfBirth: updatedCustomer.dateOfBirth || updatedCustomer.birthday,
+              email: updatedCustomer.email || updatedCustomer.profile?.preferences?.email,
+              address: updatedCustomer.address || updatedCustomer.profile?.preferences?.address,
+              city: updatedCustomer.city || updatedCustomer.profile?.preferences?.city,
+              province: updatedCustomer.province || updatedCustomer.profile?.preferences?.province,
               profile: updatedCustomer.profile || { preferences: {} },
             });
           }

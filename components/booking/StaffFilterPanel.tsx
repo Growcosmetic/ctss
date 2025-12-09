@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { User, ChevronDown, ChevronUp } from "lucide-react";
+import { format } from "date-fns";
 
 interface StaffFilterPanelProps {
   stylists: Array<{
@@ -29,7 +30,7 @@ export default function StaffFilterPanel({
   const [showAll, setShowAll] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  const selectedDateStr = selectedDate.toISOString().split("T")[0];
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
 
   // Calculate booking count for each stylist
   const stylistBookingCounts = useMemo(() => {

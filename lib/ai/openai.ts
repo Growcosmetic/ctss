@@ -19,16 +19,45 @@ function getClient(): OpenAI {
 }
 
 // Export helper function for other files to use
+// This function will NOT throw during build time, only at runtime
 export function getOpenAIClientSafe(): OpenAI {
-  try {
-    return getClient();
-  } catch (error) {
-    // Return a mock client that will fail gracefully when used
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  // If no API key, return a mock client that will fail gracefully at runtime
+  if (!apiKey) {
     return {
       chat: {
         completions: {
           create: async () => {
-            throw new Error("OPENAI_API_KEY is not configured. Please set it in .env file.");
+            throw new Error("OPENAI_API_KEY is not configured. Please set OPENAI_API_KEY in .env file.");
+          },
+        },
+      },
+      audio: {
+        speech: {
+          create: async () => {
+            throw new Error("OPENAI_API_KEY is not configured. Please set OPENAI_API_KEY in .env file.");
+          },
+        },
+        transcriptions: {
+          create: async () => {
+            throw new Error("OPENAI_API_KEY is not configured. Please set OPENAI_API_KEY in .env file.");
+          },
+        },
+      },
+    } as any;
+  }
+  
+  // If API key exists, create real client
+  try {
+    return new OpenAI({ apiKey });
+  } catch (error) {
+    // Fallback to mock if creation fails
+    return {
+      chat: {
+        completions: {
+          create: async () => {
+            throw new Error("Failed to initialize OpenAI client. Please check OPENAI_API_KEY in .env file.");
           },
         },
       },

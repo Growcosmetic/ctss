@@ -239,7 +239,37 @@ export default function CRMPage() {
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST]}>
       <MainLayout>
-        <div className="space-y-6">
+        {/* 3-Column Layout */}
+        <div className="flex h-[calc(100vh-72px)] overflow-hidden">
+          {/* Left Panel - Customer List */}
+          <CustomerListPanel
+            customers={sortedCustomers.map((c) => ({
+              id: c.id,
+              firstName: c.firstName,
+              lastName: c.lastName,
+              phone: c.phone,
+              email: c.email,
+              customerCode: c.id.slice(0, 8).toUpperCase(),
+            }))}
+            selectedCustomerId={selectedCustomer?.id || null}
+            onSelectCustomer={handleSelectCustomer}
+            searchTerm={listSearchTerm}
+            onSearchChange={setListSearchTerm}
+          />
+
+          {/* Center Panel - Customer Detail */}
+          <CustomerDetailPanel
+            customer={selectedCustomer}
+            onUpdate={handleCustomerUpdate}
+            onDelete={handleDelete}
+          />
+
+          {/* Right Panel - Customer Activity */}
+          <CustomerActivityPanel customerId={selectedCustomer?.id || null} />
+        </div>
+
+        {/* Old Layout - Hidden for now */}
+        <div className="hidden space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

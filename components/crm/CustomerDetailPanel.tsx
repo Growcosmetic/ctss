@@ -647,6 +647,38 @@ export default function CustomerDetailPanel({
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm khách hàng</label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={formData?.customerGroup || ""}
+                        onChange={(e) => setFormData({ ...formData, customerGroup: e.target.value })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Chưa phân nhóm</option>
+                        {availableGroups.map((group) => (
+                          <option key={group} value={group}>
+                            {group}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (onManageGroups) {
+                            onManageGroups();
+                          }
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        <Plus size={14} className="mr-1" />
+                        Tạo nhóm
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nguồn giới thiệu</label>
                     <Input
                       value={formData?.referralSource || ""}

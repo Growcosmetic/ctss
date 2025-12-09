@@ -84,7 +84,7 @@ export default function CustomerDetailPanel({
   const [formData, setFormData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSelectGroupModalOpen, setIsSelectGroupModalOpen] = useState(false);
+  const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
 
   // Extract available groups from all customers
   const availableGroups = React.useMemo(() => {

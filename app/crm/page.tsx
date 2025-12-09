@@ -864,7 +864,10 @@ export default function CRMPage() {
               isOpen={isGroupModalOpen}
               onClose={() => setIsGroupModalOpen(false)}
               customers={customers}
-              onUpdate={fetchCustomers}
+              onUpdate={async () => {
+                await fetchCustomers();
+                // Force re-render by updating a key or state
+              }}
             />
 
         {/* Recent Customers Modal */}

@@ -3,13 +3,16 @@
 // ============================================
 
 import { NextResponse } from "next/server";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { customerInsightAnalysisPrompt } from "@/core/prompts/customerInsightAnalysisPrompt";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 export async function POST(req: Request) {
   try {
@@ -52,7 +55,7 @@ export async function POST(req: Request) {
     const promptText = customerInsightAnalysisPrompt(profile);
 
     // Call OpenAI
-    const completion = await client.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {

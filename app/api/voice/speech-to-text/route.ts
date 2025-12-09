@@ -3,13 +3,16 @@
 // ============================================
 
 import { NextRequest } from "next/server";
-import OpenAI from "openai";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
     const file = new File([buffer], audioFile.name, { type: audioFile.type });
 
     // Call OpenAI Whisper API
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await getClient().audio.transcriptions.create({
       file: file,
       model: "whisper-1",
       language: language === "vi" ? "vi" : undefined,

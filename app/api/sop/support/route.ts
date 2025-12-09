@@ -3,12 +3,15 @@
 // ============================================
 
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { sopSupportPrompt } from "@/core/prompts/sopSupportPrompt";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 export async function POST(req: Request) {
   try {
@@ -29,7 +32,7 @@ export async function POST(req: Request) {
       customerInfo,
     });
 
-    const completion = await client.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {

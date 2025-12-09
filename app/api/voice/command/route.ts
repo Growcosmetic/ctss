@@ -3,13 +3,16 @@
 // ============================================
 
 import { NextRequest } from "next/server";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { cookies } from "next/headers";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
@@ -95,7 +98,7 @@ TRẢ VỀ JSON:
 }
 `;
 
-    const commandCompletion = await openai.chat.completions.create({
+    const commandCompletion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -295,7 +298,7 @@ TRẢ VỀ JSON:
     // Generate audio response
     let responseAudio = null;
     try {
-      const audio = await openai.audio.speech.create({
+      const audio = await getClient().audio.speech.create({
         model: "tts-1-hd",
         voice: "nova",
         input: responseText,

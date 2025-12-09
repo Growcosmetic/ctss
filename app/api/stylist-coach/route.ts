@@ -3,15 +3,18 @@
 // ============================================
 
 import { NextRequest, NextResponse } from "next/server";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { successResponse, errorResponse } from "@/lib/api-response";
 
 // Initialize OpenAI client
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 // ===============================
 // PROMPT SYSTEM
@@ -134,7 +137,7 @@ Hãy phân tích & trả về đúng JSON theo cấu trúc quy định.
     // ===============================
     // GPT CALL
     // ===============================
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },

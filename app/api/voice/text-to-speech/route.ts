@@ -3,13 +3,16 @@
 // ============================================
 
 import { NextRequest } from "next/server";
-import OpenAI from "openai";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 function errorResponse(message: string, status: number = 400) {
   return Response.json({ success: false, error: message }, { status });
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // OpenAI TTS API supports: alloy, echo, fable, onyx, nova, shimmer
     // We use "nova" for Mina's voice (warm, feminine)
-    const mp3 = await openai.audio.speech.create({
+    const mp3 = await getClient().audio.speech.create({
       model: "tts-1-hd", // High quality voice
       voice: voice as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer",
       input: text,

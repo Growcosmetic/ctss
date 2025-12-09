@@ -4,11 +4,12 @@
 // ============================================
 
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 
 export async function POST(req: Request) {
   try {
@@ -70,6 +71,7 @@ LƯU Ý:
 CHỈ TRẢ VỀ JSON hợp lệ - KHÔNG DÙNG MARKDOWN.
     `;
 
+    const client = getClient();
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [

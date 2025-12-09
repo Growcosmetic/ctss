@@ -3,12 +3,15 @@
 // ============================================
 
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { prisma } from "@/lib/prisma";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
+
+// Client initialized lazily via getClient()
 
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
@@ -64,7 +67,7 @@ Tạo lời chào ngắn gọn, ấm áp, và hỏi xem khách cần gì.
 ${customer?.name ? `Khách hàng là ${customer.name} (khách quen).` : "Đây là khách hàng mới."}
 Trả lời trong 2-3 câu, tự nhiên, thân thiện.`;
 
-    const greetingCompletion = await openai.chat.completions.create({
+    const greetingCompletion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -85,7 +88,7 @@ Trả lời trong 2-3 câu, tự nhiên, thân thiện.`;
       "Chào chị yêu, em là Mina của Chí Tâm Hair Salon. Hôm nay em có thể hỗ trợ chị về uốn, nhuộm hay đặt lịch ạ?";
 
     // Generate audio for greeting
-    const greetingAudio = await openai.audio.speech.create({
+    const greetingAudio = await getClient().audio.speech.create({
       model: "tts-1-hd",
       voice: "nova", // Mina's voice
       input: greetingText,
@@ -176,7 +179,7 @@ export async function PUT(request: NextRequest) {
         .slice(-5),
     });
 
-    const intentCompletion = await openai.chat.completions.create({
+    const intentCompletion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -233,7 +236,7 @@ export async function PUT(request: NextRequest) {
       {}
     );
 
-    const responseCompletion = await openai.chat.completions.create({
+    const responseCompletion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -252,7 +255,7 @@ export async function PUT(request: NextRequest) {
     );
 
     // Generate audio response
-    const responseAudio = await openai.audio.speech.create({
+    const responseAudio = await getClient().audio.speech.create({
       model: "tts-1-hd",
       voice: "nova",
       input: responseData.responseText || "",

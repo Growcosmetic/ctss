@@ -18,6 +18,24 @@ function getClient(): OpenAI {
   return openai;
 }
 
+// Export helper function for other files to use
+export function getOpenAIClientSafe(): OpenAI {
+  try {
+    return getClient();
+  } catch (error) {
+    // Return a mock client that will fail gracefully when used
+    return {
+      chat: {
+        completions: {
+          create: async () => {
+            throw new Error("OPENAI_API_KEY is not configured. Please set it in .env file.");
+          },
+        },
+      },
+    } as any;
+  }
+}
+
 /**
  * Map AI type string to AiLogType enum
  */

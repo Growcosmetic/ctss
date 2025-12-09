@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { prisma } from "@/lib/prisma";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
+
+// Client initialized lazily via getClient()
 
 export async function GET() {
   try {
@@ -83,7 +86,7 @@ Không dùng markdown.
 Trả về text thuần, dễ đọc.
 `;
 
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       messages: [
         { role: "system", content: "Bạn là chuyên gia phân tích dữ liệu salon với nhiều năm kinh nghiệm. Hãy đưa ra insights thực tế và hữu ích." },

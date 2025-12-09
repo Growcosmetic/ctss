@@ -3,12 +3,15 @@
 // ============================================
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { prisma } from "@/lib/prisma";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
+
+// Client initialized lazily via getClient()
 
 export async function POST(req: Request) {
   try {
@@ -139,7 +142,7 @@ KIỂM TRA:
 CHỈ TRẢ VỀ JSON - KHÔNG DÙNG MARKDOWN.
     `;
 
-    const completion = await client.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {

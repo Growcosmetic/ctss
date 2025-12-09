@@ -1,15 +1,18 @@
 import { NextRequest } from "next/server";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { buildAIPrompt } from "@/features/mina/bot/services/minaBrain";
 import { CTSSRole } from "@/features/auth/types";
 import { makeReply } from "@/features/mina/core/makeReply";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Client initialized lazily via getClient()
 
 // Simple token validation
 function validateToken(token: string): string | null {
@@ -208,7 +211,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const completion = await openai.chat.completions.create({
+          const completion = await getClient().chat.completions.create({
             model: process.env.OPENAI_MODEL || "gpt-4o-mini",
             messages: [
               { role: "system", content: aiPrompt },

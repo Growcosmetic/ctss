@@ -3,13 +3,16 @@
 // ============================================
 
 import { NextRequest } from "next/server";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
 import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { plexisFormulaPrompt } from "@/core/prompts/plexisFormulaPrompt";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
     const prompt = plexisFormulaPrompt(styleAnalysis, curlAnalysis, hairCondition);
 
     // Call OpenAI
-    const completion = await openai.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {

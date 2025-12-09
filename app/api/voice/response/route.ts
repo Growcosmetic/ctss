@@ -3,14 +3,17 @@
 // ============================================
 
 import { NextRequest } from "next/server";
-import OpenAI from "openai";
+
+// Lazy initialize OpenAI client
+function getClient() {
+  return getOpenAIClientSafe();
+}
+import { getOpenAIClientSafe } from "@/lib/ai/openai";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { voiceResponsePrompt } from "@/core/prompts/voiceResponsePrompt";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Client initialized lazily via getClient()
 
 function successResponse(data: any, message: string = "Success", status: number = 200) {
   return Response.json({ success: true, data, message }, { status });
@@ -110,7 +113,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Call OpenAI
-    const completion = await openai.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -147,7 +150,7 @@ export async function POST(request: NextRequest) {
     let audioUrl = null;
     if (includeAudio) {
       try {
-        const mp3 = await openai.audio.speech.create({
+        const mp3 = await getClient().audio.speech.create({
           model: "tts-1-hd",
           voice: "nova", // Mina's voice
           input: responseData.responseText,

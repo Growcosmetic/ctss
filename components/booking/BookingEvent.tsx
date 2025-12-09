@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Clock, User, Phone, CheckCircle, Scissors } from "lucide-react";
+import { Clock, Phone, CheckCircle } from "lucide-react";
 
 interface BookingEventProps {
   booking: any;
@@ -66,17 +66,6 @@ export default function BookingEvent({
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    const s = status?.toUpperCase();
-    switch (s) {
-      case "PENDING": return "Mới";
-      case "CONFIRMED": return "Đã xác nhận";
-      case "IN_PROGRESS": return "Đang làm";
-      case "COMPLETED": return "Xong";
-      case "CANCELLED": return "Hủy";
-      default: return "";
-    }
-  };
 
   const statusColors = getStatusColor();
   const heightInPx = (booking.duration / 30) * 60;
@@ -109,72 +98,53 @@ export default function BookingEvent({
   return (
     <div
       onClick={onClick}
-      className={`absolute left-1 right-1 p-2 cursor-pointer border-l-4 shadow-sm hover:shadow-md transition-all ${statusColors.borderLeft}`}
+      className={`absolute left-1 right-1 p-2.5 cursor-pointer border-l-4 shadow-sm hover:shadow-md transition-all ${statusColors.borderLeft}`}
       style={{
         backgroundColor: statusColors.bg,
         borderColor: statusColors.border,
         borderRadius: "8px",
         height: `${heightInPx}px`,
-        minHeight: "60px",
+        minHeight: "70px",
       }}
     >
       <div className="flex items-start gap-2 h-full">
-        <User className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: statusColors.border }} />
-        <div className="flex-1 min-w-0 flex flex-col justify-between">
-          {/* Header: Time + Status */}
-          <div className="flex justify-between items-start mb-1">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-gray-500" />
-              <span className="text-xs font-semibold text-gray-700">{booking.start}</span>
-            </div>
-            {booking.status && (
-              <span className="text-[9px] uppercase font-bold tracking-wider opacity-70 px-1.5 py-0.5 bg-white/50 rounded">
-                {getStatusLabel(booking.status)}
-              </span>
-            )}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          {/* Time - Lớn và rõ ràng */}
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-gray-600" />
+            <span className="text-sm font-bold text-gray-900">{booking.start}</span>
           </div>
 
-          {/* Customer Name */}
-          <p className={`text-xs font-bold truncate ${statusColors.text} mb-0.5`}>
+          {/* Customer Name - Nổi bật */}
+          <p className={`text-sm font-bold truncate ${statusColors.text}`}>
             {booking.customerName}
           </p>
 
-          {/* Phone - Clickable */}
+          {/* Phone - Clickable, dễ thấy */}
           {booking.phone && (
             <div 
               onClick={handleCallClick}
-              className="flex items-center gap-1 text-blue-600 text-[10px] mt-0.5 hover:underline cursor-pointer w-fit"
+              className="flex items-center gap-1 text-blue-600 text-xs hover:underline cursor-pointer w-fit font-medium"
             >
-              <Phone className="w-2.5 h-2.5" />
+              <Phone className="w-3 h-3" />
               <span>{booking.phone}</span>
             </div>
           )}
 
-          {/* Service */}
-          <div className="flex items-center gap-1 mt-1">
-            <Scissors className="w-2.5 h-2.5 text-gray-500" />
-            <p className="text-[10px] text-gray-600 truncate">
-              {booking.serviceName}
-            </p>
-          </div>
-
-          {/* Stylist */}
-          {stylistName && (
-            <div className="flex items-center gap-1 mt-1 bg-white/60 rounded-full px-1.5 py-0.5 w-fit border border-gray-100">
-              <User className="w-2.5 h-2.5 text-purple-600" />
-              <span className="text-[9px] font-medium text-purple-700">{stylistName}</span>
-            </div>
-          )}
+          {/* Service - Gọn gàng */}
+          <p className="text-xs text-gray-600 truncate mt-0.5">
+            {booking.serviceName}
+          </p>
         </div>
 
-        {/* Quick Action: Check-in Button */}
+        {/* Quick Action: Check-in Button - Góc phải */}
         {canCheckIn && onCheckIn && (
           <button
             onClick={handleCheckInClick}
-            className="flex-shrink-0 bg-green-500 hover:bg-green-600 text-white p-1 rounded-full shadow-sm transition-transform hover:scale-110"
-            title="Check-in khách đến"
+            className="flex-shrink-0 bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full shadow-md transition-transform hover:scale-110"
+            title="Check-in"
           >
-            <CheckCircle className="w-3 h-3" />
+            <CheckCircle className="w-4 h-4" />
           </button>
         )}
       </div>

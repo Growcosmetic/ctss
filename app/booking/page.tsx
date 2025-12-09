@@ -24,6 +24,7 @@ export default function BookingPage() {
   const [selectedStylists, setSelectedStylists] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [viewMode, setViewMode] = useState<"staff" | "time">("time");
   
   // Global state bookingList - không bị reset khi drawer mở/đóng
   const [bookingList, setBookingList] = useState(fakeBookings);
@@ -177,6 +178,8 @@ export default function BookingPage() {
             services={fakeServices}
             bookingList={bookingList}
             stats={todayStats}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
           <div className="flex gap-4">
             {/* Staff Filter Panel - Left Side */}
@@ -205,6 +208,7 @@ export default function BookingPage() {
                 selectedStatus={selectedStatus}
                 onCheckIn={handleCheckIn}
                 onCall={handleCall}
+                viewMode={viewMode}
               />
             </div>
 

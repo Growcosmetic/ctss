@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Clock, Phone, CheckCircle, User, FileText } from "lucide-react";
 
 interface BookingEventProps {
   booking: any;
@@ -69,102 +68,24 @@ export default function BookingEvent({
 
   const statusColors = getStatusColor();
   const heightInPx = (booking.duration / 30) * 60;
-  
-  // Tìm tên stylist
-  const stylist = stylists.find((s) => s.id === booking.stylistId);
-  const stylistName = stylist?.name || "";
-
-  // Xử lý click check-in
-  const handleCheckInClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onCheckIn && booking.id) {
-      onCheckIn(booking.id);
-    }
-  };
-
-  // Xử lý click gọi điện
-  const handleCallClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onCall && booking.phone) {
-      onCall(booking.phone);
-    } else if (booking.phone) {
-      window.location.href = `tel:${booking.phone}`;
-    }
-  };
-
-  const canCheckIn = booking.status?.toUpperCase() === "PENDING" || 
-                     booking.status?.toUpperCase() === "CONFIRMED";
 
   return (
     <div
       onClick={onClick}
-      className={`absolute left-1 right-1 p-2.5 cursor-pointer border-l-4 shadow-sm hover:shadow-md transition-all ${statusColors.borderLeft}`}
+      className={`absolute left-1 right-1 p-2 cursor-pointer border-l-4 shadow-sm hover:shadow-md transition-all ${statusColors.borderLeft}`}
       style={{
         backgroundColor: statusColors.bg,
         borderColor: statusColors.border,
         borderRadius: "8px",
         height: `${heightInPx}px`,
-        minHeight: "70px",
+        minHeight: "50px",
       }}
     >
-      <div className="flex items-start gap-2 h-full">
-        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-          {/* Time - Lớn và rõ ràng */}
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-gray-600" />
-            <span className="text-sm font-bold text-gray-900">{booking.start}</span>
-          </div>
-
-          {/* Customer Name - LỚN HƠN, RÕ RÀNG HƠN */}
-          <p className={`text-base font-bold ${statusColors.text} leading-tight`}>
-            {booking.customerName}
-          </p>
-
-          {/* Stylist Name - Hiển thị trong card */}
-          {stylistName && (
-            <div className="flex items-center gap-1 text-xs text-purple-700 bg-white/70 rounded px-1.5 py-0.5 w-fit">
-              <User className="w-3 h-3" />
-              <span className="font-medium">{stylistName}</span>
-            </div>
-          )}
-
-          {/* Phone - Clickable, dễ thấy */}
-          {booking.phone && (
-            <div 
-              onClick={handleCallClick}
-              className="flex items-center gap-1 text-blue-600 text-xs hover:underline cursor-pointer w-fit font-medium"
-            >
-              <Phone className="w-3 h-3" />
-              <span>{booking.phone}</span>
-            </div>
-          )}
-
-          {/* Service - Gọn gàng */}
-          <p className="text-xs text-gray-600 truncate">
-            {booking.serviceName}
-          </p>
-
-          {/* Notes - GHI CHÚ */}
-          {booking.notes && (
-            <div className="flex items-start gap-1 mt-0.5">
-              <FileText className="w-3 h-3 text-gray-500 flex-shrink-0 mt-0.5" />
-              <p className="text-[10px] text-gray-600 line-clamp-2 leading-tight">
-                {booking.notes}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Action: Check-in Button - Góc phải */}
-        {canCheckIn && onCheckIn && (
-          <button
-            onClick={handleCheckInClick}
-            className="flex-shrink-0 bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full shadow-md transition-transform hover:scale-110"
-            title="Check-in"
-          >
-            <CheckCircle className="w-4 h-4" />
-          </button>
-        )}
+      <div className="flex items-center justify-center h-full">
+        {/* Chỉ hiển thị tên khách hàng - đơn giản */}
+        <p className={`text-sm font-bold ${statusColors.text} leading-tight text-center truncate w-full`}>
+          {booking.customerName}
+        </p>
       </div>
     </div>
   );

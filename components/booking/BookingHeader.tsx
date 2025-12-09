@@ -25,6 +25,8 @@ interface BookingHeaderProps {
   services: Array<{ id: string; name: string }>;
   bookingList?: Array<{ date: string; status: string }>;
   stats?: BookingStats;
+  viewMode?: "staff" | "time";
+  onViewModeChange?: (mode: "staff" | "time") => void;
 }
 
 export default function BookingHeader({
@@ -41,6 +43,8 @@ export default function BookingHeader({
   services,
   bookingList = [],
   stats,
+  viewMode = "time",
+  onViewModeChange,
 }: BookingHeaderProps) {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -120,6 +124,32 @@ export default function BookingHeader({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">Booking</h1>
+          
+          {/* View Mode Toggle */}
+          {onViewModeChange && (
+            <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1">
+              <button
+                onClick={() => onViewModeChange("staff")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  viewMode === "staff"
+                    ? "bg-[#A4E3E3] text-[#0c4a6e]"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Nhân viên
+              </button>
+              <button
+                onClick={() => onViewModeChange("time")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  viewMode === "time"
+                    ? "bg-[#A4E3E3] text-[#0c4a6e]"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Thời gian
+              </button>
+            </div>
+          )}
           
           {/* Quick Filter Buttons */}
           <div className="flex items-center gap-2">

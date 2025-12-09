@@ -97,6 +97,7 @@ interface BookingCalendarProps {
   selectedStatus?: string;
   onCheckIn?: (id: string) => void;
   onCall?: (phone: string) => void;
+  viewMode?: "staff" | "time";
 }
 
 export default function BookingCalendar({
@@ -110,6 +111,7 @@ export default function BookingCalendar({
   selectedStatus = "all",
   onCheckIn,
   onCall,
+  viewMode = "time",
 }: BookingCalendarProps) {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const { getAvailableSlots } = useBestSlot();
@@ -224,7 +226,17 @@ export default function BookingCalendar({
                   <p className="text-sm text-gray-500">{format(day, "EEE")}</p>
                   <p className="text-lg font-semibold">{format(day, "dd")}</p>
                 </div>
-                {/* Bỏ stylist rows - chỉ hiển thị trong booking card */}
+                
+                {/* Hiển thị nhân viên rows nếu viewMode = "staff" */}
+                {viewMode === "staff" && (
+                  <>
+                    {stylists.map((st: any) => (
+                      <div key={st.id} className="border-t text-xs p-2 text-center bg-gray-50">
+                        {st.name}
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -244,13 +256,13 @@ export default function BookingCalendar({
             {weekDays.map((day) => {
               const dayStr = format(day, "yyyy-MM-dd");
 
-              return (
-                <div key={dayStr} className="flex-1 border-r relative">
-                  {/* Single grid for all bookings - không chia theo stylist rows */}
-                  <div className="relative">
-                    {/* Tạo slots cho tất cả stylists - invisible nhưng vẫn có thể drop */}
+              if (viewMode === "staff") {
+                // Chế độ "Nhân viên": Mỗi nhân viên một hàng
+                return (
+                  <div key={dayStr} className="flex-1 border-r relative">
                     {stylists.map((st: any) => (
-                      <div key={st.id} className="relative">
+                      <div key={st.id} className="relative border-t">
+                        {/* Tạo slots cho nhân viên này */}
                         {timeSlots.map((__, rowIndex) => {
                           const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
                           return (
@@ -263,54 +275,120 @@ export default function BookingCalendar({
                             />
                           );
                         })}
+
+                        {/* BOOKINGS cho nhân viên này */}
+                        <div className="absolute inset-0 pointer-events-none">
+                          {filteredBookings
+                            .filter((b: any) => b.date === dayStr && b.stylistId === st.id)
+                            .map((b: any) => {
+                              const position = getTimePosition(b.start);
+                              const k = `${b.id}-${b.start}-${b.end}`;
+
+                              return (
+                                <div
+                                  key={k}
+                                  className="absolute left-0 right-0 pointer-events-none"
+                                  style={{ top: position }}
+                                >
+                                  <div className="pointer-events-auto">
+                                    <DraggableBooking
+                                      booking={b}
+                                      onClick={() => {
+                                        setSelectedBooking(b);
+                                        if (onBookingClick) onBookingClick(b);
+                                      }}
+                                      isDragging={isDragging && (activeBooking as any)?.id === b.id}
+                                      onCheckIn={onCheckIn || ((id: string) => {
+                                        setBookingList((prev: any[]) =>
+                                          prev.map((booking: any) =>
+                                            booking.id === id
+                                              ? { ...booking, status: "IN_PROGRESS" }
+                                              : booking
+                                          )
+                                        );
+                                      })}
+                                      onCall={onCall || ((phone: string) => {
+                                        window.location.href = `tel:${phone}`;
+                                      })}
+                                      stylists={stylists}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
                       </div>
                     ))}
+                  </div>
+                );
+              } else {
+                // Chế độ "Thời gian": Không chia theo nhân viên
+                return (
+                  <div key={dayStr} className="flex-1 border-r relative">
+                    <div className="relative">
+                      {/* Tạo slots cho tất cả stylists - invisible nhưng vẫn có thể drop */}
+                      {stylists.map((st: any) => (
+                        <div key={st.id} className="relative">
+                          {timeSlots.map((__, rowIndex) => {
+                            const id = `slot|${dayStr}|${st.id}|${rowIndex}`;
+                            return (
+                              <DroppableSlot
+                                key={id}
+                                id={id}
+                                rowIndex={rowIndex}
+                                stylistId={st.id}
+                                date={dayStr}
+                              />
+                            );
+                          })}
+                        </div>
+                      ))}
 
-                    {/* BOOKINGS - Hiển thị tất cả bookings trong ngày, không chia theo stylist */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      {filteredBookings
-                        .filter((b: any) => b.date === dayStr)
-                        .map((b: any) => {
-                          const position = getTimePosition(b.start);
-                          const k = `${b.id}-${b.start}-${b.end}`;
+                      {/* BOOKINGS - Hiển thị tất cả bookings trong ngày, không chia theo stylist */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {filteredBookings
+                          .filter((b: any) => b.date === dayStr)
+                          .map((b: any) => {
+                            const position = getTimePosition(b.start);
+                            const k = `${b.id}-${b.start}-${b.end}`;
 
-                          return (
-                            <div
-                              key={k}
-                              className="absolute left-0 right-0 pointer-events-none"
-                              style={{ top: position }}
-                            >
-                              <div className="pointer-events-auto">
-                                <DraggableBooking
-                                  booking={b}
-                                  onClick={() => {
-                                    setSelectedBooking(b);
-                                    if (onBookingClick) onBookingClick(b);
-                                  }}
-                                  isDragging={isDragging && (activeBooking as any)?.id === b.id}
-                                  onCheckIn={onCheckIn || ((id: string) => {
-                                    // Update booking status to IN_PROGRESS
-                                    setBookingList((prev: any[]) =>
-                                      prev.map((booking: any) =>
-                                        booking.id === id
-                                          ? { ...booking, status: "IN_PROGRESS" }
-                                          : booking
-                                      )
-                                    );
-                                  })}
-                                  onCall={onCall || ((phone: string) => {
-                                    window.location.href = `tel:${phone}`;
-                                  })}
-                                  stylists={stylists}
-                                />
+                            return (
+                              <div
+                                key={k}
+                                className="absolute left-0 right-0 pointer-events-none"
+                                style={{ top: position }}
+                              >
+                                <div className="pointer-events-auto">
+                                  <DraggableBooking
+                                    booking={b}
+                                    onClick={() => {
+                                      setSelectedBooking(b);
+                                      if (onBookingClick) onBookingClick(b);
+                                    }}
+                                    isDragging={isDragging && (activeBooking as any)?.id === b.id}
+                                    onCheckIn={onCheckIn || ((id: string) => {
+                                      setBookingList((prev: any[]) =>
+                                        prev.map((booking: any) =>
+                                          booking.id === id
+                                            ? { ...booking, status: "IN_PROGRESS" }
+                                            : booking
+                                        )
+                                      );
+                                    })}
+                                    onCall={onCall || ((phone: string) => {
+                                      window.location.href = `tel:${phone}`;
+                                    })}
+                                    stylists={stylists}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
+                );
+              }
             })}
           </div>
         </div>

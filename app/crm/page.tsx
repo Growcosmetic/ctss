@@ -442,17 +442,18 @@ export default function CRMPage() {
             onSearchChange={setListSearchTerm}
           />
 
-          {/* Center Panel - Customer Detail */}
-          <CustomerDetailPanel
-            customer={selectedCustomer}
-            onUpdate={handleCustomerUpdate}
-            onDelete={handleDelete}
-            onPrintReceipt={handlePrintReceipt}
-            onCreateOrder={handleCreateOrder}
-            onBookAppointment={handleBookAppointment}
-            onViewPoints={handleViewPoints}
-            onLockZalo={handleLockZalo}
-          />
+                  {/* Center Panel - Customer Detail */}
+                  <CustomerDetailPanel
+                    customer={selectedCustomer}
+                    onUpdate={handleCustomerUpdate}
+                    onDelete={handleDelete}
+                    onPrintReceipt={handlePrintReceipt}
+                    onCreateOrder={handleCreateOrder}
+                    onBookAppointment={handleBookAppointment}
+                    onViewPoints={handleViewPoints}
+                    onLockZalo={handleLockZalo}
+                    onManageGroups={handleManageGroups}
+                  />
 
           {/* Right Panel - Customer Activity */}
           <CustomerActivityPanel customerId={selectedCustomer?.id || null} />

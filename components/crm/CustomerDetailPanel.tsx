@@ -62,6 +62,7 @@ interface CustomerDetailPanelProps {
   onBookAppointment?: (customerId: string) => void;
   onViewPoints?: (customerId: string) => void;
   onLockZalo?: (customerId: string) => void;
+  onManageGroups?: () => void;
 }
 
 export default function CustomerDetailPanel({
@@ -73,6 +74,7 @@ export default function CustomerDetailPanel({
   onBookAppointment,
   onViewPoints,
   onLockZalo,
+  onManageGroups,
 }: CustomerDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);

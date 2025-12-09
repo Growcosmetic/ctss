@@ -1,154 +1,97 @@
-# 🔧 Fix: "permission denied for schema public"
+# 🔧 Fix: Database Permission Denied
 
-## ❌ Lỗi
-
+## Vấn đề:
 ```
 Error: ERROR: permission denied for schema public
 ```
 
-**Nguyên nhân:** User database không có quyền truy cập schema `public`.
+## Nguyên nhân:
+User `ctssuser` không có quyền tạo bảng trong schema `public`.
 
----
+## Giải pháp:
 
-## ✅ Giải pháp
-
-### Cách 1: Grant permissions cho user (Khuyến nghị)
-
-#### Bước 1: Kết nối PostgreSQL với quyền superuser
+### BƯỚC 1: Grant quyền cho user
 
 ```bash
-# Kết nối với user postgres (hoặc user có quyền admin)
-psql -U postgres -d ctss_db
+sudo -u postgres psql << EOF
+-- Grant schema usage
+GRANT USAGE ON SCHEMA public TO ctssuser;
 
-# Hoặc nếu dùng user khác
-psql -U your_admin_user -d ctss_db
-```
+-- Grant create privileges
+GRANT CREATE ON SCHEMA public TO ctssuser;
 
-#### Bước 2: Grant permissions
+-- Grant all privileges on database
+GRANT ALL PRIVILEGES ON DATABASE ctss TO ctssuser;
 
-Trong psql, chạy các lệnh sau:
+-- Grant all privileges on all tables (for future tables)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ctssuser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ctssuser;
 
-```sql
--- Grant usage on schema
-GRANT USAGE ON SCHEMA public TO your_database_user;
-
--- Grant create on schema
-GRANT CREATE ON SCHEMA public TO your_database_user;
-
--- Grant all privileges on all tables
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO your_database_user;
-
--- Grant all privileges on all sequences
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO your_database_user;
-
--- Grant privileges on future tables
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO your_database_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO your_database_user;
-
--- Thoát psql
 \q
+EOF
 ```
 
-**Thay `your_database_user` bằng user trong DATABASE_URL của bạn.**
-
----
-
-### Cách 2: Dùng `prisma db push` thay vì `migrate deploy`
-
-Nếu bạn chưa có migrations và chỉ muốn sync schema:
+### BƯỚC 2: Push schema lại
 
 ```bash
-# Thay vì migrate deploy
+cd ~/ctss
 npx prisma db push
-
-# Sau đó generate Prisma Client
-npx prisma generate
 ```
 
-**Lưu ý:** `db push` sẽ tạo/sửa tables trực tiếp, không tạo migration files.
-
----
-
-### Cách 3: Tạo migrations mới thay vì deploy
-
-Nếu bạn muốn tạo migrations mới:
+### BƯỚC 3: Seed users
 
 ```bash
-# Tạo migration mới
-npx prisma migrate dev --name init
-
-# Hoặc nếu đã có database
-npx prisma migrate dev --name fix_schema
+cd ~/ctss
+npm run db:seed
 ```
 
----
-
-### Cách 4: Kiểm tra và sửa DATABASE_URL
-
-Kiểm tra file `.env`:
-
-```env
-DATABASE_URL="postgresql://USERNAME:PASSWORD@localhost:5432/ctss_db?schema=public"
-```
-
-**Đảm bảo:**
-- `USERNAME` có quyền truy cập database
-- `PASSWORD` đúng
-- Database `ctss_db` đã được tạo
-
----
-
-## 🔍 Debug
-
-### Kiểm tra user hiện tại:
+Hoặc:
 
 ```bash
-# Kết nối database
-psql -U postgres -d ctss_db
-
-# Xem user hiện tại
-SELECT current_user;
-
-# Xem permissions
-\dn+ public
-
-# Xem tables
-\dt
+npx tsx prisma/seed.ts
 ```
 
-### Kiểm tra DATABASE_URL:
+### BƯỚC 4: Kiểm tra users đã được tạo
 
 ```bash
-# Xem DATABASE_URL từ .env
-cat .env | grep DATABASE_URL
+cd ~/ctss
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+(async () => {
+  try {
+    const users = await prisma.user.findMany();
+    console.log('✅ Số lượng users:', users.length);
+    users.forEach(u => {
+      console.log('  -', u.name, '(' + u.phone + ')', '-', u.role);
+    });
+  } catch (e) {
+    console.error('❌ Error:', e.message);
+  } finally {
+    await prisma.\$disconnect();
+  }
+})();
+"
 ```
 
----
-
-## 🚀 Quick Fix (Nếu không cần migrations)
-
-Nếu bạn chỉ muốn sync schema mà không cần migrations:
+### BƯỚC 5: Restart PM2
 
 ```bash
-# 1. Push schema trực tiếp
-npx prisma db push
-
-# 2. Generate Prisma Client
-npx prisma generate
-
-# 3. Test
-npx prisma studio
+pm2 restart ctss
 ```
 
+### BƯỚC 6: Test login
+
+Truy cập: `http://72.61.119.247/login`
+
+Đăng nhập với:
+- **Phone**: `0900000001` (hoặc bất kỳ số nào từ seed)
+- **Password**: `123456`
+
 ---
 
-## ⚠️ Lưu ý
+## Lưu ý:
 
-1. **Production:** Nên dùng migrations thay vì `db push`
-2. **Development:** Có thể dùng `db push` để nhanh hơn
-3. **Permissions:** Đảm bảo user có đủ quyền trước khi chạy migrations
-
----
-
-*Last updated: 2024*
-
+- Seed data đã được fix để dùng `phone` thay vì `email`
+- Login form có thể dùng phone hoặc email (email sẽ được convert thành phone)
+- Tất cả users seed có password: `123456`

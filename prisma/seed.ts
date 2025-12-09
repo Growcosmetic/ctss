@@ -9,54 +9,44 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding users...");
 
-  // Seed users with different roles
+  // Seed users with different roles (using phone instead of email)
   const users = [
     {
-      email: "admin@ctss.com",
-      password: "123456", // In production, this should be hashed
-      firstName: "Admin",
-      lastName: "User",
+      name: "Admin User",
       phone: "0900000001",
+      password: "123456", // In production, this should be hashed
       role: "ADMIN" as const,
     },
     {
-      email: "manager@ctss.com",
-      password: "123456",
-      firstName: "Manager",
-      lastName: "User",
+      name: "Manager User",
       phone: "0900000002",
+      password: "123456",
       role: "MANAGER" as const,
     },
     {
-      email: "reception@ctss.com",
-      password: "123456",
-      firstName: "Reception",
-      lastName: "User",
+      name: "Reception User",
       phone: "0900000003",
+      password: "123456",
       role: "RECEPTIONIST" as const,
     },
     {
-      email: "stylist@ctss.com",
-      password: "123456",
-      firstName: "Stylist",
-      lastName: "User",
+      name: "Stylist User",
       phone: "0900000004",
+      password: "123456",
       role: "STYLIST" as const,
     },
     {
-      email: "assistant@ctss.com",
-      password: "123456",
-      firstName: "Assistant",
-      lastName: "User",
+      name: "Assistant User",
       phone: "0900000005",
+      password: "123456",
       role: "ASSISTANT" as const,
     },
   ];
 
   for (const userData of users) {
-    // Check if user exists
+    // Check if user exists by phone
     const existing = await prisma.user.findUnique({
-      where: { email: userData.email },
+      where: { phone: userData.phone },
     });
 
     if (existing) {
@@ -66,16 +56,16 @@ async function main() {
           where: { id: existing.id },
           data: { role: userData.role },
         });
-        console.log(`✅ Updated user: ${userData.email} (${userData.role})`);
+        console.log(`✅ Updated user: ${userData.phone} (${userData.role})`);
       } else {
-        console.log(`⏭️  User already exists: ${userData.email}`);
+        console.log(`⏭️  User already exists: ${userData.phone}`);
       }
     } else {
       // Create new user
       await prisma.user.create({
         data: userData,
       });
-      console.log(`✅ Created user: ${userData.email} (${userData.role})`);
+      console.log(`✅ Created user: ${userData.phone} (${userData.role})`);
     }
   }
 

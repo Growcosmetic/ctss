@@ -567,32 +567,34 @@ export default function BookingDetailDrawer({
 
         {/* Bottom Actions */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-          >
-            <X className="w-4 h-4" />
-            Đóng
-          </button>
-          <div className="flex items-center gap-3">
-            {isEditing ? (
-              <>
-                <button
-                  onClick={handleCancelEdit}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Lưu thông tin
-                </button>
-              </>
-            ) : (
-              <>
+          {isEditing ? (
+            <>
+              {/* Khi đang edit: Chỉ hiển thị Hủy và Lưu */}
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Lưu thông tin
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Khi không edit: Hiển thị Đóng và các actions */}
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Đóng
+              </button>
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
@@ -614,9 +616,9 @@ export default function BookingDetailDrawer({
                   <Printer className="w-4 h-4" />
                   In lịch hẹn
                 </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

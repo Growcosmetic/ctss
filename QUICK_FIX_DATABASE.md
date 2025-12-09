@@ -1,134 +1,108 @@
-# ⚡ Quick Fix: Database Permission Error
+# 🚀 QUICK FIX - Database Permission
 
-## ❌ Lỗi
+## Vấn đề:
+`ctssuser` không có đủ quyền để tạo schema.
 
-```
-Error: ERROR: permission denied for schema public
-```
+## Giải pháp nhanh nhất: Dùng postgres user
 
----
-
-## ✅ Giải pháp nhanh nhất
-
-### Option 1: Dùng `prisma db push` (Khuyến nghị - Không cần migrations)
+### BƯỚC 1: Set password cho postgres user (nếu chưa có)
 
 ```bash
-# Thay vì migrate deploy, dùng db push
+sudo -u postgres psql -c "\password postgres"
+```
+
+Nhập password mới (ví dụ: `postgres123`) hoặc Enter để giữ nguyên.
+
+### BƯỚC 2: Sửa .env
+
+```bash
+cd ~/ctss
+nano .env
+```
+
+Thay đổi dòng `DATABASE_URL` thành:
+
+```
+DATABASE_URL="postgresql://postgres:postgres123@localhost:5432/ctss"
+```
+
+(Lưu ý: Thay `postgres123` bằng password bạn vừa set)
+
+Hoặc chạy script tự động:
+
+```bash
+cd ~/ctss
+git pull origin main
+chmod +x fix-env-database.sh
+./fix-env-database.sh
+```
+
+### BƯỚC 3: Push schema
+
+```bash
+cd ~/ctss
 npx prisma db push
-
-# Sau đó generate Prisma Client
-npx prisma generate
 ```
 
-**Lưu ý:** `db push` sẽ sync schema trực tiếp, không tạo migration files.
+Bây giờ sẽ thành công vì postgres user có đầy đủ quyền!
 
----
-
-### Option 2: Grant permissions cho user
-
-#### Bước 1: Kết nối PostgreSQL
+### BƯỚC 4: Seed users
 
 ```bash
-# Kết nối với user postgres (superuser)
-psql -U postgres -d ctss_db
-
-# Hoặc nếu trên server
-psql -U postgres -h localhost -d ctss_db
+cd ~/ctss
+npm run db:seed
 ```
 
-#### Bước 2: Chạy SQL commands
-
-```sql
--- Thay 'user' bằng user trong DATABASE_URL của bạn
-GRANT USAGE ON SCHEMA public TO "user";
-GRANT CREATE ON SCHEMA public TO "user";
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "user";
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "user";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "user";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "user";
-```
-
-#### Bước 3: Thoát và thử lại
-
-```sql
-\q
-```
-
-Sau đó chạy lại:
-```bash
-npx prisma migrate deploy
-```
-
----
-
-### Option 3: Tạo migrations mới
-
-Nếu bạn muốn tạo migrations:
+### BƯỚC 5: Kiểm tra users
 
 ```bash
-# Tạo migration mới
-npx prisma migrate dev --name init
-
-# Hoặc
-npx prisma migrate dev --name fix_schema
+cd ~/ctss
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+(async () => {
+  try {
+    const users = await prisma.user.findMany();
+    console.log('✅ Số lượng users:', users.length);
+    users.forEach(u => {
+      console.log('  -', u.name, '(' + u.phone + ')', '-', u.role);
+    });
+  } catch (e) {
+    console.error('❌ Error:', e.message);
+  } finally {
+    await prisma.\$disconnect();
+  }
+})();
+"
 ```
 
----
-
-## 🔍 Kiểm tra DATABASE_URL
-
-File `.env` hiện tại:
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/ctss?schema=public"
-```
-
-**Vấn đề:** User `user` có thể không có quyền.
-
-**Giải pháp:** 
-1. Thay `user` bằng user có quyền (ví dụ: `postgres`)
-2. Hoặc grant permissions cho user `user` như ở Option 2
-
----
-
-## 🚀 Recommended: Dùng db push
-
-Nếu bạn đang development và không cần migrations:
+### BƯỚC 6: Restart PM2
 
 ```bash
-# 1. Push schema
-npx prisma db push
-
-# 2. Generate client
-npx prisma generate
-
-# 3. Test với Prisma Studio
-npx prisma studio
+pm2 restart ctss
 ```
 
-**Ưu điểm:**
-- ✅ Không cần permissions phức tạp
-- ✅ Nhanh hơn
-- ✅ Tự động sync schema
+### BƯỚC 7: Test login
 
-**Nhược điểm:**
-- ❌ Không tạo migration files
-- ❌ Không phù hợp cho production
+Truy cập: `http://72.61.119.247/login`
+
+Đăng nhập với:
+- Phone: `0900000001`
+- Password: `123456`
 
 ---
 
-## 📝 Trên Server (srv1136013)
+## Lưu ý:
 
-Nếu bạn đang trên server và không có quyền superuser:
-
-```bash
-# Option 1: Dùng db push (nhanh nhất)
-npx prisma db push
-
-# Option 2: Liên hệ admin để grant permissions
-# Hoặc dùng user postgres trong DATABASE_URL
-```
+- Sau khi setup xong, có thể giữ nguyên postgres user (an toàn)
+- Hoặc đổi lại ctssuser sau khi đã grant đủ quyền
 
 ---
 
-*Last updated: 2024*
+## Tài khoản demo:
 
+- Admin: `0900000001` / `123456`
+- Manager: `0900000002` / `123456`
+- Reception: `0900000003` / `123456`
+- Stylist: `0900000004` / `123456`
+- Assistant: `0900000005` / `123456`

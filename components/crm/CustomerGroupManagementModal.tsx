@@ -45,13 +45,17 @@ export default function CustomerGroupManagementModal({
         groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
       });
 
-      const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries()).map(([name, count], index) => ({
-        id: `group-${index}`,
-        name,
-        customerCount: count,
-      }));
+      const extractedGroups: CustomerGroup[] = Array.from(groupMap.entries())
+        .sort((a, b) => b[1] - a[1]) // Sort by count descending
+        .map(([name, count], index) => ({
+          id: `group-${name}-${count}-${index}`, // Use name, count, and index for unique ID
+          name,
+          customerCount: count,
+        }));
 
       setGroups(extractedGroups);
+    } else {
+      setGroups([]);
     }
   }, [customers]);
 

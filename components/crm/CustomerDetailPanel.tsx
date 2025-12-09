@@ -324,23 +324,99 @@ export default function CustomerDetailPanel({
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                   {customer.profile?.preferences?.rank || "Hạng Thường"}
                 </span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs flex items-center gap-1 text-blue-700"
-                  onClick={() => {
-                    if (onAddToGroup && customer) {
-                      setIsSelectGroupModalOpen(true);
-                    } else if (onManageGroups) {
-                      onManageGroups();
-                    } else {
-                      alert("Tính năng quản lý nhóm khách hàng");
-                    }
-                  }}
-                >
-                  <Plus size={14} />
-                  {customer?.profile?.preferences?.customerGroup ? "Di chuyển nhóm" : "Thêm nhóm khách hàng"}
-                </Button>
+                <div className="relative">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs flex items-center gap-1 text-blue-700"
+                    onClick={() => setIsGroupDropdownOpen(!isGroupDropdownOpen)}
+                  >
+                    <Plus size={14} />
+                    {customer?.profile?.preferences?.customerGroup || "Thêm nhóm khách hàng"}
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Button>
+                  
+                  {isGroupDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsGroupDropdownOpen(false)}
+                      />
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto">
+                        <div className="py-1">
+                          {availableGroups.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                              Chưa có nhóm nào
+                            </div>
+                          ) : (
+                            availableGroups.map((group) => (
+                              <button
+                                key={group}
+                                onClick={async () => {
+                                  if (onAddToGroup && customer) {
+                                    try {
+                                      await onAddToGroup(customer.id, group);
+                                      await onUpdate();
+                                    } catch (error) {
+                                      console.error("Error adding to group:", error);
+                                    }
+                                  }
+                                  setIsGroupDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
+                                  customer?.profile?.preferences?.customerGroup === group ? "bg-blue-50 text-blue-700" : "text-gray-700"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span>{group}</span>
+                                  {customer?.profile?.preferences?.customerGroup === group && (
+                                    <Check size={16} className="text-blue-600" />
+                                  )}
+                                </div>
+                              </button>
+                            ))
+                          )}
+                          
+                          <div className="border-t border-gray-200 mt-1 pt-1">
+                            <button
+                              onClick={() => {
+                                setIsGroupDropdownOpen(false);
+                                if (onManageGroups) {
+                                  onManageGroups();
+                                }
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors flex items-center gap-2"
+                            >
+                              <Plus size={16} />
+                              Tạo nhóm mới
+                            </button>
+                            
+                            {customer?.profile?.preferences?.customerGroup && (
+                              <button
+                                onClick={async () => {
+                                  if (onAddToGroup && customer) {
+                                    try {
+                                      await onAddToGroup(customer.id, "");
+                                      await onUpdate();
+                                    } catch (error) {
+                                      console.error("Error removing from group:", error);
+                                    }
+                                  }
+                                  setIsGroupDropdownOpen(false);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                Xóa khỏi nhóm hiện tại
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
                 <div className="flex items-center gap-1">
                   <Gift size={16} className="text-red-500" />
                   <span className="text-lg font-bold text-red-600">{customer.loyaltyPoints || 0}</span>

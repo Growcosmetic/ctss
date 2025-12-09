@@ -9,6 +9,7 @@ import AiInsightsPanel from "@/components/dashboard/AiInsightsPanel";
 import { useUIStore } from "@/store/useUIStore";
 import BookingHeader from "@/components/booking/BookingHeader";
 import BookingCalendar from "@/components/booking/BookingCalendar";
+import BookingListPanel from "@/components/booking/BookingListPanel";
 import CreateBookingModal, { BookingFormData } from "@/components/booking/CreateBookingModal";
 import BookingDetailDrawer from "@/components/booking/BookingDetailDrawer";
 import { fakeStylists } from "@/lib/data/fakeStylists";
@@ -95,7 +96,7 @@ export default function BookingPage() {
     setIsDetailDrawerOpen(false);
   };
 
-  const handleCancelBooking = () => {
+  const handleCancelBookingFromDrawer = () => {
     if (selectedBooking) {
       setBookingList(
         bookingList.map((b) =>
@@ -146,6 +147,14 @@ export default function BookingPage() {
     window.location.href = `tel:${phone}`;
   };
 
+  const handleCancelBooking = (bookingId: string) => {
+    setBookingList(
+      bookingList.map((b) =>
+        b.id === bookingId ? { ...b, status: "CANCELLED" as const } : b
+      )
+    );
+  };
+
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST, CTSSRole.ASSISTANT]}>
       <div className="flex min-h-screen bg-[#FAFAFA]">
@@ -168,26 +177,46 @@ export default function BookingPage() {
             bookingList={bookingList}
             stats={todayStats}
           />
-          <BookingCalendar
-            bookingList={bookingList}
-            setBookingList={setBookingList}
-            stylists={fakeStylists}
-            selectedDate={selectedDate}
-            onBookingClick={handleBookingClick}
-            selectedStylists={selectedStylists}
-            selectedService={selectedService}
-            selectedStatus={selectedStatus}
-            onCheckIn={handleCheckIn}
-            onCall={handleCall}
-          />
+          <div className="flex gap-6">
+            {/* Calendar - Main Content */}
+            <div className="flex-1">
+              <BookingCalendar
+                bookingList={bookingList}
+                setBookingList={setBookingList}
+                stylists={fakeStylists}
+                selectedDate={selectedDate}
+                onBookingClick={handleBookingClick}
+                selectedStylists={selectedStylists}
+                selectedService={selectedService}
+                selectedStatus={selectedStatus}
+                onCheckIn={handleCheckIn}
+                onCall={handleCall}
+              />
+            </div>
+
+            {/* Booking List Panel - Right Side */}
+            <div className="hidden lg:block">
+              <div className="sticky top-24">
+                <BookingListPanel
+                  bookingList={bookingList}
+                  selectedDate={selectedDate}
+                  onBookingClick={handleBookingClick}
+                  onCall={handleCall}
+                  onCheckIn={handleCheckIn}
+                  onCancel={handleCancelBooking}
+                  stylists={fakeStylists}
+                />
+              </div>
+            </div>
+          </div>
         </main>
       </div>
-      {/* AI Insights Panel - Có thể ẩn/hiện */}
-      <div className={`hidden lg:block p-6 transition-all duration-300 ${sidebarOpen ? '' : ''}`}>
+      {/* AI Insights Panel - Có thể ẩn/hiện (ẩn đi để nhường chỗ cho Booking List Panel) */}
+      {/* <div className={`hidden lg:block p-6 transition-all duration-300 ${sidebarOpen ? '' : ''}`}>
         <div className="sticky top-24">
           <AiInsightsPanel />
         </div>
-      </div>
+      </div> */}
 
       {/* Create Booking Modal */}
       <CreateBookingModal
@@ -210,7 +239,7 @@ export default function BookingPage() {
         bookingList={bookingList}
         setBookingList={setBookingList}
         onEdit={handleEditBooking}
-        onCancel={handleCancelBooking}
+        onCancel={handleCancelBookingFromDrawer}
         onChangeStylist={handleChangeStylist}
         onViewHistory={handleViewHistory}
       />

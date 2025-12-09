@@ -359,6 +359,7 @@ export default function CRMPage() {
 
           {/* Right Panel - Customer Activity */}
           <CustomerActivityPanel customerId={selectedCustomer?.id || null} />
+          </div>
         </div>
 
         {/* Old Layout - Hidden for now */}

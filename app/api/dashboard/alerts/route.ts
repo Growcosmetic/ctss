@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       for (const customer of recentCustomers) {
         try {
           const risk = await detectChurnRisk(customer.id);
-          if (risk.level === "HIGH") {
+          if (risk.riskLevel === "HIGH") {
             alerts.push({
               id: `churn-${customer.id}`,
               type: "churn-risk",

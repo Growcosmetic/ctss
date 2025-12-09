@@ -204,6 +204,7 @@ export default function CustomerDetailPanel({
           company: formData.company || undefined,
           taxId: formData.taxId || undefined,
           referralSource: formData.referralSource || undefined,
+          customerGroup: formData.customerGroup || undefined,
         },
       };
 

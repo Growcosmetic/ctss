@@ -9,8 +9,15 @@ import {
   LowStockAlert,
   UsageTrend,
 } from "../types";
-import { StockTransactionType } from "@prisma/client";
 import { subDays, subMonths } from "date-fns";
+
+// Stock transaction types
+const StockTransactionType = {
+  IN: "IN",
+  OUT: "OUT",
+  ADJUST: "ADJUST",
+  MIX: "MIX",
+} as const;
 
 /**
  * Add stock to a product in a branch
@@ -23,23 +30,32 @@ export async function addStock(
   reason?: string,
   notes?: string
 ): Promise<void> {
-  // Create or update ProductStock
-  const stock = await prisma.productStock.upsert({
+  // Check if stock exists
+  const existingStock = await prisma.productStock.findFirst({
     where: {
-      productId_branchId: {
-        productId,
-        branchId,
-      },
-    },
-    update: {
-      quantity: { increment: quantity },
-    },
-    create: {
       productId,
       branchId,
-      quantity,
     },
   });
+
+  if (existingStock) {
+    // Update existing stock
+    await prisma.productStock.update({
+      where: { id: existingStock.id },
+      data: {
+        quantity: { increment: quantity },
+      },
+    });
+  } else {
+    // Create new stock
+    await prisma.productStock.create({
+      data: {
+        productId,
+        branchId,
+        quantity,
+      },
+    });
+  }
 
   // Create transaction record
   await prisma.stockTransaction.create({
@@ -49,8 +65,6 @@ export async function addStock(
       type: StockTransactionType.IN,
       quantity,
       reason: reason || "manual",
-      notes,
-      createdBy,
     },
   });
 }
@@ -68,12 +82,10 @@ export async function removeStock(
   notes?: string
 ): Promise<void> {
   // Check current stock
-  const stock = await prisma.productStock.findUnique({
+  const stock = await prisma.productStock.findFirst({
     where: {
-      productId_branchId: {
-        productId,
-        branchId,
-      },
+      productId,
+      branchId,
     },
   });
 
@@ -83,12 +95,7 @@ export async function removeStock(
 
   // Update stock
   await prisma.productStock.update({
-    where: {
-      productId_branchId: {
-        productId,
-        branchId,
-      },
-    },
+    where: { id: stock.id },
     data: {
       quantity: { decrement: quantity },
     },
@@ -102,9 +109,6 @@ export async function removeStock(
       type: StockTransactionType.OUT,
       quantity,
       reason,
-      reference,
-      notes,
-      createdBy,
     },
   });
 }
@@ -119,12 +123,10 @@ export async function adjustStock(
   createdBy: string,
   notes?: string
 ): Promise<void> {
-  const stock = await prisma.productStock.findUnique({
+  const stock = await prisma.productStock.findFirst({
     where: {
-      productId_branchId: {
-        productId,
-        branchId,
-      },
+      productId,
+      branchId,
     },
   });
 
@@ -132,22 +134,22 @@ export async function adjustStock(
   const adjustment = newQuantity - currentQuantity;
 
   // Update or create stock
-  await prisma.productStock.upsert({
-    where: {
-      productId_branchId: {
+  if (stock) {
+    await prisma.productStock.update({
+      where: { id: stock.id },
+      data: {
+        quantity: newQuantity,
+      },
+    });
+  } else {
+    await prisma.productStock.create({
+      data: {
         productId,
         branchId,
+        quantity: newQuantity,
       },
-    },
-    update: {
-      quantity: newQuantity,
-    },
-    create: {
-      productId,
-      branchId,
-      quantity: newQuantity,
-    },
-  });
+    });
+  }
 
   // Create transaction record
   await prisma.stockTransaction.create({
@@ -157,8 +159,6 @@ export async function adjustStock(
       type: StockTransactionType.ADJUST,
       quantity: Math.abs(adjustment),
       reason: "adjustment",
-      notes: notes || `Adjusted from ${currentQuantity} to ${newQuantity}`,
-      createdBy,
     },
   });
 }
@@ -176,9 +176,11 @@ export async function getStockLevels(
         select: {
           id: true,
           name: true,
-          sku: true,
           unit: true,
           category: true,
+          subCategory: true,
+          minStock: true,
+          maxStock: true,
         },
       },
       branch: {
@@ -200,9 +202,15 @@ export async function getStockLevels(
     productId: stock.productId,
     branchId: stock.branchId,
     quantity: Number(stock.quantity),
-    minLevel: stock.minLevel ? Number(stock.minLevel) : null,
-    maxLevel: stock.maxLevel ? Number(stock.maxLevel) : null,
-    product: stock.product,
+    minLevel: stock.product.minStock ? Number(stock.product.minStock) : null,
+    maxLevel: stock.product.maxStock ? Number(stock.product.maxStock) : null,
+    product: {
+      id: stock.product.id,
+      name: stock.product.name,
+      unit: stock.product.unit,
+      category: stock.product.category,
+      subCategory: stock.product.subCategory,
+    },
     branch: stock.branch,
   }));
 }
@@ -213,32 +221,17 @@ export async function getStockLevels(
 export async function getLowStockAlerts(
   branchId: string
 ): Promise<LowStockAlert[]> {
+  // Get all stocks for the branch
   const stocks = await prisma.productStock.findMany({
-    where: {
-      branchId,
-      OR: [
-        {
-          minLevel: {
-            not: null,
-          },
-          quantity: {
-            lte: prisma.productStock.fields.minLevel,
-          },
-        },
-        {
-          minLevel: null,
-          quantity: {
-            lte: 0,
-          },
-        },
-      ],
-    },
+    where: { branchId },
     include: {
       product: {
         select: {
           id: true,
           name: true,
           unit: true,
+          minStock: true,
+          maxStock: true,
         },
       },
       branch: {
@@ -254,7 +247,12 @@ export async function getLowStockAlerts(
 
   for (const stock of stocks) {
     const currentStock = Number(stock.quantity);
-    const minLevel = stock.minLevel ? Number(stock.minLevel) : 0;
+    const minLevel = stock.product.minStock ? Number(stock.product.minStock) : 0;
+    
+    // Only add alert if stock is below minimum
+    if (currentStock > minLevel) {
+      continue;
+    }
 
     // Calculate daily usage (last 30 days)
     const thirtyDaysAgo = subDays(new Date(), 30);
@@ -352,9 +350,7 @@ export async function autoDeductForService(
             booking.branchId,
             amountUsed,
             createdBy,
-            "serviceUsage",
-            bookingId,
-            `Auto-deducted for service: ${service.name}`
+            "serviceUsage"
           );
         } catch (error: any) {
           console.error(
@@ -506,10 +502,7 @@ export async function getStockTransactions(
     branchId: t.branchId,
     type: t.type,
     quantity: Number(t.quantity),
-    reason: t.reason,
-    reference: t.reference,
-    notes: t.notes,
-    createdBy: t.createdBy,
+    reason: t.reason || null,
     createdAt: t.createdAt,
     product: t.product,
     branch: t.branch,

@@ -53,7 +53,8 @@ export default function BookingPage() {
   const handleWalkInBooking = () => {
     // Tạo booking walk-in với thời gian hiện tại
     const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${Math.floor(now.getMinutes() / 30) * 30.toString().padStart(2, "0")}`;
+    const roundedMinutes = Math.floor(now.getMinutes() / 30) * 30;
+    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${roundedMinutes.toString().padStart(2, "0")}`;
     const todayStr = format(now, "yyyy-MM-dd");
     
     // Mở modal với dữ liệu walk-in

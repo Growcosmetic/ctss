@@ -8,13 +8,19 @@ import { Input } from "@/components/ui/Input";
 
 interface ServiceFormData {
   name: string;
+  code?: string;
   description?: string;
   category: string;
+  englishName?: string;
+  englishDescription?: string;
   duration: number;
   price: number;
   cost?: number;
   image?: string;
   isActive: boolean;
+  allowPriceOverride: boolean;
+  unit?: string;
+  displayLocation?: string;
 }
 
 interface ServiceFormModalProps {
@@ -34,13 +40,19 @@ export default function ServiceFormModal({
 }: ServiceFormModalProps) {
   const [formData, setFormData] = useState<ServiceFormData>({
     name: "",
+    code: "",
     description: "",
     category: "",
+    englishName: "",
+    englishDescription: "",
     duration: 30,
     price: 0,
     cost: 0,
     image: "",
     isActive: true,
+    allowPriceOverride: false,
+    unit: "",
+    displayLocation: "BOTH",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,20 +63,32 @@ export default function ServiceFormModal({
       const activePrice = service.servicePrices?.find((p: any) => p.isActive);
       setFormData({
         name: service.name || "",
+        code: service.code || "",
         description: service.description || "",
         category: service.category?.id || service.category || "",
+        englishName: service.englishName || "",
+        englishDescription: service.englishDescription || "",
         duration: service.duration || 30,
         price: activePrice?.price || service.price || 0,
         cost: activePrice?.cost || service.cost || 0,
         image: service.image || "",
         isActive: service.isActive !== undefined ? service.isActive : true,
+        allowPriceOverride: service.allowPriceOverride || false,
+        unit: service.unit || "",
+        displayLocation: service.displayLocation || "BOTH",
       });
     } else {
       // Create mode
       setFormData({
         name: "",
+        code: "",
         description: "",
         category: categories[0]?.id || "",
+        allowPriceOverride: false,
+        unit: "",
+        displayLocation: "BOTH",
+        englishName: "",
+        englishDescription: "",
         duration: 30,
         price: 0,
         cost: 0,
@@ -89,14 +113,20 @@ export default function ServiceFormModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
-          description: formData.description,
+          code: formData.code || undefined,
+          description: formData.description || undefined,
           category: formData.category,
           categoryId: formData.category,
+          englishName: formData.englishName || undefined,
+          englishDescription: formData.englishDescription || undefined,
           duration: formData.duration,
           price: formData.price,
-          cost: formData.cost,
-          image: formData.image,
+          cost: formData.cost || undefined,
+          image: formData.image || undefined,
           isActive: formData.isActive,
+          allowPriceOverride: formData.allowPriceOverride,
+          unit: formData.unit || undefined,
+          displayLocation: formData.displayLocation || undefined,
         }),
       });
 
@@ -145,10 +175,23 @@ export default function ServiceFormModal({
           />
         </div>
 
+        {/* Mã dịch vụ */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mã dịch vụ
+          </label>
+          <Input
+            type="text"
+            value={formData.code}
+            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+            placeholder="VD: DV10001"
+          />
+        </div>
+
         {/* Danh mục */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Danh mục <span className="text-red-500">*</span>
+            Nhóm dịch vụ <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.category}
@@ -156,7 +199,7 @@ export default function ServiceFormModal({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             required
           >
-            <option value="">Chọn danh mục</option>
+            <option value="">Chọn nhóm dịch vụ</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -174,6 +217,33 @@ export default function ServiceFormModal({
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Nhập mô tả dịch vụ"
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+
+        {/* Tên tiếng Anh */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tên tiếng Anh (nếu có)
+          </label>
+          <Input
+            type="text"
+            value={formData.englishName}
+            onChange={(e) => setFormData({ ...formData, englishName: e.target.value })}
+            placeholder="English name"
+          />
+        </div>
+
+        {/* Mô tả tiếng Anh */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mô tả bằng Tiếng Anh (nếu có)
+          </label>
+          <textarea
+            value={formData.englishDescription}
+            onChange={(e) => setFormData({ ...formData, englishDescription: e.target.value })}
+            placeholder="English description"
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
@@ -242,8 +312,38 @@ export default function ServiceFormModal({
           />
         </div>
 
-        {/* Trạng thái */}
+        {/* Đơn vị tính */}
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Đơn vị tính
+          </label>
+          <Input
+            type="text"
+            value={formData.unit}
+            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+            placeholder="Ví dụ: lần, giờ, ngày, gói..."
+          />
+        </div>
+
+        {/* Tùy chọn hiển thị */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tùy chọn hiển thị
+          </label>
+          <select
+            value={formData.displayLocation}
+            onChange={(e) => setFormData({ ...formData, displayLocation: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="BOTH">Cả POS và Booking</option>
+            <option value="POS">Chỉ POS</option>
+            <option value="BOOKING">Chỉ Booking</option>
+            <option value="NONE">Ẩn</option>
+          </select>
+        </div>
+
+        {/* Trạng thái */}
+        <div className="space-y-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -255,6 +355,19 @@ export default function ServiceFormModal({
             />
             <span className="text-sm font-medium text-gray-700">
               Dịch vụ đang hoạt động
+            </span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.allowPriceOverride}
+              onChange={(e) =>
+                setFormData({ ...formData, allowPriceOverride: e.target.checked })
+              }
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Cho phép sửa giá khi thanh toán
             </span>
           </label>
         </div>

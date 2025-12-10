@@ -10,23 +10,7 @@ export async function GET(
   try {
     const service = await prisma.service.findUnique({
       where: { id: params.id },
-      include: {
-        category: true,
-        staffServices: {
-          include: {
-            staff: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      // Note: category is a String field, not a relation, so we don't include it
     });
 
     if (!service) {
@@ -47,33 +31,43 @@ export async function PUT(
   try {
     const body = await request.json();
     const {
-      categoryId,
+      category,
+      categoryId, // Support both for backward compatibility
       name,
+      code,
       description,
+      englishName,
+      englishDescription,
       duration,
       price,
       cost,
       image,
       isActive,
+      allowPriceOverride,
+      unit,
+      displayLocation,
       sortOrder,
     } = body;
 
+    const updateData: any = {};
+    if (category !== undefined) updateData.category = category;
+    if (categoryId !== undefined) updateData.category = categoryId; // Map categoryId to category
+    if (name !== undefined) updateData.name = name;
+    if (code !== undefined) updateData.code = code;
+    if (description !== undefined) updateData.description = description;
+    if (englishName !== undefined) updateData.englishName = englishName;
+    if (englishDescription !== undefined) updateData.englishDescription = englishDescription;
+    if (duration !== undefined) updateData.duration = parseInt(String(duration));
+    if (price !== undefined) updateData.price = parseInt(String(price));
+    if (image !== undefined) updateData.image = image;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (allowPriceOverride !== undefined) updateData.allowPriceOverride = allowPriceOverride;
+    if (unit !== undefined) updateData.unit = unit;
+    if (displayLocation !== undefined) updateData.displayLocation = displayLocation;
+
     const service = await prisma.service.update({
       where: { id: params.id },
-      data: {
-        categoryId,
-        name,
-        description,
-        duration: duration ? parseInt(duration) : undefined,
-        price: price ? parseFloat(price) : undefined,
-        cost: cost !== undefined ? (cost ? parseFloat(cost) : null) : undefined,
-        image,
-        isActive,
-        sortOrder,
-      },
-      include: {
-        category: true,
-      },
+      data: updateData,
     });
 
     return successResponse(service, "Service updated successfully");

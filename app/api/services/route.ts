@@ -9,9 +9,19 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
+    const search = searchParams.get("search");
 
     const where: any = {};
-    if (category) where.category = category;
+    if (category) {
+      where.category = { equals: category, mode: "insensitive" };
+    }
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { code: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
     const services = await prisma.service.findMany({
       where,
@@ -38,22 +48,48 @@ export async function GET(req: Request) {
 // POST /api/services - Create a new service
 export async function POST(req: Request) {
   try {
-    const { name, category, price, duration } = await req.json();
+    const {
+      name,
+      code,
+      category,
+      categoryId, // Support both for backward compatibility
+      description,
+      englishName,
+      englishDescription,
+      price,
+      duration,
+      image,
+      isActive,
+      allowPriceOverride,
+      unit,
+      displayLocation,
+    } = await req.json();
 
-    if (!name || !category || price === undefined || duration === undefined) {
+    if (!name || !category) {
       return NextResponse.json(
-        { success: false, error: "name, category, price, and duration are required" },
+        { success: false, error: "name and category are required" },
         { status: 400 }
       );
     }
 
-    // Check if service already exists
-    const existing = await prisma.service.findFirst({
-      where: {
-        name: { equals: name, mode: "insensitive" },
-        category: { equals: category, mode: "insensitive" },
-      },
-    });
+    // Use categoryId if provided, otherwise use category
+    const finalCategory = categoryId || category;
+
+    // Check if service already exists (by code if provided, otherwise by name+category)
+    let existing = null;
+    if (code) {
+      existing = await prisma.service.findFirst({
+        where: { code },
+      });
+    }
+    if (!existing) {
+      existing = await prisma.service.findFirst({
+        where: {
+          name: { equals: name, mode: "insensitive" },
+          category: { equals: finalCategory, mode: "insensitive" },
+        },
+      });
+    }
 
     if (existing) {
       return NextResponse.json({
@@ -65,9 +101,18 @@ export async function POST(req: Request) {
     const service = await prisma.service.create({
       data: {
         name,
-        category,
-        price: parseInt(price),
-        duration: parseInt(duration),
+        code: code || null,
+        category: finalCategory,
+        description: description || null,
+        englishName: englishName || null,
+        englishDescription: englishDescription || null,
+        price: price !== undefined ? parseInt(String(price)) : 0,
+        duration: duration !== undefined ? parseInt(String(duration)) : 30,
+        image: image || null,
+        isActive: isActive !== undefined ? isActive : true,
+        allowPriceOverride: allowPriceOverride !== undefined ? allowPriceOverride : false,
+        unit: unit || null,
+        displayLocation: displayLocation || null,
       },
     });
 

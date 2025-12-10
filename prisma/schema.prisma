@@ -502,7 +502,6 @@ model CustomerProfile {
 
   // Relationship
   customer Customer @relation(fields: [customerId], references: [id])
-  photos   CustomerPhoto[] // Customer photos
 }
 
 ///////////////////////////////////////////////////////////////

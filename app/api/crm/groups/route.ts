@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
       allCustomers.forEach((customer) => {
         // Skip placeholder customers
         const isPlaceholder = customer.phone?.startsWith("GROUP_") || 
-                              customer.status === "INACTIVE" ||
                               (customer.profile?.preferences as any)?.isGroupPlaceholder === true;
         
         if (isPlaceholder) {
@@ -98,7 +97,6 @@ export async function POST(request: NextRequest) {
         data: {
           name: `[Nhóm] ${groupName.trim()}`,
           phone: placeholderPhone,
-          status: "INACTIVE", // Mark as inactive so it doesn't show in normal lists
         },
       });
 

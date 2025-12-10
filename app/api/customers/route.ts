@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
-    const status = searchParams.get("status");
 
     const skip = (page - 1) * limit;
 
@@ -20,19 +19,11 @@ export async function GET(request: NextRequest) {
         { phone: { contains: search, mode: "insensitive" } },
       ];
     }
-    if (status) {
-      where.status = status;
-    }
 
     let customers: any[], total: number;
     try {
       // Build where clause
       const whereWithFilter: any = { ...where };
-      
-      // If status filter exists, use it; otherwise exclude INACTIVE
-      if (!where.status) {
-        whereWithFilter.status = { not: "INACTIVE" };
-      }
 
       [customers, total] = await Promise.all([
         prisma.customer.findMany({
@@ -50,7 +41,6 @@ export async function GET(request: NextRequest) {
       // Filter out placeholder customers in memory (more reliable than Prisma query)
       customers = customers.filter((c: any) => {
         const isPlaceholder = c.phone?.startsWith("GROUP_") || 
-                              c.status === "INACTIVE" ||
                               (c.profile?.preferences as any)?.isGroupPlaceholder === true;
         return !isPlaceholder;
       });
@@ -86,9 +76,6 @@ export async function GET(request: NextRequest) {
             c.name.toLowerCase().includes(search.toLowerCase()) ||
             c.phone.includes(search)
           );
-        }
-        if (status) {
-          filteredMock = filteredMock.filter(c => c.status === status);
         }
         
         // Apply pagination
@@ -132,7 +119,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
-    const status = searchParams.get("status");
     const skip = (page - 1) * limit;
     
     let filteredMock = mockCustomers;
@@ -141,9 +127,6 @@ export async function GET(request: NextRequest) {
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.includes(search)
       );
-    }
-    if (status) {
-      filteredMock = filteredMock.filter(c => c.status === status);
     }
     
     const startIndex = skip;

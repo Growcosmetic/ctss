@@ -69,7 +69,6 @@ interface Customer {
   totalSpent: number;
   lastVisitDate?: string;
   loyaltyPoints: number;
-  status: string;
   createdAt: string;
 }
 
@@ -149,7 +148,6 @@ export default function CRMPage() {
         // Otherwise use regular customers API
         const params = new URLSearchParams();
         if (searchTerm) params.append("search", searchTerm);
-        if (activeTab !== "all") params.append("status", activeTab.toUpperCase());
         params.append("page", currentPage.toString());
         params.append("limit", itemsPerPage.toString());
         params.append("sortBy", sortBy);
@@ -394,14 +392,6 @@ export default function CRMPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      ACTIVE: "bg-green-100 text-green-800",
-      INACTIVE: "bg-gray-100 text-gray-800",
-      BLACKLISTED: "bg-red-100 text-red-800",
-    };
-    return colors[status] || colors.ACTIVE;
-  };
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -431,7 +421,7 @@ export default function CRMPage() {
       newToday,
       birthdaysToday,
       birthdaysThisMonth,
-      active: customers.filter((c) => c.status === "ACTIVE").length,
+      active: customers.filter((c) => c.totalVisits > 0).length,
       totalRevenue: customers.reduce((sum, c) => sum + Number(c.totalSpent), 0),
       totalPoints: customers.reduce((sum, c) => sum + c.loyaltyPoints, 0),
     };
@@ -572,7 +562,7 @@ export default function CRMPage() {
               <div>
                 <p className="text-sm text-gray-500">Khách hàng hoạt động</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {customers.filter((c) => c.status === "ACTIVE").length}
+                  {customers.filter((c) => c.totalVisits > 0).length}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-500" />
@@ -770,7 +760,6 @@ export default function CRMPage() {
                         {sortBy === "lastVisitDate" && <ArrowUpDown size={14} />}
                       </button>
                     </TableHead>
-                    <TableHead>Trạng thái</TableHead>
                     <TableHead>Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -840,15 +829,6 @@ export default function CRMPage() {
                           ) : (
                             <span className="text-sm text-gray-400">Chưa có</span>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              customer.status
-                            )}`}
-                          >
-                            {customer.status}
-                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

@@ -104,8 +104,8 @@ export async function generateCustomerSummary(
   if (customer.bookings.length > 0) {
     warningFlags.push("Có lịch hẹn không đến (no-show)");
   }
-  if (customer.status === "BLACKLISTED") {
-    warningFlags.push("Khách hàng bị blacklist");
+  if (customer.riskLevel === "HIGH") {
+    warningFlags.push("Khách hàng có rủi ro cao");
   }
   if (customer.lastVisitDate) {
     const daysSinceLastVisit = Math.floor(
@@ -414,9 +414,9 @@ export async function detectChurnRisk(customerId: string): Promise<ChurnRisk> {
     riskScore += 0.3;
   }
 
-  // Check if customer is inactive
-  if (customer.status === "INACTIVE" || customer.status === "BLACKLISTED") {
-    reasons.push(`Trạng thái: ${customer.status}`);
+  // Check if customer has high risk level
+  if (customer.riskLevel === "HIGH") {
+    reasons.push(`Mức độ rủi ro: ${customer.riskLevel}`);
     riskScore += 0.5;
   }
 

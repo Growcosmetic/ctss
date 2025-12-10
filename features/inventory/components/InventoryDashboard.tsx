@@ -11,7 +11,7 @@ import { Package, AlertTriangle, Loader2, Database } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function InventoryDashboard() {
-  const { currentBranch, loading: branchLoading } = useBranch();
+  const { currentBranch, loading: branchLoading, loadBranches } = useBranch();
   const [stocks, setStocks] = useState<ProductStock[]>([]);
   const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
@@ -75,8 +75,12 @@ export default function InventoryDashboard() {
       
       if (result.success) {
         alert(`✅ ${result.data.message}`);
-        // Reload data after seeding
-        await loadData();
+        // Reload branches to get the real branch, then reload data
+        await loadBranches();
+        // Wait a bit for branch to update, then reload data
+        setTimeout(() => {
+          loadData();
+        }, 500);
       } else {
         alert(`❌ Lỗi: ${result.error || "Không thể tạo dữ liệu mẫu"}`);
       }
@@ -120,17 +124,15 @@ export default function InventoryDashboard() {
               </p>
             )}
           </div>
-          {currentBranch && currentBranch.id !== "default-branch" && (
-            <Button
-              onClick={handleSeedData}
-              disabled={seeding}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Database className="w-4 h-4" />
-              {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
-            </Button>
-          )}
+          <Button
+            onClick={handleSeedData}
+            disabled={seeding}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Database className="w-4 h-4" />
+            {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
+          </Button>
         </div>
       </div>
 

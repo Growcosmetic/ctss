@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     const staffBookings = bookings.map((booking) => ({
       id: booking.id,
       customerId: booking.customerId,
-      customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+      customerName: booking.customer.name,
       customerPhone: booking.customer.phone,
       serviceName: booking.bookingServices[0]?.service?.name || "Dịch vụ",
       serviceId: booking.bookingServices[0]?.serviceId || "",

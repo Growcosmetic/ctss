@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
 
       const timelineBooking = {
         id: booking.id,
-        customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+        customerName: booking.customer.name,
         serviceName:
           booking.bookingServices[0]?.service?.name || "Dịch vụ",
         stylistName: booking.staff

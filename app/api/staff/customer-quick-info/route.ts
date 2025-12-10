@@ -93,13 +93,13 @@ export async function GET(request: NextRequest) {
 
     return successResponse({
       customerId: customer.id,
-      name: `${customer.firstName} ${customer.lastName}`,
+      name: customer.name,
       phone: customer.phone,
       lastServices,
       minaSummary,
       churnRisk,
       notes,
-      preferences: customer.preferences,
+      preferences: (customer.profile?.preferences as any) || {},
     });
   } catch (error: any) {
     return errorResponse(error.message || "Failed to get customer quick info", 500);

@@ -183,12 +183,12 @@ async function getCustomerAnalyticsReport(dateFrom: Date, dateTo: Date) {
 
   return {
     totalCustomers: customers.length,
-    activeCustomers: customers.filter((c) => c.status === "ACTIVE").length,
+    activeCustomers: customers.filter((c) => c.totalVisits > 0).length,
     newCustomers: customers.filter((c) => c.createdAt >= dateFrom).length,
     topCustomers: customers
       .map((c) => ({
         id: c.id,
-        name: `${c.firstName} ${c.lastName}`,
+        name: c.name,
         totalSpent: Number(c.totalSpent),
         totalVisits: c.totalVisits,
       }))

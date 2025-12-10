@@ -345,6 +345,7 @@ export default function BookingCalendar({
                                           window.location.href = `tel:${phone}`;
                                         })}
                                         stylists={stylists}
+                                        onQuickEdit={onQuickEdit}
                                       />
                                     </div>
                                   </div>
@@ -414,6 +415,7 @@ export default function BookingCalendar({
                                       window.location.href = `tel:${phone}`;
                                     })}
                                     stylists={stylists}
+                                    onQuickEdit={onQuickEdit}
                                   />
                                 </div>
                               </div>

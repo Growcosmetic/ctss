@@ -18,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import ServiceFormModal from "@/components/services/ServiceFormModal";
 
 interface Service {
   id: string;
@@ -67,7 +68,7 @@ export default function ServicesPage() {
       const response = await fetch(`/api/services?${params.toString()}`);
       const result = await response.json();
       if (result.success) {
-        setServices(result.data.services);
+        setServices(result.services || result.data?.services || []);
       }
     } catch (error) {
       console.error("Failed to fetch services:", error);
@@ -77,12 +78,26 @@ export default function ServicesPage() {
   };
 
   const fetchCategories = async () => {
-    // This would need a categories API endpoint
-    // For now, extract unique categories from services
-    const uniqueCategories = Array.from(
-      new Map(services.map((s) => [s.category.id, s.category])).values()
-    );
-    setCategories(uniqueCategories);
+    try {
+      // Try to fetch categories from API first
+      const response = await fetch("/api/services/categories");
+      const result = await response.json();
+      if (result.success && result.data?.length > 0) {
+        setCategories(result.data);
+      } else {
+        // Fallback: extract unique categories from services
+        const uniqueCategories = Array.from(
+          new Map(services.map((s) => [s.category.id, s.category])).values()
+        );
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      // Fallback: extract unique categories from services
+      const uniqueCategories = Array.from(
+        new Map(services.map((s) => [s.category.id, s.category])).values()
+      );
+      setCategories(uniqueCategories);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -98,6 +113,18 @@ export default function ServicesPage() {
     } catch (error) {
       console.error("Failed to delete service:", error);
     }
+  };
+
+  const handleEdit = (service: Service) => {
+    setSelectedService(service);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    fetchServices();
+    fetchCategories();
+    setIsFormOpen(false);
+    setSelectedService(null);
   };
 
   const getCurrentPrice = (service: Service) => {
@@ -210,7 +237,7 @@ export default function ServicesPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedService(service);
+                        handleEdit(service);
                       }}
                       className="text-primary-600 hover:text-primary-700"
                     >
@@ -275,7 +302,7 @@ export default function ServicesPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedService(service);
+                            handleEdit(service);
                           }}
                           className="text-primary-600 hover:text-primary-700"
                         >
@@ -360,6 +387,18 @@ export default function ServicesPage() {
             </div>
           </Modal>
         )}
+
+        {/* Service Form Modal */}
+        <ServiceFormModal
+          isOpen={isFormOpen}
+          onClose={() => {
+            setIsFormOpen(false);
+            setSelectedService(null);
+          }}
+          service={selectedService}
+          categories={categories}
+          onSuccess={handleFormSuccess}
+        />
       </div>
     </MainLayout>
   );

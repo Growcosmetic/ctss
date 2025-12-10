@@ -15,8 +15,11 @@ export function useBranch() {
   }, []);
 
   useEffect(() => {
-    if (currentBranch) {
-      loadBranchKPIs(currentBranch.id);
+    // Only load KPIs for real branches, not mock/default branches
+    if (currentBranch && currentBranch.id !== "default-branch") {
+      loadBranchKPIs(currentBranch.id).catch(() => {
+        // Silently fail if KPIs can't be loaded
+      });
     }
   }, [currentBranch]);
 

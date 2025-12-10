@@ -7,72 +7,135 @@ import { ProductStock, LowStockAlert, StockTransaction } from "../types";
 import StockCard from "./StockCard";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
-import { Package, AlertTriangle, Loader2 } from "lucide-react";
+import { Package, AlertTriangle, Loader2, Database } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export default function InventoryDashboard() {
-  const { currentBranch } = useBranch();
+  const { currentBranch, loading: branchLoading } = useBranch();
   const [stocks, setStocks] = useState<ProductStock[]>([]);
   const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
-    if (currentBranch?.id) {
+    // Wait for branch to load, then load inventory data
+    if (!branchLoading && currentBranch?.id) {
       loadData();
+    } else if (!branchLoading && !currentBranch) {
+      // If no branch after loading, set loading to false
+      setLoading(false);
     }
-  }, [currentBranch]);
+  }, [currentBranch, branchLoading]);
 
   const loadData = async () => {
-    if (!currentBranch?.id) return;
+    // Skip loading if branch is mock/default-branch
+    if (!currentBranch?.id || currentBranch.id === "default-branch") {
+      setLoading(false);
+      setStocks([]);
+      setAlerts([]);
+      setTransactions([]);
+      return;
+    }
 
     try {
       setLoading(true);
       const [stocksData, alertsData, transactionsData] = await Promise.all([
-        getStockLevels(currentBranch.id),
-        getLowStockAlerts(currentBranch.id),
-        getStockTransactions(currentBranch.id, 20),
+        getStockLevels(currentBranch.id).catch(() => []),
+        getLowStockAlerts(currentBranch.id).catch(() => []),
+        getStockTransactions(currentBranch.id, 20).catch(() => []),
       ]);
-      setStocks(stocksData);
-      setAlerts(alertsData);
-      setTransactions(transactionsData);
+      setStocks(stocksData || []);
+      setAlerts(alertsData || []);
+      setTransactions(transactionsData || []);
     } catch (error) {
       console.error("Error loading inventory data:", error);
+      // Set empty arrays on error
+      setStocks([]);
+      setAlerts([]);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSeedData = async () => {
+    if (!confirm("Bạn có chắc muốn tạo dữ liệu mẫu? Điều này sẽ tạo sản phẩm và tồn kho mẫu.")) {
+      return;
+    }
+
+    try {
+      setSeeding(true);
+      const response = await fetch("/api/inventory/seed", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ ${result.data.message}`);
+        // Reload data after seeding
+        await loadData();
+      } else {
+        alert(`❌ Lỗi: ${result.error || "Không thể tạo dữ liệu mẫu"}`);
+      }
+    } catch (error) {
+      console.error("Error seeding data:", error);
+      alert("❌ Có lỗi xảy ra khi tạo dữ liệu mẫu");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="w-full">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Package className="w-6 h-6" />
-                Quản lý kho
-              </h1>
-              {currentBranch && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Chi nhánh: {currentBranch.name}
-                </p>
-              )}
-            </div>
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Package className="w-6 h-6" />
+              Quản lý kho
+            </h1>
+            {currentBranch && (
+              <p className="text-sm text-gray-600 mt-1">
+                Chi nhánh: {currentBranch.name}
+                {currentBranch.id === "default-branch" && (
+                  <span className="ml-2 text-xs text-gray-400">(Chưa có chi nhánh thật)</span>
+                )}
+              </p>
+            )}
+            {!currentBranch && !branchLoading && (
+              <p className="text-sm text-gray-500 mt-1">
+                Vui lòng chọn chi nhánh để xem kho hàng
+              </p>
+            )}
           </div>
+          {currentBranch && currentBranch.id !== "default-branch" && (
+            <Button
+              onClick={handleSeedData}
+              disabled={seeding}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Database className="w-4 h-4" />
+              {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="space-y-6">
         {/* Alerts */}
         {alerts.length > 0 && (
           <div className="mb-6">
@@ -95,11 +158,19 @@ export default function InventoryDashboard() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Tồn kho hiện tại
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stocks.map((stock) => (
-              <StockCard key={stock.id} stock={stock} />
-            ))}
-          </div>
+          {stocks.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+              <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Chưa có sản phẩm nào trong kho</p>
+              <p className="text-sm text-gray-400 mt-2">Hãy thêm sản phẩm để bắt đầu quản lý kho</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stocks.map((stock) => (
+                <StockCard key={stock.id} stock={stock} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent Transactions */}

@@ -588,13 +588,26 @@ ctss/
 - Import/Export Excel
 
 ### **4. Booking System** ✅
-- Calendar view
-- Staff mode / Time mode
-- Drag & drop booking
-- Booking detail drawer
-- Create/Edit/Delete booking
-- Staff filter panel
-- Booking list panel
+**Tính năng cơ bản:**
+- ✅ Calendar view với drag & drop
+- ✅ Staff mode / Time mode (toggle view)
+- ✅ Drag & drop booking (di chuyển booking giữa các slot)
+- ✅ Booking detail drawer (xem chi tiết booking)
+- ✅ Create booking (tạo booking mới)
+- ✅ Delete booking (hủy booking)
+- ⚠️ Edit booking (UI có, chưa tích hợp API đầy đủ)
+- ✅ Staff filter panel (lọc theo nhân viên)
+- ✅ Booking list panel (danh sách booking theo ngày)
+- ✅ Quick filter (Hôm nay, Tuần này)
+- ✅ Search booking (tìm theo tên/SĐT)
+- ✅ Stats summary (tổng quan booking hôm nay)
+
+**Tính năng nâng cao (chưa hoàn chỉnh):**
+- ⚠️ Nhắn tin Zalo/SMS (có button, chưa tích hợp API)
+- ❌ Copy/Duplicate booking (chưa có)
+- ⚠️ Walk-in booking (có UI, chưa rõ đã hoàn chỉnh)
+- ⚠️ Thông báo booking sắp đến (có reminder system, chưa có badge trên UI)
+- ❌ Quick edit (click để edit nhanh - chưa có)
 
 ### **5. POS System** ✅
 - Checkout

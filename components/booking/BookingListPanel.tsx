@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Search, Phone, X, CheckCircle, Clock, User, Scissors } from "lucide-react";
+import { Search, Phone, X, CheckCircle, Clock, User, Scissors, AlertCircle } from "lucide-react";
 import { format, isToday, parse } from "date-fns";
 
 interface BookingListPanelProps {
@@ -70,6 +70,16 @@ export default function BookingListPanel({
       return aHour * 60 + aMin - (bHour * 60 + bMin);
     });
   }, [bookingList, selectedDateStr, searchQuery, statusFilter]);
+
+  // Tính toán booking sắp đến (< 30 phút)
+  const getTimeUntilBooking = (booking: any) => {
+    if (!booking.date || !booking.start) return null;
+    const bookingDateTime = new Date(`${booking.date}T${booking.start}`);
+    const now = new Date();
+    const diffMs = bookingDateTime.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    return diffMinutes;
+  };
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -222,13 +232,23 @@ export default function BookingListPanel({
               const canCheckIn =
                 booking.status?.toUpperCase() === "PENDING" ||
                 booking.status?.toUpperCase() === "CONFIRMED";
+              const timeUntil = getTimeUntilBooking(booking);
+              const isUpcoming = timeUntil !== null && timeUntil > 0 && timeUntil <= 30;
 
               return (
                 <div
                   key={booking.id}
                   onClick={() => onBookingClick?.(booking)}
-                  className="p-3 border border-gray-200 rounded-lg hover:border-[#A4E3E3] hover:shadow-sm transition-all cursor-pointer bg-white"
+                  className="p-3 border border-gray-200 rounded-lg hover:border-[#A4E3E3] hover:shadow-sm transition-all cursor-pointer bg-white relative"
                 >
+                  {/* Badge "Sắp đến" */}
+                  {isUpcoming && (
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 shadow-md">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>Sắp đến</span>
+                    </div>
+                  )}
+                  
                   {/* Header: Time + Status */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -239,6 +259,11 @@ export default function BookingListPanel({
                       {booking.end && (
                         <span className="text-xs text-gray-500">
                           ~ {booking.end}
+                        </span>
+                      )}
+                      {isUpcoming && timeUntil !== null && (
+                        <span className="text-xs text-red-600 font-medium">
+                          ({timeUntil} phút)
                         </span>
                       )}
                     </div>

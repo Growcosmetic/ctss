@@ -49,6 +49,18 @@ export default function BookingPage() {
     setIsCreateModalOpen(true);
   };
 
+  // Handle walk-in booking (quick create)
+  const handleWalkInBooking = () => {
+    // Tạo booking walk-in với thời gian hiện tại
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${Math.floor(now.getMinutes() / 30) * 30.toString().padStart(2, "0")}`;
+    const todayStr = format(now, "yyyy-MM-dd");
+    
+    // Mở modal với dữ liệu walk-in
+    setIsCreateModalOpen(true);
+    // TODO: Pass walk-in flag to CreateBookingModal
+  };
+
   const handleSubmitBooking = (data: BookingFormData) => {
     const service = fakeServices.find((s) => s.id === data.serviceId);
     const stylist = fakeStylists.find((s) => s.id === data.stylistId);
@@ -134,6 +146,35 @@ export default function BookingPage() {
     }
   };
 
+  const handleQuickEdit = (booking: any, field: "time" | "stylist" | "service") => {
+    // Mở drawer với booking và chế độ edit
+    const originalBooking = bookingList.find((b) => b.id === booking.id);
+    if (originalBooking) {
+      const stylist = fakeStylists.find((s) => s.id === booking.stylistId);
+      setSelectedBooking({
+        ...booking,
+        phone: originalBooking.phone,
+        stylistName: stylist?.name || "",
+        notes: originalBooking.notes,
+      });
+      setIsDetailDrawerOpen(true);
+      // Tự động focus vào field được chọn
+      setTimeout(() => {
+        if (field === "time") {
+          // Focus vào time input trong drawer
+          const timeInput = document.querySelector('[data-field="time"]') as HTMLElement;
+          timeInput?.click();
+        } else if (field === "stylist") {
+          const stylistSelect = document.querySelector('[data-field="stylist"]') as HTMLElement;
+          stylistSelect?.click();
+        } else if (field === "service") {
+          const serviceSelect = document.querySelector('[data-field="service"]') as HTMLElement;
+          serviceSelect?.click();
+        }
+      }, 100);
+    }
+  };
+
   const handleCheckIn = (bookingId: string) => {
     // Update booking status to IN_PROGRESS
     setBookingList(
@@ -209,6 +250,7 @@ export default function BookingPage() {
                 onCheckIn={handleCheckIn}
                 onCall={handleCall}
                 viewMode={viewMode}
+                onQuickEdit={handleQuickEdit}
               />
             </div>
 

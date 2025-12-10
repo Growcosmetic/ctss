@@ -35,7 +35,7 @@ for (let hour = 8; hour < 22; hour++) {
 // =======================================================
 // DRAGGABLE BOOKING
 // =======================================================
-function DraggableBooking({ booking, onClick, isDragging, onCheckIn, onCall, stylists }: any) {
+function DraggableBooking({ booking, onClick, isDragging, onCheckIn, onCall, stylists, onQuickEdit }: any) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: booking.id,
     data: booking,
@@ -56,6 +56,7 @@ function DraggableBooking({ booking, onClick, isDragging, onCheckIn, onCall, sty
         onCheckIn={onCheckIn}
         onCall={onCall}
         stylists={stylists}
+        onQuickEdit={onQuickEdit}
       />
     </div>
   );
@@ -98,6 +99,7 @@ interface BookingCalendarProps {
   onCheckIn?: (id: string) => void;
   onCall?: (phone: string) => void;
   viewMode?: "staff" | "time";
+  onQuickEdit?: (booking: any, field: "time" | "stylist" | "service") => void;
 }
 
 export default function BookingCalendar({
@@ -112,6 +114,7 @@ export default function BookingCalendar({
   onCheckIn,
   onCall,
   viewMode = "time",
+  onQuickEdit,
 }: BookingCalendarProps) {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const { getAvailableSlots } = useBestSlot();

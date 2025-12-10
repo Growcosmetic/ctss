@@ -18,6 +18,7 @@ import {
   AlertCircle,
   XCircle,
   Loader,
+  Copy,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fakeStylists } from "@/lib/data/fakeStylists";
@@ -145,9 +146,58 @@ export default function BookingDetailDrawer({
     }
   };
 
-  const handleSendZalo = () => {
-    // TODO: Implement Zalo message sending
-    alert(`Gửi tin nhắn Zalo cho ${booking.customerName} (${booking.phone})`);
+  const handleSendZalo = async () => {
+    if (!booking?.phone) return;
+    
+    try {
+      // Gửi tin nhắn Zalo qua API
+      const response = await fetch("/api/messaging/zalo/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: booking.phone,
+          message: `Xin chào ${booking.customerName}, bạn có lịch hẹn tại salon vào ${booking.date} lúc ${booking.time}. Vui lòng xác nhận.`,
+        }),
+      });
+      
+      if (response.ok) {
+        alert(`Đã gửi tin nhắn Zalo cho ${booking.customerName}`);
+      } else {
+        // Fallback: mở Zalo app nếu API chưa sẵn sàng
+        window.open(`https://zalo.me/${booking.phone}`, "_blank");
+      }
+    } catch (error) {
+      // Fallback: mở Zalo app
+      window.open(`https://zalo.me/${booking.phone}`, "_blank");
+    }
+  };
+
+  const handleCopyBooking = () => {
+    if (!booking) return;
+    
+    // Tạo booking mới từ booking hiện tại
+    const newBooking = {
+      id: `booking-${Date.now()}`,
+      customerName: booking.customerName,
+      phone: booking.phone,
+      serviceName: booking.serviceName,
+      stylistId: booking.stylistId,
+      date: booking.date,
+      start: booking.time,
+      end: (() => {
+        const [hour, minute] = booking.time.split(":").map(Number);
+        const endMinutes = hour * 60 + minute + booking.duration;
+        const endHour = Math.floor(endMinutes / 60);
+        const endMinute = endMinutes % 60;
+        return `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
+      })(),
+      status: "pending" as const,
+      notes: booking.notes,
+    };
+
+    setBookingList([...bookingList, newBooking]);
+    alert(`Đã tạo bản sao booking cho ${booking.customerName}`);
+    onClose();
   };
 
   const handlePrint = () => {
@@ -601,6 +651,14 @@ export default function BookingDetailDrawer({
                 >
                   <Edit className="w-4 h-4" />
                   Sửa
+                </button>
+                <button
+                  onClick={handleCopyBooking}
+                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+                  title="Tạo bản sao booking này"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy booking
                 </button>
                 <button
                   onClick={handleSendZalo}

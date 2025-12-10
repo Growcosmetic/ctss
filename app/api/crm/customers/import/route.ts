@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
         try {
           const {
             name,
+            firstName,
+            lastName,
             phone,
             email,
             dateOfBirth,
@@ -32,6 +34,11 @@ export async function POST(request: NextRequest) {
             address,
             city,
             province,
+            country,
+            preferences,
+            notes,
+            loyaltyPoints,
+            totalSpent,
           } = customerData;
 
           if (!name || !phone) {
@@ -60,7 +67,10 @@ export async function POST(request: NextRequest) {
               address: address || currentPreferences.address,
               city: city || currentPreferences.city,
               province: province || currentPreferences.province,
-              customerGroup: groupName || currentPreferences.customerGroup,
+              country: country || currentPreferences.country,
+              customerGroup: groupName || preferences?.customerGroup || currentPreferences.customerGroup,
+              rank: preferences?.rank || currentPreferences.rank,
+              referralSource: preferences?.referralSource || currentPreferences.referralSource,
             };
 
             await prisma.customer.update({
@@ -69,6 +79,8 @@ export async function POST(request: NextRequest) {
                 name: name || existing.name,
                 birthday: dateOfBirth ? new Date(dateOfBirth) : existing.birthday,
                 gender: gender || existing.gender,
+                notes: notes || existing.notes,
+                totalSpent: totalSpent !== undefined ? totalSpent : existing.totalSpent,
               },
             });
 
@@ -86,6 +98,21 @@ export async function POST(request: NextRequest) {
               },
             });
 
+            // Update loyalty points if provided
+            if (loyaltyPoints !== undefined && loyaltyPoints > 0) {
+              await prisma.customerLoyalty.upsert({
+                where: { customerId: existing.id },
+                update: {
+                  totalPoints: loyaltyPoints,
+                },
+                create: {
+                  customerId: existing.id,
+                  totalPoints: loyaltyPoints,
+                  lifetimePoints: loyaltyPoints,
+                },
+              });
+            }
+
             results.updated++;
           } else {
             // Create new customer
@@ -95,6 +122,8 @@ export async function POST(request: NextRequest) {
                 phone,
                 birthday: dateOfBirth ? new Date(dateOfBirth) : null,
                 gender: gender || null,
+                notes: notes || null,
+                totalSpent: totalSpent || 0,
               },
             });
 
@@ -108,10 +137,24 @@ export async function POST(request: NextRequest) {
                   address: address || null,
                   city: city || null,
                   province: province || null,
-                  customerGroup: groupName || null,
+                  country: country || null,
+                  customerGroup: groupName || preferences?.customerGroup || null,
+                  rank: preferences?.rank || null,
+                  referralSource: preferences?.referralSource || null,
                 },
               },
             });
+
+            // Create loyalty record if points provided
+            if (loyaltyPoints !== undefined && loyaltyPoints > 0) {
+              await prisma.customerLoyalty.create({
+                data: {
+                  customerId: customer.id,
+                  totalPoints: loyaltyPoints,
+                  lifetimePoints: loyaltyPoints,
+                },
+              });
+            }
 
             results.created++;
           }
@@ -142,4 +185,5 @@ export async function POST(request: NextRequest) {
     return errorResponse(error.message || "Failed to import customers", 500);
   }
 }
+
 

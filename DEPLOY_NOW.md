@@ -1,111 +1,69 @@
-# 🚀 HƯỚNG DẪN DEPLOY NHANH
+# 🚀 DEPLOY LÊN VPS - HƯỚNG DẪN NHANH
 
-## ✅ **Bước 1: Push GitHub (Đã hoàn thành)**
+## ✅ Đã hoàn thành:
+- ✅ Code đã được commit
+- ✅ Code đã được push lên GitHub
 
-Code đã được push lên GitHub thành công!
+## 📋 Bước tiếp theo - Deploy lên VPS:
 
----
-
-## 🚀 **Bước 2: Deploy lên VPS**
-
-### **Cách 1: Tự động (Nếu có SSH key)**
+### Cách 1: SSH vào VPS và chạy lệnh
 
 ```bash
-./deploy-now.sh
-```
-
-### **Cách 2: Thủ công (Khuyến nghị)**
-
-**SSH vào VPS:**
-```bash
+# SSH vào VPS
 ssh root@72.61.119.247
-```
 
-**Chạy các lệnh sau trên VPS:**
-```bash
+# Sau khi vào VPS, chạy các lệnh sau:
 cd ~/ctss
-
-# Pull code mới
 git pull origin main
-
-# Install dependencies (nếu có package mới)
 npm install
-
-# Setup database
 npx prisma db push --accept-data-loss
 npx prisma generate
-
-# Build ứng dụng
 npm run build
-
-# Restart PM2
 pm2 restart ctss
-
-# Hoặc nếu chưa có PM2
-pm2 start npm --name "ctss" -- start
-pm2 save
 ```
 
-### **Cách 3: Dùng script có sẵn trên VPS**
+### Cách 2: Dùng script deploy.sh (nếu SSH key đã setup)
 
 ```bash
-ssh root@72.61.119.247
-cd ~/ctss
-./deploy-vps.sh
+./deploy.sh
 ```
 
 ---
 
-## ✅ **Kiểm tra sau khi deploy**
+## 🔍 Kiểm tra sau khi deploy:
 
 ```bash
-# Kiểm tra PM2
+# Kiểm tra PM2 status
 pm2 status
-pm2 logs ctss
+
+# Xem logs
+pm2 logs ctss --lines 50
 
 # Kiểm tra ứng dụng
-curl http://localhost:3000/api/health
-
-# Kiểm tra từ browser
-http://72.61.119.247
+curl http://72.61.119.247/api/health
 ```
 
 ---
 
-## 🐛 **Xử lý lỗi**
+## 📝 Các thay đổi đã deploy:
 
-### **Lỗi: Permission denied (SSH)**
-- Cần nhập password hoặc setup SSH key
-- Hoặc deploy thủ công trên VPS
-
-### **Lỗi: Git pull failed**
-- Kiểm tra kết nối internet trên VPS
-- Kiểm tra quyền truy cập GitHub
-
-### **Lỗi: Build failed**
-```bash
-# Clear và rebuild
-rm -rf .next node_modules
-npm install
-npm run build
-```
-
-### **Lỗi: Database permission**
-```bash
-# Dùng db push thay vì migrate
-npx prisma db push --accept-data-loss
-```
+1. ✅ Seed data system (`data/seed-data.js`)
+2. ✅ Script seed toàn bộ hệ thống (`scripts/seed-all-via-api.js`)
+3. ✅ POST endpoint cho `/api/services`
+4. ✅ Sửa Prisma schema
+5. ✅ README hướng dẫn seed data
 
 ---
 
-## 📝 **Ghi chú**
+## 🌐 Sau khi deploy xong:
 
-- **VPS IP**: 72.61.119.247
-- **App URL**: http://72.61.119.247
-- **PM2 Name**: ctss
-- **Port**: 3000
+- Truy cập: http://72.61.119.247
+- CRM: http://72.61.119.247/crm
+- Booking: http://72.61.119.247/booking
 
 ---
 
-*Last updated: 2025-01-XX*
-
+**Lưu ý**: Nếu SSH bị từ chối, cần:
+1. Kiểm tra SSH key đã được thêm vào VPS chưa
+2. Hoặc dùng password để SSH
+3. Hoặc deploy thủ công qua SSH client

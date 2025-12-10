@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock, Plus, Facebook, Globe, CreditCard, Briefcase, Building, Hash, Check } from "lucide-react";
+import { Edit, Trash2, Phone, Mail, Calendar, MapPin, User, Star, Gift, FileText, Users, X, Save, Printer, ShoppingCart, BarChart3, Lock, Plus, Facebook, Globe, CreditCard, Briefcase, Building, Hash, Check, Eye, RefreshCw, Tag } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Gender } from "@/features/crm/types";
 import { saveCustomer } from "@/features/crm/services/crmApi";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import { useCustomer360 } from "@/features/customer360/hooks/useCustomer360";
+import { Customer360Layout } from "@/features/customer360/components/Customer360Layout";
 
 interface Customer {
   id: string;
@@ -67,6 +69,47 @@ interface CustomerDetailPanelProps {
   onAddToGroup?: (customerId: string, groupName: string) => Promise<void>; // Handler to add/move customer to group
 }
 
+interface CustomerTag {
+  id: string;
+  tag: string;
+  category: string | null;
+}
+
+// Customer360 Drawer Component
+function Customer360Drawer({
+  customerId,
+  customerName,
+  onClose,
+}: {
+  customerId: string;
+  customerName: string;
+  onClose: () => void;
+}) {
+  const { data, loading, error } = useCustomer360(customerId);
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex justify-end z-50" onClick={onClose}>
+      <div
+        className="bg-white w-full max-w-6xl h-full overflow-y-auto shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+          <h2 className="text-xl font-semibold text-gray-900">{customerName} - 360° View</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-0">
+          <Customer360Layout data={data} loading={loading} error={error} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerDetailPanel({
   customer,
   onUpdate,
@@ -85,9 +128,65 @@ export default function CustomerDetailPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
+  const [is360ViewOpen, setIs360ViewOpen] = useState(false);
+  const [tags, setTags] = useState<CustomerTag[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
 
   // Extract available groups from API and customers
   const [availableGroups, setAvailableGroups] = React.useState<string[]>([]);
+
+  // Load customer tags
+  React.useEffect(() => {
+    if (customer?.id) {
+      loadCustomerTags();
+    } else {
+      setTags([]);
+    }
+  }, [customer?.id]);
+
+  const loadCustomerTags = async () => {
+    if (!customer?.id) return;
+    
+    setLoadingTags(true);
+    try {
+      const response = await fetch("/api/crm/tags/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: customer.id }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setTags(result.tags || []);
+      }
+    } catch (error) {
+      console.error("Error loading tags:", error);
+    } finally {
+      setLoadingTags(false);
+    }
+  };
+
+  const refreshTags = async () => {
+    if (!customer?.id) return;
+    
+    setLoadingTags(true);
+    try {
+      const response = await fetch("/api/crm/tags/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: customer.id }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setTags(result.tags || []);
+        alert(`Đã làm mới tags: ${result.total} tags`);
+      }
+    } catch (error) {
+      console.error("Error refreshing tags:", error);
+      alert("Có lỗi xảy ra khi làm mới tags");
+    } finally {
+      setLoadingTags(false);
+    }
+  };
 
   React.useEffect(() => {
     const loadGroups = async () => {
@@ -365,6 +464,38 @@ export default function CustomerDetailPanel({
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                   {customer.profile?.preferences?.rank || "Hạng Thường"}
                 </span>
+                
+                {/* Customer Tags */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {loadingTags ? (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                      Đang tải tags...
+                    </span>
+                  ) : tags.length > 0 ? (
+                    <>
+                      {tags.slice(0, 5).map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1"
+                        >
+                          <Tag size={12} />
+                          {tag.tag}
+                        </span>
+                      ))}
+                      {tags.length > 5 && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                          +{tags.length - 5}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs flex items-center gap-1">
+                      <Tag size={12} />
+                      Chưa có tags
+                    </span>
+                  )}
+                </div>
+                
                 <div className="relative">
                   <Button 
                     variant="outline" 
@@ -1035,7 +1166,25 @@ export default function CustomerDetailPanel({
 
         {/* Bottom Action Bar */}
         {customer && (
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex items-center justify-center gap-3 mt-auto">
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex items-center justify-center gap-3 mt-auto flex-wrap">
+            <Button 
+              size="sm" 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              onClick={() => setIs360ViewOpen(true)}
+            >
+              <Eye size={16} className="mr-2" />
+              Xem 360°
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={refreshTags}
+              disabled={loadingTags}
+              title="Làm mới tags"
+            >
+              <RefreshCw size={16} className={`mr-2 ${loadingTags ? 'animate-spin' : ''}`} />
+              {loadingTags ? 'Đang tải...' : tags.length > 0 ? `Làm mới Tags (${tags.length})` : 'Tạo Tags'}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => onPrintReceipt?.(customer.id)}>
               <Printer size={16} className="mr-2" />
               In phiếu
@@ -1059,6 +1208,15 @@ export default function CustomerDetailPanel({
           </div>
         )}
       </div>
+
+      {/* Customer 360 View Drawer */}
+      {is360ViewOpen && customer && (
+        <Customer360Drawer
+          customerId={customer.id}
+          customerName={customer.name || `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Khách hàng"}
+          onClose={() => setIs360ViewOpen(false)}
+        />
+      )}
     </div>
   );
 }

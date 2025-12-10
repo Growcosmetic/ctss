@@ -125,27 +125,44 @@ export default function CRMPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"createdAt" | "totalSpent" | "totalVisits" | "lastVisitDate">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedSegment, setSelectedSegment] = useState<string>("");
   const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCustomers();
-  }, [activeTab, sortBy, sortOrder]);
+  }, [activeTab, sortBy, sortOrder, selectedSegment]);
 
   const fetchCustomers = async () => {
     try {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (activeTab !== "all") params.append("status", activeTab.toUpperCase());
-      params.append("page", currentPage.toString());
-      params.append("limit", itemsPerPage.toString());
-      params.append("sortBy", sortBy);
-      params.append("sortOrder", sortOrder);
+      setLoading(true);
+      let result: any;
 
-      const response = await fetch(`/api/customers?${params.toString()}`);
-      const result = await response.json();
+      // If segment is selected, use segmentation API
+      if (selectedSegment) {
+        const response = await fetch("/api/crm/segmentation/list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ segment: selectedSegment }),
+        });
+        result = await response.json();
+      } else {
+        // Otherwise use regular customers API
+        const params = new URLSearchParams();
+        if (searchTerm) params.append("search", searchTerm);
+        if (activeTab !== "all") params.append("status", activeTab.toUpperCase());
+        params.append("page", currentPage.toString());
+        params.append("limit", itemsPerPage.toString());
+        params.append("sortBy", sortBy);
+        params.append("sortOrder", sortOrder);
+
+        const response = await fetch(`/api/customers?${params.toString()}`);
+        result = await response.json();
+      }
+
       if (result.success) {
         // Map customers để đảm bảo có firstName và lastName
-        const mappedCustomers = result.data.customers.map((c: any) => {
+        const customersList = selectedSegment ? result.customers : result.data.customers;
+        const mappedCustomers = customersList.map((c: any) => {
           const fullName = c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Khách hàng";
           const nameParts = fullName.trim().split(" ");
           const lastName = nameParts.pop() || "";
@@ -499,6 +516,8 @@ export default function CRMPage() {
             onSelectCustomer={handleSelectCustomer}
             searchTerm={listSearchTerm}
             onSearchChange={setListSearchTerm}
+            selectedSegment={selectedSegment}
+            onSegmentChange={setSelectedSegment}
           />
 
                   {/* Center Panel - Customer Detail */}
@@ -900,14 +919,7 @@ export default function CRMPage() {
           )}
         </Card>
 
-        {/* Customer 360 Detail Drawer - Keep for compatibility */}
-        {false && selectedCustomer && (
-          <Customer360Drawer
-            customerId={selectedCustomer.id}
-            customerName={`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}
-            onClose={() => setSelectedCustomer(null)}
-          />
-        )}
+        {/* Customer 360 Detail Drawer - Moved to CustomerDetailPanel */}
         </div>
 
         {/* Customer Form Modal - For adding new customers */}

@@ -48,38 +48,75 @@ export async function getCustomerCore(
 export async function getBookingHistory(
   customerId: string
 ): Promise<CustomerBookingHistory[]> {
-  const bookings = await prisma.booking.findMany({
-    where: { customerId },
-    include: {
-      service: {
-        select: {
-          name: true,
+  try {
+    // Try to get bookings first
+    const bookings = await prisma.booking.findMany({
+      where: { customerId },
+      include: {
+        service: {
+          select: {
+            name: true,
+          },
+        },
+        stylist: {
+          select: {
+            name: true,
+          },
+        },
+        branch: {
+          select: {
+            name: true,
+          },
         },
       },
-      stylist: {
-        select: {
-          name: true,
-        },
+      orderBy: {
+        date: "desc",
       },
-      branch: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      date: "desc",
-    },
-  });
+    });
 
-  return bookings.map((booking) => ({
-    id: booking.id,
-    date: booking.date.toISOString(),
-    serviceName: booking.service?.name,
-    stylistName: booking.stylist?.name,
-    branchName: booking.branch.name,
-    status: booking.status,
-  }));
+    return bookings.map((booking) => ({
+      id: booking.id,
+      date: booking.date.toISOString(),
+      serviceName: booking.service?.name,
+      stylistName: booking.stylist?.name,
+      branchName: booking.branch.name,
+      status: booking.status,
+    }));
+  } catch (error: any) {
+    // If booking table is not accessible, try to use Visit table as fallback
+    if (error.message?.includes("denied access") || error.message?.includes("booking")) {
+      console.warn("Booking table not accessible, using Visit table as fallback");
+      try {
+        const visits = await prisma.visit.findMany({
+          where: { customerId },
+          include: {
+            branch: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            date: "desc",
+          },
+        });
+
+        return visits.map((visit) => ({
+          id: visit.id,
+          date: visit.date.toISOString(),
+          serviceName: visit.service || null,
+          stylistName: visit.stylist || null,
+          branchName: visit.branch?.name || null,
+          status: "COMPLETED" as const,
+        }));
+      } catch (visitError) {
+        console.error("Error getting visit history:", visitError);
+        return [];
+      }
+    }
+    console.error("Error getting booking history:", error);
+    return [];
+  }
 }
 
 // ============================================
@@ -296,19 +333,119 @@ export async function getLoyaltyInfo(
 export async function getVisitFrequency(
   customerId: string
 ): Promise<CustomerVisitFrequency> {
-  const bookings = await prisma.booking.findMany({
-    where: { customerId },
-    select: {
-      date: true,
-    },
-    orderBy: {
-      date: "desc",
-    },
-  });
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { customerId },
+      select: {
+        date: true,
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
 
-  const totalVisits = bookings.length;
+    const totalVisits = bookings.length;
 
-  if (totalVisits === 0) {
+    if (totalVisits === 0) {
+      return {
+        totalVisits: 0,
+        avgVisitInterval: null,
+        lastVisit: null,
+        nextPredictedVisit: null,
+      };
+    }
+
+    // Calculate average interval between visits
+    let totalIntervalDays = 0;
+    let intervalCount = 0;
+
+    for (let i = 0; i < bookings.length - 1; i++) {
+      const current = bookings[i].date;
+      const next = bookings[i + 1].date;
+      const interval = differenceInDays(current, next);
+      totalIntervalDays += interval;
+      intervalCount++;
+    }
+
+    const avgVisitInterval =
+      intervalCount > 0 ? totalIntervalDays / intervalCount : null;
+
+    const lastVisit = bookings[0]?.date.toISOString() ?? null;
+
+    // Predict next visit: lastVisit + avgInterval
+    let nextPredictedVisit: string | null = null;
+    if (lastVisit && avgVisitInterval !== null) {
+      const lastVisitDate = new Date(lastVisit);
+      const predictedDate = addDays(lastVisitDate, Math.round(avgVisitInterval));
+      nextPredictedVisit = predictedDate.toISOString();
+    }
+
+    return {
+      totalVisits,
+      avgVisitInterval,
+      lastVisit,
+      nextPredictedVisit,
+    };
+  } catch (error: any) {
+    // Fallback to Visit table
+    if (error.message?.includes("denied access") || error.message?.includes("booking")) {
+      try {
+        const visits = await prisma.visit.findMany({
+          where: { customerId },
+          select: {
+            date: true,
+          },
+          orderBy: {
+            date: "desc",
+          },
+        });
+
+        const totalVisits = visits.length;
+        if (totalVisits === 0) {
+          return {
+            totalVisits: 0,
+            avgVisitInterval: null,
+            lastVisit: null,
+            nextPredictedVisit: null,
+          };
+        }
+
+        let totalIntervalDays = 0;
+        let intervalCount = 0;
+        for (let i = 0; i < visits.length - 1; i++) {
+          const current = visits[i].date;
+          const next = visits[i + 1].date;
+          const interval = differenceInDays(current, next);
+          totalIntervalDays += interval;
+          intervalCount++;
+        }
+
+        const avgVisitInterval = intervalCount > 0 ? totalIntervalDays / intervalCount : null;
+        const lastVisit = visits[0]?.date.toISOString() ?? null;
+        let nextPredictedVisit: string | null = null;
+        if (lastVisit && avgVisitInterval !== null) {
+          const lastVisitDate = new Date(lastVisit);
+          const predictedDate = addDays(lastVisitDate, Math.round(avgVisitInterval));
+          nextPredictedVisit = predictedDate.toISOString();
+        }
+
+        return {
+          totalVisits,
+          avgVisitInterval,
+          lastVisit,
+          nextPredictedVisit,
+        };
+      } catch (visitError) {
+        console.error("Error getting visit frequency:", visitError);
+        return {
+          totalVisits: 0,
+          avgVisitInterval: null,
+          lastVisit: null,
+          nextPredictedVisit: null,
+        };
+      }
+    }
+    console.error("Error getting visit frequency:", error);
     return {
       totalVisits: 0,
       avgVisitInterval: null,
@@ -316,38 +453,6 @@ export async function getVisitFrequency(
       nextPredictedVisit: null,
     };
   }
-
-  // Calculate average interval between visits
-  let totalIntervalDays = 0;
-  let intervalCount = 0;
-
-  for (let i = 0; i < bookings.length - 1; i++) {
-    const current = bookings[i].date;
-    const next = bookings[i + 1].date;
-    const interval = differenceInDays(current, next);
-    totalIntervalDays += interval;
-    intervalCount++;
-  }
-
-  const avgVisitInterval =
-    intervalCount > 0 ? totalIntervalDays / intervalCount : null;
-
-  const lastVisit = bookings[0]?.date.toISOString() ?? null;
-
-  // Predict next visit: lastVisit + avgInterval
-  let nextPredictedVisit: string | null = null;
-  if (lastVisit && avgVisitInterval !== null) {
-    const lastVisitDate = new Date(lastVisit);
-    const predictedDate = addDays(lastVisitDate, Math.round(avgVisitInterval));
-    nextPredictedVisit = predictedDate.toISOString();
-  }
-
-  return {
-    totalVisits,
-    avgVisitInterval,
-    lastVisit,
-    nextPredictedVisit,
-  };
 }
 
 // ============================================
@@ -357,47 +462,89 @@ export async function getVisitFrequency(
 export async function getServicePatterns(
   customerId: string
 ): Promise<CustomerServicePattern[]> {
-  const bookings = await prisma.booking.findMany({
-    where: {
-      customerId,
-      serviceId: {
-        not: null,
-      },
-    },
-    include: {
-      service: {
-        select: {
-          id: true,
-          name: true,
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        customerId,
+        serviceId: {
+          not: null,
         },
       },
-    },
-  });
+      include: {
+        service: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-  // Count frequency of each service
-  const serviceCountMap = new Map<string, { id: string; name: string; count: number }>();
+    // Count frequency of each service
+    const serviceCountMap = new Map<string, { id: string; name: string; count: number }>();
 
-  for (const booking of bookings) {
-    if (booking.service) {
-      const serviceId = booking.service.id;
-      const existing = serviceCountMap.get(serviceId);
-      if (existing) {
-        existing.count++;
-      } else {
-        serviceCountMap.set(serviceId, {
-          id: serviceId,
-          name: booking.service.name,
-          count: 1,
-        });
+    for (const booking of bookings) {
+      if (booking.service) {
+        const serviceId = booking.service.id;
+        const existing = serviceCountMap.get(serviceId);
+        if (existing) {
+          existing.count++;
+        } else {
+          serviceCountMap.set(serviceId, {
+            id: serviceId,
+            name: booking.service.name,
+            count: 1,
+          });
+        }
       }
     }
-  }
 
-  return Array.from(serviceCountMap.values()).map((item) => ({
-    serviceId: item.id,
-    serviceName: item.name,
-    count: item.count,
-  }));
+    return Array.from(serviceCountMap.values()).map((item) => ({
+      serviceId: item.id,
+      serviceName: item.name,
+      count: item.count,
+    }));
+  } catch (error: any) {
+    // Fallback to Visit table
+    if (error.message?.includes("denied access") || error.message?.includes("booking")) {
+      try {
+        const visits = await prisma.visit.findMany({
+          where: { customerId },
+          select: {
+            service: true,
+          },
+        });
+
+        const serviceCountMap = new Map<string, { id: string; name: string; count: number }>();
+        visits.forEach((visit) => {
+          if (visit.service) {
+            const serviceName = visit.service;
+            const existing = serviceCountMap.get(serviceName);
+            if (existing) {
+              existing.count++;
+            } else {
+              serviceCountMap.set(serviceName, {
+                id: serviceName,
+                name: serviceName,
+                count: 1,
+              });
+            }
+          }
+        });
+
+        return Array.from(serviceCountMap.values()).map((item) => ({
+          serviceId: item.id,
+          serviceName: item.name,
+          count: item.count,
+        }));
+      } catch (visitError) {
+        console.error("Error getting service patterns:", visitError);
+        return [];
+      }
+    }
+    console.error("Error getting service patterns:", error);
+    return [];
+  }
 }
 
 // ============================================
@@ -407,9 +554,10 @@ export async function getServicePatterns(
 export async function getBranchVisitMap(
   customerId: string
 ): Promise<Record<string, number>> {
-  const bookings = await prisma.booking.findMany({
-    where: { customerId },
-    include: {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { customerId },
+      include: {
       branch: {
         select: {
           id: true,
@@ -419,14 +567,44 @@ export async function getBranchVisitMap(
     },
   });
 
-  const branchVisitMap: Record<string, number> = {};
+    const branchVisitMap: Record<string, number> = {};
 
-  for (const booking of bookings) {
-    const branchName = booking.branch.name;
-    branchVisitMap[branchName] = (branchVisitMap[branchName] || 0) + 1;
+    for (const booking of bookings) {
+      const branchName = booking.branch.name;
+      branchVisitMap[branchName] = (branchVisitMap[branchName] || 0) + 1;
+    }
+
+    return branchVisitMap;
+  } catch (error: any) {
+    // Fallback to Visit table
+    if (error.message?.includes("denied access") || error.message?.includes("booking")) {
+      try {
+        const visits = await prisma.visit.findMany({
+          where: { customerId },
+          include: {
+            branch: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        const branchVisitMap: Record<string, number> = {};
+        for (const visit of visits) {
+          const branchName = visit.branch?.name || "Unknown";
+          branchVisitMap[branchName] = (branchVisitMap[branchName] || 0) + 1;
+        }
+
+        return branchVisitMap;
+      } catch (visitError) {
+        console.error("Error getting branch visit map:", visitError);
+        return {};
+      }
+    }
+    console.error("Error getting branch visit map:", error);
+    return {};
   }
-
-  return branchVisitMap;
 }
 
 // ============================================

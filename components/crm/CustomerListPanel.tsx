@@ -21,6 +21,8 @@ interface CustomerListPanelProps {
   onSelectCustomer: (customer: Customer) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  selectedSegment?: string;
+  onSegmentChange?: (segment: string) => void;
 }
 
 export default function CustomerListPanel({
@@ -29,6 +31,8 @@ export default function CustomerListPanel({
   onSelectCustomer,
   searchTerm,
   onSearchChange,
+  selectedSegment,
+  onSegmentChange,
 }: CustomerListPanelProps) {
   const filteredCustomers = useMemo(() => {
     if (!searchTerm) return customers;
@@ -67,7 +71,7 @@ export default function CustomerListPanel({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           <Button variant="outline" size="sm" className="flex-1">
             <Filter size={14} className="mr-1" />
             Tìm nâng cao
@@ -75,6 +79,28 @@ export default function CustomerListPanel({
           <Button variant="outline" size="sm" title="Xuất dữ liệu">
             <Download size={14} />
           </Button>
+        </div>
+        
+        {/* Segmentation Filter */}
+        <div className="mb-2">
+          <select 
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={selectedSegment || ""}
+            onChange={(e) => {
+              if (onSegmentChange) {
+                onSegmentChange(e.target.value);
+              }
+            }}
+          >
+            <option value="">Tất cả segments</option>
+            <option value="A">Segment A - VIP High Value</option>
+            <option value="B">Segment B - Ready-to-Return</option>
+            <option value="C">Segment C - Overdue</option>
+            <option value="D">Segment D - Lost</option>
+            <option value="E">Segment E - High Risk</option>
+            <option value="F">Segment F - Color Lovers</option>
+            <option value="G">Segment G - Curl Lovers</option>
+          </select>
         </div>
       </div>
 

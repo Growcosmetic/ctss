@@ -1,16 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
-import { Calendar, ShoppingBag, CreditCard, Heart, Bell, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calendar, ShoppingBag, CreditCard, Heart, Bell, FileText, ChevronDown, ChevronUp, Clock, AlertCircle } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import CustomerPhotosTab from "./CustomerPhotosTab";
+import { formatDate } from "@/lib/utils";
 
 interface CustomerActivityPanelProps {
   customerId: string | null;
 }
 
+interface Reminder {
+  id: string;
+  type: string;
+  message: string;
+  dueDate: string;
+  status: string;
+  priority?: string;
+}
+
 export default function CustomerActivityPanel({ customerId }: CustomerActivityPanelProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["appointments", "orders"]));
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [loadingReminders, setLoadingReminders] = useState(false);
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => {
@@ -22,6 +34,47 @@ export default function CustomerActivityPanel({ customerId }: CustomerActivityPa
       }
       return newSet;
     });
+  };
+
+  // Load reminders
+  useEffect(() => {
+    if (customerId) {
+      loadReminders();
+    } else {
+      setReminders([]);
+    }
+  }, [customerId]);
+
+  const loadReminders = async () => {
+    if (!customerId) return;
+    
+    setLoadingReminders(true);
+    try {
+      // Try GET endpoint first (for listing reminders)
+      const response = await fetch(`/api/reminders/process?customerId=${customerId}&sent=false`);
+      const result = await response.json();
+      if (result.success) {
+        // Map API response to Reminder interface
+        const mappedReminders = (result.reminders || []).map((r: any) => ({
+          id: r.id,
+          type: r.type,
+          message: r.message,
+          dueDate: r.sendAt,
+          status: r.sent ? 'SENT' : 'PENDING',
+          priority: r.metadata?.priority || (r.type === 'URGENT' ? 'HIGH' : r.type === 'FOLLOW_UP' ? 'MEDIUM' : 'LOW'),
+        }));
+        setReminders(mappedReminders);
+      } else {
+        // If no reminders, set empty array
+        setReminders([]);
+      }
+    } catch (error) {
+      console.error("Error loading reminders:", error);
+      // Set empty array on error so UI still shows
+      setReminders([]);
+    } finally {
+      setLoadingReminders(false);
+    }
   };
 
   if (!customerId) {
@@ -171,7 +224,9 @@ export default function CustomerActivityPanel({ customerId }: CustomerActivityPa
               >
                 <div className="flex items-center gap-2">
                   <Bell size={18} className="text-yellow-500" />
-                  <span className="font-medium text-gray-900">Nhắc nhở chưa thực hiện</span>
+                  <span className="font-medium text-gray-900">
+                    Nhắc nhở chưa thực hiện ({reminders.filter(r => r.status === 'PENDING').length})
+                  </span>
                 </div>
                 {expandedSections.has("reminders") ? (
                   <ChevronUp size={18} className="text-gray-400" />
@@ -181,8 +236,46 @@ export default function CustomerActivityPanel({ customerId }: CustomerActivityPa
               </button>
               {expandedSections.has("reminders") && (
                 <div className="p-3 border-t border-gray-200">
-                  <div className="text-sm text-gray-600 mb-2">Chưa có nhắc nhở</div>
-                  <a href="#" className="text-blue-600 text-sm hover:underline">Xem toàn bộ</a>
+                  {loadingReminders ? (
+                    <div className="text-sm text-gray-500">Đang tải...</div>
+                  ) : reminders.filter(r => r.status === 'PENDING').length === 0 ? (
+                    <div className="text-sm text-gray-600 mb-2">Chưa có nhắc nhở</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {reminders.filter(r => r.status === 'PENDING').slice(0, 5).map((reminder) => (
+                        <div
+                          key={reminder.id}
+                          className={`p-2 rounded border-l-4 ${
+                            reminder.priority === 'HIGH' 
+                              ? 'border-red-500 bg-red-50' 
+                              : reminder.priority === 'MEDIUM'
+                              ? 'border-yellow-500 bg-yellow-50'
+                              : 'border-blue-500 bg-blue-50'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <AlertCircle size={16} className={`mt-0.5 ${
+                              reminder.priority === 'HIGH' ? 'text-red-600' : 
+                              reminder.priority === 'MEDIUM' ? 'text-yellow-600' : 
+                              'text-blue-600'
+                            }`} />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{reminder.message}</p>
+                              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                <Clock size={12} />
+                                {formatDate(reminder.dueDate)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {reminders.filter(r => r.status === 'PENDING').length > 5 && (
+                        <a href="#" className="text-blue-600 text-sm hover:underline block mt-2">
+                          Xem thêm {reminders.filter(r => r.status === 'PENDING').length - 5} nhắc nhở
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

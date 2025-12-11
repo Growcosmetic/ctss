@@ -7,6 +7,7 @@ import { ProductStock, LowStockAlert, StockTransaction } from "../types";
 import StockCard from "./StockCard";
 import StockListView from "./StockListView";
 import CategorySidebar from "./CategorySidebar";
+import EditProductModal from "./EditProductModal";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
 import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight } from "lucide-react";
@@ -27,6 +28,8 @@ export default function InventoryDashboard() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [editingStock, setEditingStock] = useState<ProductStock | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     // Wait for branch to load, then load inventory data
@@ -384,7 +387,13 @@ export default function InventoryDashboard() {
             </div>
           ) : (
             <>
-              <StockListView stocks={paginatedStocks} />
+              <StockListView 
+                stocks={paginatedStocks} 
+                onEdit={(stock) => {
+                  setEditingStock(stock);
+                  setIsEditModalOpen(true);
+                }}
+              />
               
               {/* Pagination */}
               {totalPages > 1 && (
@@ -483,6 +492,19 @@ export default function InventoryDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingStock(null);
+        }}
+        stock={editingStock}
+        onSuccess={() => {
+          loadData();
+        }}
+      />
     </div>
   );
 }

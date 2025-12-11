@@ -99,48 +99,81 @@ export async function GET(request: NextRequest) {
 // POST /api/inventory - Create a new product
 export async function POST(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+
+    if (!token) {
+      return errorResponse("Not authenticated", 401);
+    }
+
+    const userId = validateToken(token);
+    if (!userId) {
+      return errorResponse("Invalid token", 401);
+    }
+
     const body = await request.json();
     const {
-      categoryId,
       name,
       sku,
-      description,
-      cost,
-      price,
-      stockQuantity,
-      minStockLevel,
+      category,
+      subCategory,
       unit,
-      image,
+      capacity,
+      capacityUnit,
+      pricePerUnit,
+      costPrice,
+      minStock,
+      maxStock,
+      supplier,
+      brand,
+      notes,
     } = body;
 
-    if (!categoryId || !name || !sku || !cost || !price) {
-      return errorResponse("Category, name, SKU, cost, and price are required", 400);
+    // Validate required fields
+    if (!name || !category || !unit) {
+      return errorResponse("Tên sản phẩm, nhóm sản phẩm và đơn vị tính là bắt buộc", 400);
     }
+
+    // Generate SKU if not provided
+    let finalSku = sku;
+    if (!finalSku || finalSku.trim() === "") {
+      // Generate SKU from name and timestamp
+      const namePrefix = name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .substring(0, 6);
+      const timestamp = Date.now().toString().slice(-6);
+      finalSku = `${namePrefix}${timestamp}`;
+    }
+
+    // Check if SKU already exists (by checking notes field for now, or we can add SKU field later)
+    // For now, we'll allow duplicate SKUs and store it in notes
+    const skuNote = sku ? `SKU: ${sku}\n${notes || ""}` : (notes || "");
 
     const product = await prisma.product.create({
       data: {
-        categoryId,
         name,
-        sku,
-        description,
-        cost: parseFloat(cost),
-        price: parseFloat(price),
-        stockQuantity: stockQuantity ? parseInt(stockQuantity) : 0,
-        minStockLevel: minStockLevel ? parseInt(minStockLevel) : 0,
-        unit: unit || "pcs",
-        image,
-      },
-      include: {
-        category: true,
+        category,
+        subCategory: subCategory || null,
+        unit,
+        capacity: capacity ? parseFloat(capacity.toString()) : null,
+        capacityUnit: capacityUnit || null,
+        pricePerUnit: pricePerUnit ? parseFloat(pricePerUnit.toString()) : null,
+        minStock: minStock ? parseFloat(minStock.toString()) : null,
+        maxStock: maxStock ? parseFloat(maxStock.toString()) : null,
+        supplier: supplier || null,
+        notes: brand ? `Thương hiệu: ${brand}\n${skuNote}`.trim() : skuNote || null,
+        branchAware: true,
       },
     });
 
-    return successResponse(product, "Product created successfully", 201);
+    return successResponse(product, "Sản phẩm đã được tạo thành công", 201);
   } catch (error: any) {
+    console.error("Error creating product:", error);
     if (error.code === "P2002") {
-      return errorResponse("SKU already exists", 409);
+      return errorResponse("Sản phẩm đã tồn tại", 409);
     }
-    return errorResponse(error.message || "Failed to create product", 500);
+    return errorResponse(error.message || "Không thể tạo sản phẩm", 500);
   }
 }
 

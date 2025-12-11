@@ -8,9 +8,11 @@ import StockCard from "./StockCard";
 import StockListView from "./StockListView";
 import CategorySidebar from "./CategorySidebar";
 import EditProductModal from "./EditProductModal";
+import CreateProductModal from "./CreateProductModal";
+import ImportExcelModal from "./ImportExcelModal";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";
@@ -30,6 +32,8 @@ export default function InventoryDashboard() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingStock, setEditingStock] = useState<ProductStock | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   useEffect(() => {
     // Wait for branch to load, then load inventory data
@@ -159,15 +163,62 @@ export default function InventoryDashboard() {
   }, [searchTerm, filterCategory, filterStatus]);
 
   // Export to Excel handler
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export
-    alert("Tính năng xuất Excel đang phát triển");
+  const handleExportExcel = async () => {
+    try {
+      if (stocks.length === 0) {
+        alert("Không có dữ liệu để xuất");
+        return;
+      }
+
+      // Import XLSX dynamically
+      const XLSX = (await import("xlsx")).default;
+
+      // Prepare data according to Excel template format (Hình 3)
+      const exportData = stocks.map((stock) => {
+        const product = stock.product;
+        // Extract SKU from notes if available
+        const skuMatch = product?.notes?.match(/SKU:\s*([^\n]+)/);
+        const sku = skuMatch ? skuMatch[1].trim() : "";
+        // Extract brand from notes if available
+        const brandMatch = product?.notes?.match(/Thương hiệu:\s*([^\n]+)/);
+        const brand = brandMatch ? brandMatch[1].trim() : "";
+        // Get capacity string
+        const capacityStr = product?.capacity && product?.capacityUnit
+          ? `${product.capacity} ${product.capacityUnit}`
+          : "";
+
+        return {
+          "Tên sản phẩm": product?.name || "",
+          "Mã sản phẩm": sku || "",
+          "Thương hiệu": brand || "",
+          "Nhóm sản phẩm": product?.category || "",
+          "Mô tả": product?.notes?.replace(/SKU:.*\n?/g, "").replace(/Thương hiệu:.*\n?/g, "").trim() || "",
+          "Đơn vị tính": product?.unit || "",
+          "Dung tích (nếu có)": capacityStr,
+          "Giá nhập": product?.pricePerUnit ? Math.round(product.pricePerUnit) : 0,
+          "Giá bán": product?.pricePerUnit ? Math.round(product.pricePerUnit) : 0,
+        };
+      });
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "DANH SÁCH SẢN PHẨM");
+
+      // Generate filename with current date
+      const filename = `danh_sach_san_pham_${new Date().toISOString().split("T")[0]}.xlsx`;
+      XLSX.writeFile(wb, filename);
+
+      alert(`✅ Đã xuất ${stocks.length} sản phẩm ra file Excel`);
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+      alert("Có lỗi xảy ra khi xuất Excel");
+    }
   };
 
   // Import from Excel handler
   const handleImportExcel = () => {
-    // TODO: Implement Excel import
-    alert("Tính năng nhập Excel đang phát triển");
+    setIsImportModalOpen(true);
   };
 
   // Copy from branch handler
@@ -218,6 +269,13 @@ export default function InventoryDashboard() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4" />
+                Tạo sản phẩm mới
+              </Button>
               <Button
                 onClick={handleCopyFromBranch}
                 variant="outline"
@@ -501,6 +559,24 @@ export default function InventoryDashboard() {
           setEditingStock(null);
         }}
         stock={editingStock}
+        onSuccess={() => {
+          loadData();
+        }}
+      />
+
+      {/* Create Product Modal */}
+      <CreateProductModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          loadData();
+        }}
+      />
+
+      {/* Import Excel Modal */}
+      <ImportExcelModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
         onSuccess={() => {
           loadData();
         }}

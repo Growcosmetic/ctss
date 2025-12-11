@@ -140,3 +140,5 @@ export default function EditStockLevelsModal({ stock, isOpen, onClose, onSuccess
     </div>
   );
 }
+
+export default EditStockLevelsModal;

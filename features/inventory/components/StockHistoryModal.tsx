@@ -152,5 +152,3 @@ export default function StockHistoryModal({ stock, isOpen, onClose }: StockHisto
     </div>
   );
 }
-
-export default StockHistoryModal;

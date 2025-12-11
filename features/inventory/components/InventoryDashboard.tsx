@@ -14,11 +14,13 @@ import AssignLocationModal from "./AssignLocationModal";
 import SupplierListPage from "./SupplierListPage";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2 } from "lucide-react";
+import InventoryOverview from "./InventoryOverview";
+import ProductListPage from "./ProductListPage";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2, LayoutDashboard, List as ListIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";
-type TabMode = "inventory" | "suppliers";
+type TabMode = "overview" | "products" | "suppliers" | "inventory";
 
 export default function InventoryDashboard() {
   const { currentBranch, loading: branchLoading, loadBranches } = useBranch();
@@ -41,7 +43,7 @@ export default function InventoryDashboard() {
   const [assigningLocationStock, setAssigningLocationStock] = useState<ProductStock | null>(null);
   const [isAssignLocationModalOpen, setIsAssignLocationModalOpen] = useState(false);
   const [locations, setLocations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<TabMode>("inventory");
+  const [activeTab, setActiveTab] = useState<TabMode>("overview");
 
   useEffect(() => {
     // Wait for branch to load, then load inventory data
@@ -292,10 +294,32 @@ export default function InventoryDashboard() {
         {/* Header */}
         <div className="mb-6">
           {/* Tabs */}
-          <div className="flex items-center gap-1 border-b border-gray-200 mb-4">
+          <div className="flex items-center gap-1 border-b border-gray-200 mb-4 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === "overview"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4 inline-block mr-2" />
+              Tổng thể kho
+            </button>
+            <button
+              onClick={() => setActiveTab("products")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === "products"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <ListIcon className="w-4 h-4 inline-block mr-2" />
+              Danh sách sản phẩm
+            </button>
             <button
               onClick={() => setActiveTab("inventory")}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === "inventory"
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-600 hover:text-gray-900"
@@ -306,7 +330,7 @@ export default function InventoryDashboard() {
             </button>
             <button
               onClick={() => setActiveTab("suppliers")}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === "suppliers"
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-600 hover:text-gray-900"
@@ -387,7 +411,30 @@ export default function InventoryDashboard() {
         </div>
 
         {/* Content */}
-        {activeTab === "suppliers" ? (
+        {activeTab === "overview" ? (
+          <InventoryOverview stocks={stocks} alerts={alerts} loading={loading} />
+        ) : activeTab === "products" ? (
+          <ProductListPage
+            stocks={stocks}
+            onEdit={(stock) => {
+              setEditingStock(stock);
+              setIsEditModalOpen(true);
+            }}
+            onAssignLocation={(stock) => {
+              setAssigningLocationStock(stock);
+              setIsAssignLocationModalOpen(true);
+            }}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filterCategory={filterCategory}
+            onFilterCategoryChange={setFilterCategory}
+            filterStatus={filterStatus}
+            onFilterStatusChange={setFilterStatus}
+            filterLocation={filterLocation}
+            onFilterLocationChange={setFilterLocation}
+            locations={locations}
+          />
+        ) : activeTab === "suppliers" ? (
           <SupplierListPage />
         ) : (
         <div className="space-y-6">

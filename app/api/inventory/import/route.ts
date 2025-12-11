@@ -91,13 +91,34 @@ export async function POST(request: NextRequest) {
           sku = `${namePrefix}${timestamp}`;
         }
 
-        // Build notes field
-        let notes = product.notes || "";
-        if (product.sku && !notes.includes("SKU:")) {
-          notes = `SKU: ${product.sku}\n${notes}`.trim();
+        // Check SKU uniqueness
+        const existingSku = await prisma.product.findUnique({
+          where: { sku: sku.trim().toUpperCase() },
+        });
+        if (existingSku && existingSku.id !== existingProduct?.id) {
+          // SKU exists for different product, generate new one
+          sku = `${namePrefix}${Date.now().toString().slice(-6)}`;
         }
+
+        // Build notes field (for brand and other info)
+        let notes = product.notes || "";
         if (product.brand && !notes.includes("Thương hiệu:")) {
           notes = `Thương hiệu: ${product.brand}\n${notes}`.trim();
+        }
+
+        // Handle supplier - convert supplier name to supplierId if needed
+        let supplierId = product.supplierId || null;
+        if (!supplierId && product.supplier) {
+          // Try to find supplier by name
+          const supplier = await prisma.supplier.findFirst({
+            where: {
+              name: { contains: product.supplier.trim(), mode: "insensitive" },
+              isActive: true,
+            },
+          });
+          if (supplier) {
+            supplierId = supplier.id;
+          }
         }
 
         // Check if product already exists (by name and category)
@@ -111,34 +132,58 @@ export async function POST(request: NextRequest) {
         let productToUse;
         if (existingProduct) {
           // Update existing product
+          const updateData: any = {
+            subCategory: product.subCategory?.trim() || existingProduct.subCategory || null,
+            unit: product.unit.trim() || existingProduct.unit,
+            capacity: product.capacity !== undefined && product.capacity !== null ? parseFloat(product.capacity.toString()) : existingProduct.capacity,
+            capacityUnit: product.capacityUnit || existingProduct.capacityUnit || null,
+            pricePerUnit: product.pricePerUnit !== undefined && product.pricePerUnit !== null ? parseFloat(product.pricePerUnit.toString()) : existingProduct.pricePerUnit,
+            minStock: product.minStock !== undefined && product.minStock !== null ? parseFloat(product.minStock.toString()) : existingProduct.minStock,
+            maxStock: product.maxStock !== undefined && product.maxStock !== null ? parseFloat(product.maxStock.toString()) : existingProduct.maxStock,
+            notes: notes || existingProduct.notes || null,
+          };
+
+          // Update SKU if provided and different
+          if (sku && sku.trim().toUpperCase() !== existingProduct.sku) {
+            updateData.sku = sku.trim().toUpperCase();
+          }
+
+          // Update costPrice if provided
+          if (product.costPrice !== undefined && product.costPrice !== null) {
+            updateData.costPrice = parseFloat(product.costPrice.toString());
+          }
+
+          // Update supplierId if provided
+          if (supplierId !== undefined) {
+            updateData.supplierId = supplierId;
+          }
+
+          // Update isActive if provided
+          if (product.isActive !== undefined) {
+            updateData.isActive = product.isActive;
+          }
+
           productToUse = await prisma.product.update({
             where: { id: existingProduct.id },
-            data: {
-              subCategory: product.subCategory?.trim() || existingProduct.subCategory || null,
-              unit: product.unit.trim() || existingProduct.unit,
-              capacity: product.capacity !== undefined && product.capacity !== null ? parseFloat(product.capacity.toString()) : existingProduct.capacity,
-              capacityUnit: product.capacityUnit || existingProduct.capacityUnit || null,
-              pricePerUnit: product.pricePerUnit !== undefined && product.pricePerUnit !== null ? parseFloat(product.pricePerUnit.toString()) : existingProduct.pricePerUnit,
-              minStock: product.minStock !== undefined && product.minStock !== null ? parseFloat(product.minStock.toString()) : existingProduct.minStock,
-              maxStock: product.maxStock !== undefined && product.maxStock !== null ? parseFloat(product.maxStock.toString()) : existingProduct.maxStock,
-              supplier: product.supplier?.trim() || existingProduct.supplier || null,
-              notes: notes || existingProduct.notes || null,
-            },
+            data: updateData,
           });
         } else {
           // Create new product
           productToUse = await prisma.product.create({
             data: {
               name: product.name.trim(),
+              sku: sku.trim().toUpperCase(),
               category: product.category.trim(),
               subCategory: product.subCategory?.trim() || null,
               unit: product.unit.trim(),
               capacity: product.capacity ? parseFloat(product.capacity.toString()) : null,
               capacityUnit: product.capacityUnit || null,
               pricePerUnit: product.pricePerUnit ? parseFloat(product.pricePerUnit.toString()) : null,
+              costPrice: product.costPrice ? parseFloat(product.costPrice.toString()) : null,
               minStock: product.minStock ? parseFloat(product.minStock.toString()) : null,
               maxStock: product.maxStock ? parseFloat(product.maxStock.toString()) : null,
-              supplier: product.supplier?.trim() || null,
+              supplierId: supplierId || null,
+              isActive: product.isActive !== undefined ? product.isActive : true,
               notes: notes || null,
               branchAware: true,
             },

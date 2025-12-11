@@ -58,7 +58,16 @@ export async function GET(request: NextRequest) {
         where,
         skip,
         take: limit,
-          orderBy: { name: "asc" },
+        orderBy: { name: "asc" },
+        include: {
+          supplier: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
+          },
+        },
       }),
       prisma.product.count({ where }),
     ]);

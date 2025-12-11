@@ -4,6 +4,7 @@ import React from "react";
 import { Package, TrendingDown, TrendingUp, AlertTriangle, Image as ImageIcon, Edit, MoreVertical } from "lucide-react";
 import { ProductStock } from "../types";
 import { cn } from "@/lib/utils";
+import { formatUnit } from "@/core/inventory/productUnits";
 
 interface StockListViewProps {
   stocks: ProductStock[];
@@ -127,9 +128,16 @@ export default function StockListView({ stocks, onEdit }: StockListViewProps) {
                     
                     {/* Unit */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {stock.product?.unit || "N/A"}
-                      </span>
+                      <div className="text-sm text-gray-900">
+                        <div className="font-medium">
+                          {stock.product?.unit || "N/A"}
+                        </div>
+                        {stock.product?.capacity && stock.product?.capacityUnit && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {stock.product.capacity}{stock.product.capacityUnit}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     
                     {/* Price */}

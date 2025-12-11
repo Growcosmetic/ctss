@@ -33,9 +33,9 @@ export async function addStock(
   // Check if stock exists
   const existingStock = await prisma.productStock.findFirst({
     where: {
-      productId,
-      branchId,
-    },
+        productId,
+        branchId,
+      },
   });
 
   if (existingStock) {
@@ -43,18 +43,18 @@ export async function addStock(
     await prisma.productStock.update({
       where: { id: existingStock.id },
       data: {
-        quantity: { increment: quantity },
-      },
+      quantity: { increment: quantity },
+    },
     });
   } else {
     // Create new stock
     await prisma.productStock.create({
       data: {
-        productId,
-        branchId,
-        quantity,
-      },
-    });
+      productId,
+      branchId,
+      quantity,
+    },
+  });
   }
 
   // Create transaction record
@@ -84,8 +84,8 @@ export async function removeStock(
   // Check current stock
   const stock = await prisma.productStock.findFirst({
     where: {
-      productId,
-      branchId,
+        productId,
+        branchId,
     },
   });
 
@@ -125,8 +125,8 @@ export async function adjustStock(
 ): Promise<void> {
   const stock = await prisma.productStock.findFirst({
     where: {
-      productId,
-      branchId,
+        productId,
+        branchId,
     },
   });
 
@@ -146,9 +146,9 @@ export async function adjustStock(
       data: {
         productId,
         branchId,
-        quantity: newQuantity,
-      },
-    });
+      quantity: newQuantity,
+    },
+  });
   }
 
   // Create transaction record

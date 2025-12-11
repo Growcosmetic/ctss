@@ -206,10 +206,12 @@ model Product {
   name         String
   category     String
   subCategory  String? // Uốn nóng | Uốn lạnh | Treatment | etc.
-  unit         String
+  unit         String  // Đơn vị đếm (Ống, Chai, Túi, Cái, etc.)
+  capacity     Float?  // Dung tích/số lượng (15, 100, etc.)
+  capacityUnit String? // Đơn vị dung tích (ml, l, g, kg, etc.)
   defaultUsage Int?
   branchAware  Boolean @default(true)
-
+  
   // Phase 19 fields
   pricePerUnit Float? // Giá mỗi đơn vị
   stock        Float?    @default(0) // Tồn kho tổng (nếu không branch-aware)
@@ -234,7 +236,7 @@ model Product {
   restockTriggers        RestockTrigger[]        @relation("RestockTriggerProduct") // Phase 19J
   branchInventories      BranchInventory[]       @relation("BranchInventoryProduct")
   serviceCosts           ServiceCost[]
-
+  
   @@index([category])
   @@index([name])
 }
@@ -586,7 +588,7 @@ model TrainingModule {
   updatedAt DateTime @updatedAt
 
   lessons TrainingLesson[]
-
+  
   @@index([category])
   @@index([role])
 }
@@ -605,7 +607,7 @@ model TrainingLesson {
   module    TrainingModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quiz      TrainingQuiz?
   exercises TrainingExercise[]
-
+  
   @@index([moduleId])
   @@index([role])
   @@index([level])
@@ -672,7 +674,7 @@ model SkillProgress {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
-
+  
   @@index([userId])
   @@index([skill])
 }
@@ -721,7 +723,7 @@ model OperationLog {
   customerId String?
   timestamp  DateTime @default(now())
   meta       Json? // Thông tin bổ sung (bookingId, serviceId, etc.)
-
+  
   user     User?     @relation(fields: [userId], references: [id])
   customer Customer? @relation(fields: [customerId], references: [id])
 }
@@ -734,35 +736,35 @@ model Visit {
   id         String   @id @default(cuid())
   customerId String
   date       DateTime @default(now())
-
+  
   // Dịch vụ & người thực hiện
   service   String // ví dụ: Uốn nóng - Nhuộm màu - Phục hồi
   stylist   String? // Tên stylist
   assistant String? // Tên assistant
-
+  
   // Phần kỹ thuật (chi tiết từ AI Stylist Coach)
   technical Json? // chi tiết uốn – nhuộm – phục hồi (hairCondition, chemHistory, techniqueUsed, process, warnings, aiSummary)
-
+  
   // Sản phẩm đã dùng (Phase 54)
   productsUsed Json? // [{product, gram, unitPrice, total}]
-
+  
   // Tổng chi phí dịch vụ lần này
   totalCharge Int? // Tổng chi phí (để update totalSpent)
-
+  
   // Ảnh
   photosBefore String[] // ảnh before
   photosAfter  String[] // ảnh after
-
+  
   // Follow-up & Đánh giá
   rating        Int? // điểm đánh giá (1-5)
   followUpNotes String? // Ghi chú follow-up (24h, 48h)
-
+  
   // Ghi chú tổng hợp
   notes String? // Ghi chú từ stylist/lễ tân
-
+  
   // Auto Tags (tự động phân tích)
   tags String[] // ["VIP", "Risky", "Overdue", "Loyal", "Premium"]
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -844,30 +846,30 @@ model CustomerInsight {
 model FaceAnalysis {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Face shape analysis
   faceShape  String // OVAL | ROUND | SQUARE | HEART | LONG | DIAMOND
   jawline    String? // SHARP | SOFT | ROUND | SQUARE
   forehead   String? // HIGH | MEDIUM | LOW | NARROW | WIDE
   cheekbones String? // HIGH | MEDIUM | LOW | PROMINENT | SOFT
   chin       String? // SHARP | ROUND | POINTED | WEAK
-
+  
   // Features
   features    String? // SHARP | SOFT | BALANCED
   overallVibe String? // FEMININE | MASCULINE | GENTLE | STRONG | DELICATE
-
+  
   // Analysis data
   analysisData Json? // Detailed analysis
   imageUrl     String? // Customer photo
-
+  
   // AI Generated
   isAIGenerated   Boolean @default(true)
   confidence      Float? // 0-100
   recommendations String? // AI recommendations
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([faceShape])
 }
@@ -875,7 +877,7 @@ model FaceAnalysis {
 model HairConditionAnalysis {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Hair condition metrics
   thickness   String? // THICK | MEDIUM | THIN
   density     String? // HIGH | MEDIUM | LOW
@@ -884,29 +886,29 @@ model HairConditionAnalysis {
   porosity    String? // HIGH | MEDIUM | LOW
   dryness     String? // DRY | NORMAL | OILY
   texture     String? // SMOOTH | COARSE | ROUGH
-
+  
   // Chemical history
   chemicalHistory   Json? // [{ type, date, damage }]
   lastTreatment     String? // Last chemical treatment
   lastTreatmentDate DateTime?
-
+  
   // Analysis
   canPerm         Boolean? // Can perm or not
   canColor        Boolean? // Can color or not
   riskLevel       String? // LOW | MEDIUM | HIGH | CRITICAL
   recommendations String? // Safety recommendations
-
+  
   // Product recommendations
   recommendedProducts String[] // Product IDs
-
+  
   // AI Generated
   isAIGenerated Boolean @default(true)
   confidence    Float?
   analysisNotes String?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([damageLevel])
   @@index([riskLevel])
@@ -917,39 +919,39 @@ model HairstyleRecommendation {
   customerId      String?
   faceAnalysisId  String?
   hairConditionId String?
-
+  
   // Recommendation
   recommendedStyle String // Style name
   styleCategory    String? // LAYER | CURL | STRAIGHT | BOB | MULLET | etc.
   description      String? // Style description
-
+  
   // Technical details
   curlSize   String? // 3.2 | 3.8 | 4.5 | etc.
   layerStyle String? // LONG_LAYER | SHORT_LAYER | TEXTURED
   length     String? // LONG | MEDIUM | SHORT
-
+  
   // Product recommendations
   recommendedProduct String? // Plexis product (S1, S2, Acid, etc.)
   permSetting        Json? // { time, temperature, rodSize }
-
+  
   // Reasons
   reasons  String[] // Why this style
   benefits String[] // Benefits of this style
   warnings String[] // Warnings/risks
-
+  
   // AI confidence
   confidence Float? // 0-100
   matchScore Float? // 0-100 (how well it matches)
-
+  
   // Face shape match
   faceShapeMatch Json? // How it complements face shape
-
+  
   // Alternative styles
   alternatives Json? // Alternative style options
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([recommendedStyle])
 }
@@ -959,43 +961,43 @@ model ColorRecommendation {
   customerId      String?
   faceAnalysisId  String?
   hairConditionId String?
-
+  
   // Skin tone analysis
   skinTone      String? // WARM | COOL | NEUTRAL
   skinToneLevel Float? // 1.0 - 6.0 (light to dark)
   undertone     String? // WARM | COOL | OLIVE | PINK
-
+  
   // Eye color (if available)
   eyeColor String? // BROWN | BLACK | HAZEL | GREEN | BLUE
-
+  
   // Personal style
   personalStyle String? // ELEGANT | CUTE | BOLD | MINIMAL | etc.
-
+  
   // Recommended colors
   recommendedColor String // Color name
   colorCategory    String? // BROWN | BLONDE | BLACK | HIGHLIGHT | BALAYAGE
   colorCode        String? // Specific color code
-
+  
   // Technical details
   baseColor String? // Base color needed
   technique String? // FULL_COLOR | HIGHLIGHT | BALAYAGE | OMBRE
   developer String? // Oxy level
-
+  
   // Reasons
   reasons  String[] // Why this color
   benefits String[] // Benefits
   warnings String[] // Warnings
-
+  
   // Alternatives
   alternatives Json? // Alternative color options
-
+  
   // AI confidence
   confidence Float?
   matchScore Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([recommendedColor])
 }
@@ -1004,28 +1006,28 @@ model HairSimulation {
   id               String  @id @default(cuid())
   customerId       String?
   recommendationId String? // Hairstyle or Color recommendation
-
+  
   // Original image
   originalImageUrl String
-
+  
   // Simulation settings
   style  String? // Style applied
   color  String? // Color applied
   length String? // Length adjustment
-
+  
   // Generated simulation
   simulatedImageUrl String? // AI generated mock-up
-
+  
   // Simulation type
   simulationType String // HAIRSTYLE | COLOR | FULL | LAYER | CURL
-
+  
   // Status
   status   String @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED
   progress Float? // 0-100
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([status])
 }
@@ -1033,25 +1035,25 @@ model HairSimulation {
 model StyleMatching {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Personal style analysis
   personalStyle String // ELEGANT | CUTE | BOLD | MINIMAL | CASUAL | KOREAN | JAPANESE
   styleTags     String[] // Style tags
   vibe          String? // FEMININE | MASCULINE | NEUTRAL | GENTLE | STRONG
-
+  
   // Matched styles
   matchedStyles String[] // Style names that match
   matchedColors String[] // Color names that match
-
+  
   // Confidence
   confidence Float?
-
+  
   // AI analysis
   styleAnalysis String? // Detailed style analysis
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([personalStyle])
 }
@@ -1060,34 +1062,34 @@ model StylistSupportPanel {
   id         String  @id @default(cuid())
   customerId String
   bookingId  String?
-
+  
   // Analysis references
   faceAnalysisId  String?
   hairConditionId String?
   hairstyleRecId  String?
   colorRecId      String?
-
+  
   // Support data
   supportData Json // Complete support information
-
+  
   // Quick access info
   faceShape        String?
   hairCondition    String?
   recommendedStyle String?
   recommendedColor String?
-
+  
   // Technical guide
   productGuide Json? // Product recommendations
   formulaGuide Json? // Formula/technique guide
   settings     Json? // Time, temperature, settings
   warnings     String[] // Important warnings
-
+  
   // Status
   isActive Boolean @default(true)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([bookingId])
   @@index([isActive])
@@ -1100,11 +1102,11 @@ model StylistSupportPanel {
 model HairHealthScan {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Image/Video
   imageUrl String? // Customer hair photo
   videoUrl String? // Video scan
-
+  
   // Health metrics
   healthScore       Float? // 0-100
   dryness           Float? // 0-100 (%)
@@ -1115,31 +1117,31 @@ model HairHealthScan {
   shine             Float? // 0-100
   colorEvenness     Float? // 0-100
   patchyColor       Boolean? // Color patchy or not
-
+  
   // Hair condition details
   brokenStrands Int? // Broken hair strands
   splitEnds     Int? // Split ends count
   whiteDots     Int? // White dot damage
   burnedHair    Int? // Burned hair strands
   puffyHair     Boolean? // Puffy/swollen hair
-
+  
   // Damage locations
   damageAtRoot Boolean? // Damage near root
   damageAtMid  Boolean? // Damage at mid-length
   damageAtEnd  Boolean? // Damage at ends
-
+  
   // AI Analysis
   aiAnalysis      String? // Detailed AI analysis
   detectedIssues  String[] // List of detected issues
   recommendations String? // Initial recommendations
-
+  
   // AI Generated
   isAIGenerated Boolean @default(true)
   confidence    Float? // 0-100
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([healthScore])
 }
@@ -1148,30 +1150,30 @@ model DamageLevelAssessment {
   id         String  @id @default(cuid())
   customerId String?
   scanId     String? // Reference to HairHealthScan
-
+  
   // Damage level
   damageLevel    Float // 0-100 (%)
   damageCategory String // LEVEL_1 | LEVEL_2 | LEVEL_3 | LEVEL_4 | LEVEL_5
   status         String? // HEALTHY | MILD | MODERATE | SEVERE | CRITICAL
-
+  
   // Detailed breakdown
   cuticleDamage Float? // Cuticle layer damage (%)
   cortexDamage  Float? // Cortex damage (%)
   medullaDamage Float? // Medulla damage (%)
-
+  
   // Risk factors
   breakageRisk String? // LOW | MEDIUM | HIGH | CRITICAL
   canPerm      Boolean? // Can perm or not
   canColor     Boolean? // Can color or not
   canBleach    Boolean? // Can bleach or not
-
+  
   // Assessment
   assessment String? // Detailed assessment
   warnings   String[] // Important warnings
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([damageLevel])
   @@index([damageCategory])
@@ -1181,29 +1183,29 @@ model PorosityElasticityAnalysis {
   id         String  @id @default(cuid())
   customerId String?
   scanId     String?
-
+  
   // Porosity
   porosity      String // HIGH | MEDIUM | LOW
   porosityLevel Float? // 0-100
-
+  
   // Elasticity
   elasticity      String // HIGH | MEDIUM | LOW | POOR
   elasticityLevel Float? // 0-100
   stretchTest     Json? // Stretch test results
-
+  
   // Protein/Moisture balance
   proteinLevel  Float? // Protein level
   moistureLevel Float? // Moisture level
   balance       String? // BALANCED | PROTEIN_DEFICIENT | MOISTURE_DEFICIENT
-
+  
   // Analysis
   analysis        String? // Detailed analysis
   riskFactors     String[] // Risk factors identified
   recommendations String? // Recommendations
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([porosity])
   @@index([elasticity])
@@ -1212,38 +1214,38 @@ model PorosityElasticityAnalysis {
 model ChemicalHistoryRisk {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Chemical history
   chemicalHistory Json // [{ type, date, damage, frequency }]
-
+  
   // Recent treatments
   lastPerm       DateTime?
   lastColor      DateTime?
   lastBleach     DateTime?
   lastStraighten DateTime?
   lastTreatment  DateTime?
-
+  
   // Frequency
   permFrequency  String? // HIGH | MEDIUM | LOW
   colorFrequency String? // HIGH | MEDIUM | LOW
   homeDyeing     Boolean? // DIY coloring at home
   heatStyling    Boolean? // Frequent heat styling
-
+  
   // Risk assessment
   riskLevel        String // LOW | MEDIUM | HIGH | CRITICAL
   riskScore        Float? // 0-100
   riskFactors      String[] // Risk factors
   cumulativeDamage Float? // Cumulative damage from all treatments
-
+  
   // Recommendations
   safeToPerm      Boolean? // Safe to perm
   safeToColor     Boolean? // Safe to color
   safeToBleach    Boolean? // Safe to bleach
   recommendations String? // Safety recommendations
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([riskLevel])
 }
@@ -1251,26 +1253,26 @@ model ChemicalHistoryRisk {
 model ScalpConditionAnalysis {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // Scalp condition
   scalpType    String? // OILY | DRY | NORMAL | COMBINATION
   dandruff     String? // NONE | MILD | MODERATE | SEVERE
   dandruffType String? // DRY_FLAKES | OILY_PATCHES | FUNGAL
-
+  
   // Issues
   fungalInfection Boolean? // Fungal infection
   inflammation    Boolean? // Inflammation/pimples
   rootStrength    Float? // 0-100 (%)
   hairLoss        String? // NORMAL | MILD | MODERATE | SEVERE
-
+  
   // Analysis
   analysis        String? // Detailed scalp analysis
   issues          String[] // Detected issues
   recommendations String? // Treatment recommendations
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([scalpType])
 }
@@ -1278,51 +1280,51 @@ model ScalpConditionAnalysis {
 model TreatmentPlan {
   id         String  @id @default(cuid())
   customerId String?
-
+  
   // References
   scanId             String?
   damageAssessmentId String?
   porosityAnalysisId String?
   chemicalRiskId     String?
   scalpAnalysisId    String?
-
+  
   // Plan type
   planType String // IMMEDIATE | WEEKLY | HOMECARE | COMPREHENSIVE
   duration Int? // Duration in days
-
+  
   // Immediate treatment (at salon)
   immediateTreatment Json? // Steps for immediate treatment
-
+  
   // Weekly plan (7-14 days)
   weeklyPlan Json? // Weekly treatment plan
-
+  
   // Homecare plan (30 days)
   homecarePlan Json? // Homecare routine
-
+  
   // Treatment suitability
   permSuitability   String? // SUITABLE | CAUTION | NOT_RECOMMENDED
   colorSuitability  String? // SUITABLE | CAUTION | NOT_RECOMMENDED
   bleachSuitability String? // SUITABLE | CAUTION | NOT_RECOMMENDED
-
+  
   // Products recommended
   products String[] // Product IDs recommended
-
+  
   // Expected results
   expectedHealthScore Float? // Expected health score after treatment
   expectedImprovement Float? // Expected improvement (%)
-
+  
   // Status
   status      String    @default("ACTIVE") // ACTIVE | COMPLETED | CANCELLED
   startedAt   DateTime?
   completedAt DateTime?
-
+  
   // AI Generated
   isAIGenerated Boolean @default(true)
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([planType])
   @@index([status])
@@ -1332,31 +1334,31 @@ model TreatmentTracking {
   id              String  @id @default(cuid())
   customerId      String
   treatmentPlanId String?
-
+  
   // Tracking data
   weekNumber    Int? // Week number
   healthScore   Float // Current health score
   previousScore Float? // Previous score
-
+  
   // Improvements
   improvement     Float? // Improvement percentage
   damageReduction Float? // Damage reduction (%)
-
+  
   // Treatments done
   treatmentsDone Json? // Treatments completed this week
-
+  
   // Products used
   productsUsed String[] // Products used
-
+  
   // Notes
   notes            String? // Stylist notes
   customerFeedback String? // Customer feedback
-
+  
   // AI Assessment
   aiAssessment String? // AI assessment of progress
-
+  
   trackedAt DateTime @default(now())
-
+  
   @@index([customerId])
   @@index([treatmentPlanId])
   @@index([trackedAt])
@@ -1527,24 +1529,24 @@ model SkillAssessment {
   source       String // roleplay | quiz | case_study | simulation | manual
   sourceId     String? // ID của roleplay/quiz/case_study
   scenarioType String? // khach_kho_tinh | khach_gap | etc.
-
+  
   // 5 core skills (0-20 each, total 0-100)
   communication      Int // Giao tiếp
   technical          Int // Kiến thức kỹ thuật
   problemSolving     Int // Xử lý rủi ro
   customerExperience Int // Tạo trải nghiệm
   upsale             Int // Upsale tinh tế
-
+  
   totalScore Int // Tổng điểm (0-100)
   level      String // Master | Excellent | Good | Average | Needs Improvement
-
+  
   strengths        Json? // Array of strengths
   improvements     Json? // Array of improvements
   detailedFeedback Json? // Detailed feedback for each skill
   weaknessAnalysis Json? // AI analysis of weak points
-
+  
   recommendations Json? // Personalized training recommendations
-
+  
   assessedBy String? // AI | manual | system
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -1693,37 +1695,37 @@ model LossAlert {
   staffId   String?
   serviceId String?
   mixLogId  String?
-
+  
   // Loss metrics
   expectedQty Float? // Số lượng dự kiến
   actualQty   Float? // Số lượng thực tế
   lossQty     Float? // Số lượng hao hụt
   lossRate    Float? // Tỷ lệ hao hụt %
-
+  
   // Fraud detection
   fraudPattern String? // Pattern detected: WRONG_GRAM | PRODUCT_SUBSTITUTION | FAKE_LOG | INVENTORY_THEFT | etc.
   fraudScore   Float? // 0-100, độ nghi ngờ gian lận
   behavior     String? // JSON: behavior analysis data
-
+  
   // Threshold comparison
   thresholdType  String? // PRODUCT_TYPE | SERVICE_TYPE | STAFF_AVERAGE
   thresholdValue Float? // Giá trị ngưỡng
   deviation      Float? // Độ lệch so với ngưỡng
-
+  
   // Context
   description    String? // Mô tả chi tiết
   recommendation String? // AI recommendation
   status         String  @default("OPEN") // OPEN | REVIEWED | RESOLVED | FALSE_ALARM
-
+  
   // Tracking
   detectedAt DateTime  @default(now())
   reviewedAt DateTime?
   reviewedBy String? // User ID
   resolvedAt DateTime?
-
+  
   product Product? @relation("LossAlertProduct", fields: [productId], references: [id], onDelete: Cascade)
   staff   User?    @relation("LossAlertStaff", fields: [staffId], references: [id], onDelete: Cascade)
-
+  
   @@index([type])
   @@index([severity])
   @@index([productId])
@@ -1738,7 +1740,7 @@ model ThresholdRule {
   productCategory String? // Chemical | Nhuộm | Care
   serviceId       String? // Null = apply to all services
   serviceCategory String? // Uốn | Nhuộm | Treatment
-
+  
   // Threshold values
   normalMin   Float? // Mức bình thường tối thiểu (%)
   normalMax   Float? // Mức bình thường tối đa (%)
@@ -1747,15 +1749,15 @@ model ThresholdRule {
   alertMin    Float? // Bắt đầu cảnh báo (Level 2)
   alertMax    Float? // Kết thúc cảnh báo Level 2
   criticalMin Float? // Bắt đầu cảnh báo (Level 3)
-
+  
   // Expected quantity ranges
   expectedMin Float? // Số lượng dự kiến tối thiểu (gram/ml)
   expectedMax Float? // Số lượng dự kiến tối đa (gram/ml)
-
+  
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@unique([productId, serviceId])
   @@index([productCategory])
   @@index([serviceCategory])
@@ -1770,10 +1772,10 @@ model ConsumptionTracking {
   peakUsage    Float? // Lượng dùng cao nhất trong ngày
   lowUsage     Float? // Lượng dùng thấp nhất trong ngày
   topStaffId   String? // Nhân viên dùng nhiều nhất
-
+  
   product  Product @relation("ConsumptionProduct", fields: [productId], references: [id], onDelete: Cascade)
   topStaff User?   @relation("ConsumptionTopStaff", fields: [topStaffId], references: [id])
-
+  
   @@unique([productId, date])
   @@index([productId])
   @@index([date])
@@ -1784,40 +1786,40 @@ model InventoryProjection {
   id             String   @id @default(cuid())
   productId      String
   projectionDate DateTime @default(now()) // Ngày dự đoán
-
+  
   // Current state
   currentStock Float // Tồn kho hiện tại
   safetyStock  Float? // Tồn kho an toàn
-
+  
   // Consumption data
   averageDailyUsage Float // Trung bình dùng mỗi ngày (gram/ml)
   peakDailyUsage    Float? // Lượng dùng cao nhất / ngày
   lowDailyUsage     Float? // Lượng dùng thấp nhất / ngày
-
+  
   // Projections
   projection7Days  Float // Dự báo dùng trong 7 ngày
   projection14Days Float // Dự báo dùng trong 14 ngày
   projection30Days Float // Dự báo dùng trong 30 ngày
-
+  
   // Days until empty
   daysUntilEmpty Float? // Số ngày còn lại đến khi hết
-
+  
   // AI adjustments
   seasonalFactor           Float? @default(1.0) // Hệ số mùa vụ
   trendFactor              Float? @default(1.0) // Hệ số xu hướng
   adjustedProjection30Days Float? // Dự báo 30 ngày sau khi điều chỉnh AI
-
+  
   // Status
   status          String  @default("ACTIVE") // ACTIVE | ARCHIVED
   needsRestock    Boolean @default(false) // Cần nhập hàng
   restockPriority String? // HIGH | MEDIUM | LOW
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   product         Product                 @relation("ProjectionProduct", fields: [productId], references: [id], onDelete: Cascade)
   recommendations RestockRecommendation[] // Phase 19J
-
+  
   @@unique([productId, projectionDate])
   @@index([productId])
   @@index([projectionDate])
@@ -1829,38 +1831,38 @@ model RestockRecommendation {
   id           String  @id @default(cuid())
   productId    String
   projectionId String?
-
+  
   // Current state
   currentStock   Float
   safetyStock    Float?
   daysUntilEmpty Float?
-
+  
   // Recommendation
   recommendedQty  Float // Số lượng đề xuất nhập
   recommendedUnit String? // Đơn vị đề xuất (chai, tuýp, etc.)
   estimatedCost   Float? // Chi phí ước tính
-
+  
   // Priority
   priority String // HIGH | MEDIUM | LOW
   reason   String? // Lý do đề xuất
-
+  
   // Status
   status     String    @default("PENDING") // PENDING | APPROVED | ORDERED | RECEIVED | CANCELLED
   approvedBy String? // User ID
   approvedAt DateTime?
   orderedAt  DateTime?
   receivedAt DateTime?
-
+  
   // Budget optimization
   budgetCategory String? // ESSENTIAL | IMPORTANT | OPTIONAL
   canDefer       Boolean @default(false) // Có thể hoãn
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   product    Product              @relation("RestockProduct", fields: [productId], references: [id], onDelete: Cascade)
   projection InventoryProjection? @relation(fields: [projectionId], references: [id], onDelete: SetNull)
-
+  
   @@index([productId])
   @@index([status])
   @@index([priority])
@@ -1880,19 +1882,19 @@ model RestockTrigger {
   productId   String
   triggerType String // LOW_STOCK | PROJECTED_OUT | INCREASED_USAGE | WASTAGE_SPIKE
   severity    String // INFO | WARNING | URGENT
-
+  
   currentStock Float
   threshold    Float? // Ngưỡng kích hoạt
   message      String? // Thông báo
-
+  
   status         String    @default("ACTIVE") // ACTIVE | ACKNOWLEDGED | RESOLVED
   acknowledgedAt DateTime?
   resolvedAt     DateTime?
-
+  
   createdAt DateTime @default(now())
-
+  
   product Product @relation("RestockTriggerProduct", fields: [productId], references: [id], onDelete: Cascade)
-
+  
   @@index([productId])
   @@index([triggerType])
   @@index([severity])
@@ -1911,46 +1913,46 @@ model RestockTrigger {
 model DailyReport {
   id         String   @id @default(cuid())
   reportDate DateTime @db.Date // Ngày báo cáo
-
+  
   // Revenue & Profit
   totalRevenue Float @default(0) // Tổng doanh thu
   totalCost    Float @default(0) // Tổng chi phí sản phẩm
   profit       Float @default(0) // Lợi nhuận
   margin       Float @default(0) // Margin %
-
+  
   // Service Summary
   totalServices      Int   @default(0) // Tổng số dịch vụ
   servicesByCategory Json? // Dịch vụ theo danh mục
   topServices        Json? // Top dịch vụ
-
+  
   // Product Usage
   totalProductCost Float @default(0) // Tổng chi phí sản phẩm
   productsUsed     Json? // Sản phẩm đã dùng
   unusualUsage     Json? // Sản phẩm dùng bất thường
-
+  
   // Inventory Changes
   stockChanges  Json? // Thay đổi tồn kho
   lowStockItems Json? // Sản phẩm sắp hết
   stockWarnings Json? // Cảnh báo tồn kho
-
+  
   // Loss Summary
   lossAlerts       Json? // Cảnh báo hao hụt
   highLossProducts Json? // Sản phẩm hao hụt cao
   totalLoss        Float @default(0) // Tổng hao hụt
-
+  
   // Staff Performance
   staffRevenue  Json? // Doanh thu theo nhân viên
   staffUsage    Json? // Tiêu thụ theo nhân viên
   topPerformers Json? // Top nhân viên
   staffWarnings Json? // Cảnh báo nhân viên
-
+  
   // AI Insights
   strengths       Json? // Điểm mạnh
   risks           Json? // Rủi ro
   predictions     Json? // Dự báo
   recommendations Json? // Đề xuất hành động
   aiAnalysis      String? // Phân tích AI (full text)
-
+  
   // Delivery Status
   emailSent          Boolean   @default(false)
   emailSentAt        DateTime?
@@ -1958,11 +1960,11 @@ model DailyReport {
   zaloSentAt         DateTime?
   notificationSent   Boolean   @default(false)
   notificationSentAt DateTime?
-
+  
   // Metadata
   generatedAt DateTime @default(now())
   generatedBy String? // User ID hoặc "SYSTEM"
-
+  
   @@unique([reportDate])
   @@index([reportDate])
   @@index([generatedAt])
@@ -1972,7 +1974,7 @@ model MonthlyReport {
   id          String @id @default(cuid())
   reportMonth Int // 1-12
   reportYear  Int // 2024, 2025, etc.
-
+  
   // Revenue Summary
   totalRevenue  Float  @default(0)
   totalCost     Float  @default(0)
@@ -1980,57 +1982,57 @@ model MonthlyReport {
   margin        Float  @default(0)
   revenueGrowth Float? // % so với tháng trước
   costChange    Float? // % so với tháng trước
-
+  
   // Customer Metrics
   totalCustomers     Int    @default(0)
   returningCustomers Int    @default(0)
   newCustomers       Int    @default(0)
   returnRate         Float? // Tỷ lệ khách quay lại
-
+  
   // Service Performance
   servicesByCategory Json? // Doanh thu theo danh mục
   serviceRevenue     Json? // Doanh thu từng dịch vụ
   serviceCost        Json? // Chi phí từng dịch vụ
   serviceProfit      Json? // Lợi nhuận từng dịch vụ
   serviceTrends      Json? // Xu hướng dịch vụ (tăng/giảm)
-
+  
   // Product Usage
   totalProductUsage      Json? // Tổng lượng sản phẩm dùng
   usageByCategory        Json? // Sử dụng theo nhóm
   averageUsagePerService Json? // Trung bình mỗi dịch vụ
   productCostByCategory  Json? // Chi phí theo nhóm
-
+  
   // Inventory Movement
   stockIn       Float @default(0) // Nhập
   stockOut      Float @default(0) // Xuất
   endingStock   Float @default(0) // Tồn cuối kỳ
   excessStock   Json? // Sản phẩm dư kho
   lowStockItems Json? // Sản phẩm sắp hết
-
+  
   // Loss & Fraud
   averageLossRate   Float? // Hao hụt trung bình
   lossChange        Float? // % thay đổi so với tháng trước
   highLossProducts  Json? // Sản phẩm hao hụt cao
   suspiciousStaff   Json? // Nhân viên nghi vấn
   inventoryMismatch Float? // % lệch tồn kho vs log
-
+  
   // Staff Performance
   staffRevenue    Json? // Doanh thu theo nhân viên
   staffEfficiency Json? // Tiết kiệm sản phẩm
   staffWarnings   Json? // Cảnh báo nhân viên
   topPerformers   Json? // Top nhân viên
-
+  
   // AI Recommendations
   costOptimization      Json? // Tối ưu chi phí
   inventoryOptimization Json? // Tối ưu tồn kho
   marketingSuggestions  Json? // Gợi ý marketing
   trainingNeeds         Json? // Nhu cầu đào tạo
   aiSummary             String? // Tóm tắt AI
-
+  
   // Metadata
   generatedAt DateTime @default(now())
   generatedBy String? // User ID hoặc "SYSTEM"
-
+  
   @@unique([reportMonth, reportYear])
   @@index([reportYear, reportMonth])
   @@index([generatedAt])
@@ -2048,14 +2050,14 @@ model CustomerJourney {
   touchpoint     String? // INBOX | CALL | VISIT | CHAT | REVIEW | etc.
   touchpointData Json? // Touchpoint-specific data
   timestamp      DateTime @default(now())
-
+  
   // Metadata
   source   String? // How they found salon (FB, Google, Friend, etc.)
   campaign String? // Marketing campaign if applicable
   device   String? // Mobile | Desktop | Tablet
-
+  
   customer Customer @relation("CustomerJourneyCustomer", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([journeyStage])
   @@index([touchpoint])
@@ -2067,21 +2069,21 @@ model CustomerTouchpoint {
   customerId String
   type       String // INBOX | CALL | BOOKING | SERVICE | CHECKOUT | FOLLOW_UP | REVIEW | REFERRAL
   channel    String? // Zalo | Phone | In-person | Email | FB
-
+  
   // Touchpoint data
   responseTime Int? // seconds (for inbox/call)
   content      String? // Message content or summary
   outcome      String? // SUCCESS | FAILED | PENDING | NO_RESPONSE
   metadata     Json? // Additional data
-
+  
   // Staff involved
   staffId String? // CSKH, Stylist, etc.
-
+  
   createdAt DateTime @default(now())
-
+  
   customer Customer @relation("CustomerTouchpointCustomer", fields: [customerId], references: [id], onDelete: Cascade)
   staff    User?    @relation("TouchpointStaff", fields: [staffId], references: [id])
-
+  
   @@index([customerId])
   @@index([type])
   @@index([channel])
@@ -2101,7 +2103,7 @@ model CustomerExperience {
   customerId String
   serviceId  String? // Service/Visit ID
   visitId    String? // Visit ID
-
+  
   // Experience scores (0-100)
   consultationScore Float? // Chất lượng tư vấn
   technicalScore    Float? // Chất lượng kỹ thuật
@@ -2109,22 +2111,22 @@ model CustomerExperience {
   waitTimeScore     Float? // Thời gian chờ
   valueScore        Float? // Giá cả vs giá trị
   careScore         Float? // Care sau dịch vụ
-
+  
   overallScore Float // Tổng điểm (0-100)
-
+  
   // Feedback
   strengths    String? // Điểm mạnh
   improvements String? // Điểm cần cải thiện
   feedback     String? // Feedback chi tiết
-
+  
   // AI Analysis
   aiAnalysis String? // AI phân tích trải nghiệm
   sentiment  String? // POSITIVE | NEUTRAL | NEGATIVE
-
+  
   createdAt DateTime @default(now())
-
+  
   customer Customer @relation("CustomerExperienceCustomer", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([overallScore])
   @@index([createdAt])
@@ -2144,7 +2146,7 @@ model CustomerBehavior {
   behaviorType String // VIP | HIGH_VALUE | TREND | PRICE_SENSITIVE | RISK_AVERSE | CHURN_RISK
   behaviorData Json? // Behavior-specific data
   confidence   Float? // AI confidence (0-100)
-
+  
   // Attributes
   totalSpent         Float     @default(0)
   visitCount         Int       @default(0)
@@ -2153,25 +2155,25 @@ model CustomerBehavior {
   visitFrequency     Float? // Lần/tháng
   lastVisit          DateTime?
   nextPredictedVisit DateTime? // AI dự đoán
-
+  
   // Preferences
   preferredStylist String? // Stylist ID
   preferredTime    String? // Sáng | Trưa | Chiều | Tối
   preferredDay     String? // Ngày yêu thích
-
+  
   // Lifetime Value
   lifetimeValue  Float  @default(0) // CLV
   predictedValue Float? // Giá trị dự đoán
-
+  
   // Analysis
   aiAnalysis String? // AI phân tích hành vi
   tags       String[] // Tags: VIP, Trendy, Price-sensitive, etc.
-
+  
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
-
+  
   customer Customer @relation("CustomerBehaviorCustomer", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@unique([customerId])
   @@index([behaviorType])
   @@index([totalSpent])
@@ -2184,27 +2186,27 @@ model CustomerRiskAlert {
   riskType   String // CHURN | LOW_ENGAGEMENT | NEGATIVE_FEEDBACK | NO_RESPONSE
   riskScore  Float // 0-100, độ rủi ro
   severity   String // LOW | MEDIUM | HIGH | CRITICAL
-
+  
   // Risk factors
   factors            Json? // Các yếu tố rủi ro
   lastContact        DateTime? // Lần liên hệ cuối
   daysSinceLastVisit Int? // Số ngày từ lần đến cuối
   lastScore          Float? // Experience score lần cuối
-
+  
   // Prediction
   churnProbability   Float? // Xác suất bỏ salon (%)
   predictedChurnDate DateTime? // Ngày dự đoán bỏ salon
-
+  
   // Actions
   recommendedAction String? // Hành động đề xuất
   actionTaken       String? // Hành động đã thực hiện
   status            String  @default("ACTIVE") // ACTIVE | ACKNOWLEDGED | RESOLVED | FALSE_ALARM
-
+  
   detectedAt DateTime  @default(now())
   resolvedAt DateTime?
-
+  
   customer Customer @relation("CustomerRiskAlertCustomer", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([riskType])
   @@index([severity])
@@ -2216,23 +2218,23 @@ model CustomerPrediction {
   id             String @id @default(cuid())
   customerId     String
   predictionType String // RETURN | NEXT_SERVICE | SPEND | CHURN
-
+  
   // Return prediction
   returnProbability   Float? // Xác suất quay lại (%)
   predictedReturnDate DateTime? // Ngày dự đoán quay lại
   predictedService    String? // Dịch vụ dự đoán
   predictedSpend      Float? // Chi tiêu dự đoán
-
+  
   // Model data
   modelVersion String? // AI model version
   confidence   Float? // Confidence (0-100)
   factors      Json? // Factors used in prediction
-
+  
   createdAt DateTime  @default(now())
   expiresAt DateTime? // Prediction expiry date
-
+  
   customer Customer @relation("CustomerPredictionCustomer", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@unique([customerId, predictionType])
   @@index([customerId])
   @@index([predictionType])
@@ -2259,10 +2261,10 @@ model MarketingChannel {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   campaigns  MarketingCampaign[]
   dataPoints MarketingDataPoint[]
-
+  
   @@unique([name])
   @@index([type])
 }
@@ -2271,30 +2273,30 @@ model MarketingDataPoint {
   id        String   @id @default(cuid())
   channelId String
   date      DateTime @db.Date
-
+  
   // Metrics
   leads       Int @default(0) // Lượt inbox/call
   bookings    Int @default(0) // Đặt lịch
   arrivals    Int @default(0) // Đến salon
   conversions Int @default(0) // Chốt dịch vụ
-
+  
   // Costs
   adSpend   Float @default(0) // Chi phí quảng cáo
   totalCost Float @default(0) // Tổng chi phí
-
+  
   // Revenue
   revenue Float @default(0) // Doanh thu từ kênh này
-
+  
   // Calculated
   costPerLead     Float? // CAC per lead
   costPerCustomer Float? // CAC per customer
   conversionRate  Float? // Tỷ lệ chuyển đổi
   returnRate      Float? // Tỷ lệ quay lại
-
+  
   metadata Json? // Additional data
-
+  
   channel MarketingChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-
+  
   @@unique([channelId, date])
   @@index([channelId])
   @@index([date])
@@ -2309,29 +2311,29 @@ model MarketingContent {
   imagePrompt String? // AI image generation prompt
   hashtags    String[] // Hashtags array
   platform    String? // Facebook | Instagram | TikTok
-
+  
   // Scheduling
   scheduledDate DateTime?
   publishedDate DateTime?
   isPublished   Boolean   @default(false)
-
+  
   // Performance
   views    Int @default(0)
   likes    Int @default(0)
   comments Int @default(0)
   shares   Int @default(0)
   clicks   Int @default(0)
-
+  
   // AI Generated
   isAIGenerated    Boolean @default(false)
   aiModel          String? // Model used
   generationPrompt String? // Original prompt
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   campaign MarketingCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-
+  
   @@index([campaignId])
   @@index([contentType])
   @@index([platform])
@@ -2344,25 +2346,25 @@ model MarketingAutomation {
   name        String
   triggerType String // NEW_CUSTOMER | RISK_CUSTOMER | VIP | POST_SERVICE | BIRTHDAY
   segment     String? // Customer segment
-
+  
   // Flow steps
   steps Json // Array of automation steps
-
+  
   // Schedule
   isActive  Boolean   @default(true)
   startDate DateTime?
   endDate   DateTime?
-
+  
   // Performance
   triggered  Int @default(0) // Số lần trigger
   completed  Int @default(0) // Số lần hoàn thành
   conversion Int @default(0) // Số lần chuyển đổi
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   campaign MarketingCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-
+  
   @@index([campaignId])
   @@index([triggerType])
   @@index([isActive])
@@ -2372,22 +2374,22 @@ model MarketingSegment {
   id          String  @id @default(cuid())
   name        String // VIP | HIGH_SPENDER | TREND_HUNTER | BEAUTY_ADDICT | BUDGET | ONE_TIME | RISK | REFERRAL
   description String?
-
+  
   // Criteria (JSON)
   criteria Json? // Segmentation criteria
-
+  
   // Stats
   customerCount Int   @default(0)
   averageLTV    Float @default(0)
   averageSpend  Float @default(0)
-
+  
   // AI Generated
   isAIGenerated Boolean @default(false)
   aiAnalysis    String? // AI analysis of segment
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@unique([name])
   @@index([name])
 }
@@ -2397,19 +2399,19 @@ model MarketingTrend {
   trendType   String // HAIR_STYLE | COLOR | TECHNIQUE | SEASONAL
   title       String
   description String?
-
+  
   // Trend data
   popularity Float? // 0-100
   season     String? // Spring | Summer | Fall | Winter
   source     String? // KOREA | JAPAN | LOCAL | GLOBAL
-
+  
   // AI Analysis
   aiAnalysis      String?
   recommendations Json? // AI recommendations
-
+  
   detectedAt DateTime  @default(now())
   expiresAt  DateTime?
-
+  
   @@index([trendType])
   @@index([detectedAt])
 }
@@ -2418,25 +2420,25 @@ model CompetitorAnalysis {
   id             String  @id @default(cuid())
   competitorName String
   location       String? // Khu vực
-
+  
   // Pricing
   servicePrices Json? // Service prices
-
+  
   // Services
   services Json? // Services offered
-
+  
   // Marketing
   activeCampaigns Json? // Active campaigns detected
   promotions      Json? // Current promotions
-
+  
   // Analysis
   strengths     Json? // Competitor strengths
   weaknesses    Json? // Competitor weaknesses
   opportunities Json? // Opportunities for us
-
+  
   analyzedAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
+  
   @@index([competitorName])
   @@index([analyzedAt])
 }
@@ -2449,27 +2451,27 @@ model UpsaleMatrix {
   id          String  @id @default(cuid())
   serviceId   String? // Service that triggers upsale
   serviceName String // Service name (if no serviceId)
-
+  
   // Upsale items
   recommendedServices String[] // Service IDs to recommend
   recommendedProducts String[] // Product IDs to recommend
-
+  
   // Upsale data
   upsaleType     String // SERVICE | PRODUCT | COMBO
   priority       Int    @default(0) // Higher = more priority
   conversionRate Float? // Expected conversion rate (%)
-
+  
   // Conditions
   conditions Json? // Conditions for upsale (customer type, price range, etc.)
-
+  
   // Script
   script   String? // Suggested script for stylist
   benefits String[] // Key benefits to mention
-
+  
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([serviceId])
   @@index([serviceName])
   @@index([upsaleType])
@@ -2480,28 +2482,28 @@ model UpsaleRecommendation {
   customerId String
   serviceId  String? // Current service
   invoiceId  String? // Current invoice
-
+  
   // Recommendations
   recommendedServices String[] // Service IDs
   recommendedProducts String[] // Product IDs
   combo               Json? // Combo suggestions
-
+  
   // AI Generated
   isAIGenerated Boolean @default(true)
   confidence    Float? // 0-100
   reason        String? // Why recommend these items
   script        String? // Suggested script
   tone          String? // Communication tone
-
+  
   // Status
   status        String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | SOLD
   acceptedItems String[] // Items customer accepted
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   customer Customer @relation("CustomerUpsaleRecommendation", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([serviceId])
   @@index([status])
@@ -2520,30 +2522,30 @@ model SalesFunnel {
   id          String  @id @default(cuid())
   customerId  String?
   funnelStage String // AWARENESS | CONSIDERATION | DECISION | CHECKOUT | POST_SERVICE | RETURN
-
+  
   // Funnel data
   entryPoint     String? // How customer entered funnel
   currentService String? // Service customer is interested in
   currentProduct String? // Product customer is interested in
-
+  
   // Progress
   stepsCompleted String[] // Steps customer completed
   currentStep    String? // Current step in funnel
-
+  
   // Automation
   automationActive Boolean   @default(true)
   nextAction       String? // Next automated action
   nextActionDate   DateTime? // When to trigger next action
-
+  
   // Metrics
   timeInFunnel          Int? // Minutes in funnel
   conversionProbability Float? // 0-100
-
+  
   metadata Json? // Additional data
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([funnelStage])
   @@index([nextActionDate])
@@ -2553,25 +2555,25 @@ model AbandonedCart {
   id         String  @id @default(cuid())
   customerId String?
   phone      String? // If no customerId
-
+  
   // Abandonment data
   abandonmentType String // INBOX_NO_BOOKING | BOOKING_NO_ARRIVAL | NO_CHECKOUT | VIEWED_NO_ACTION
   originalIntent  String? // Service/product customer was interested in
-
+  
   // Recovery attempts
   recoveryAttempts Int       @default(0)
   lastAttempt      DateTime?
   nextAttempt      DateTime?
-
+  
   // Status
   status String @default("ABANDONED") // ABANDONED | RECOVERED | CONVERTED | LOST
-
+  
   // Data
   metadata Json? // Original data (inbox message, booking, etc.)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([phone])
   @@index([abandonmentType])
@@ -2584,28 +2586,28 @@ model UpsaleRecord {
   invoiceId  String
   customerId String
   staffId    String? // Staff who did upsale
-
+  
   // Upsale details
   originalAmount Float // Original invoice amount
   upsaleAmount   Float // Additional amount from upsale
   totalAmount    Float // Final amount
-
+  
   // Items
   originalItems String[] // Original service/product IDs
   upsaleItems   String[] // Upsale service/product IDs
-
+  
   // Source
   source           String // MATRIX | AI | MANUAL | AUTOMATION
   recommendationId String? // If from AI recommendation
-
+  
   // Metrics
   upsaleRate     Float? // Upsale rate (%)
   conversionType String? // SERVICE_UPGRADE | PRODUCT_ADD | COMBO
-
+  
   createdAt DateTime @default(now())
-
+  
   customer Customer @relation("CustomerUpsaleRecord", fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([invoiceId])
   @@index([customerId])
   @@index([staffId])
@@ -2629,27 +2631,27 @@ model ServiceSOP {
   id          String  @id @default(cuid())
   serviceId   String?
   serviceName String // Service name if no serviceId
-
+  
   // SOP Steps
   steps Json // Array of SOP steps with details
-
+  
   // Standard parameters
   standardParams Json? // Standard parameters (time, temperature, etc.)
-
+  
   // Requirements
   prerequisites String[] // Required checks before starting
   materials     String[] // Required materials/products
-
+  
   // Quality standards
   qualityStandards Json? // Quality standards for this service
-
+  
   // Version control
   version  String  @default("1.0")
   isActive Boolean @default(true)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([serviceId])
   @@index([serviceName])
   @@index([isActive])
@@ -2660,26 +2662,26 @@ model TechnicalChecklist {
   serviceId   String?
   serviceName String?
   bookingId   String?
-
+  
   // Checklist items
   items Json // Array of checklist items
-
+  
   // Status
   completedItems String[] // Completed item IDs
   pendingItems   String[] // Pending item IDs
   skippedItems   String[] // Skipped item IDs
-
+  
   // Completion
   completionRate Float? // 0-100 (%)
   isCompleted    Boolean @default(false)
-
+  
   // AI Verification
   aiVerified Boolean  @default(false)
   aiWarnings String[] // AI warnings for missing items
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([serviceId])
   @@index([bookingId])
   @@index([isCompleted])
@@ -2690,14 +2692,14 @@ model QualityScore {
   bookingId String?
   serviceId String?
   staffId   String?
-
+  
   // Score breakdown
   overallScore     Float // 0-100
   technicalScore   Float? // Technical execution score
   consistencyScore Float? // Consistency score
   timingScore      Float? // Timing accuracy score
   productScore     Float? // Product usage score
-
+  
   // Detailed metrics
   evenness      Float? // Setting evenness (0-100)
   tension       Float? // Hair tension (0-100)
@@ -2705,15 +2707,15 @@ model QualityScore {
   spacing       Float? // Product spacing (0-100)
   temperature   Float? // Temperature accuracy (0-100)
   timing        Float? // Timing accuracy (0-100)
-
+  
   // AI Analysis
   aiAnalysis String? // AI analysis of quality
   strengths  String[] // Strengths identified
   weaknesses String[] // Weaknesses identified
-
+  
   // Real-time data
   capturedAt DateTime @default(now()) // When score was captured
-
+  
   @@index([bookingId])
   @@index([serviceId])
   @@index([staffId])
@@ -2726,30 +2728,30 @@ model ErrorDetection {
   bookingId String?
   serviceId String?
   staffId   String?
-
+  
   // Error details
   errorType     String // OVERPROCESS | UNDERPROCESS | UNEVEN | OVERHEAT | etc.
   errorCategory String // TECHNICAL | TIMING | PRODUCT | PROCEDURE
   severity      String // LOW | MEDIUM | HIGH | CRITICAL
-
+  
   // Error location
   location String? // Where error occurred (e.g., "top section", "back")
-
+  
   // Error description
   description String // Detailed error description
   detectedAt  DateTime @default(now())
-
+  
   // Detection method
   detectionMethod String // AI | MANUAL | SYSTEM
-
+  
   // Status
   status String @default("DETECTED") // DETECTED | ACKNOWLEDGED | CORRECTED | IGNORED
-
+  
   // Correction
   corrected       Boolean   @default(false)
   correctedAt     DateTime?
   correctionNotes String?
-
+  
   @@index([bookingId])
   @@index([serviceId])
   @@index([staffId])
@@ -2762,31 +2764,31 @@ model ConsistencyMetrics {
   id        String  @id @default(cuid())
   staffId   String?
   serviceId String?
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
-
+  
   // Metrics
   avgSetting       Float? // Average setting value
   avgProductAmount Float? // Average product amount
   avgTiming        Float? // Average timing
   avgQualityScore  Float? // Average quality score
-
+  
   // Comparison
   teamAvgSetting Float? // Team average
   teamAvgQuality Float? // Team average quality
-
+  
   // Consistency score
   consistencyScore Float? // 0-100 (how consistent vs team)
   deviation        Float? // Deviation from team average
-
+  
   // Analysis
   analysis        String? // Consistency analysis
   recommendations String[] // Recommendations for improvement
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([staffId])
   @@index([serviceId])
   @@index([periodStart])
@@ -2796,25 +2798,25 @@ model CorrectionSuggestion {
   id        String  @id @default(cuid())
   errorId   String? // Reference to ErrorDetection
   bookingId String?
-
+  
   // Suggestion
   suggestion String // Correction suggestion
   action     String? // Specific action to take
-
+  
   // Priority
   priority String @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
-
+  
   // Status
   status    String    @default("PENDING") // PENDING | APPLIED | REJECTED
   appliedAt DateTime?
-
+  
   // AI Generated
   isAIGenerated Boolean @default(true)
   confidence    Float? // 0-100
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([errorId])
   @@index([bookingId])
   @@index([status])
@@ -2825,33 +2827,33 @@ model PostServiceAudit {
   bookingId String?
   serviceId String?
   staffId   String?
-
+  
   // Audit scores
   auditScore    Float // 0-100 (overall audit score)
   colorScore    Float? // Color evenness (0-100)
   curlScore     Float? // Curl/wave quality (0-100)
   shineScore    Float? // Shine/gloss (0-100)
   evennessScore Float? // Overall evenness (0-100)
-
+  
   // Analysis
   aiAnalysis   String? // AI analysis of result
   strengths    String[] // Strengths
   improvements String[] // Areas for improvement
-
+  
   // Images
   beforeImageUrl String? // Before photo
   afterImageUrl  String? // After photo
-
+  
   // Status
   status String @default("PENDING") // PENDING | COMPLETED | REVIEWED
-
+  
   // Review
   reviewedBy  String? // Reviewer ID
   reviewedAt  DateTime?
   reviewNotes String?
-
+  
   auditedAt DateTime @default(now())
-
+  
   @@index([bookingId])
   @@index([serviceId])
   @@index([staffId])
@@ -2871,27 +2873,27 @@ model Branch {
   address   String?
   phone     String?
   email     String?
-
+  
   // Management
   managerId String? // Branch manager user ID
   isActive  Boolean @default(true)
-
+  
   // Settings
   timezone String? @default("Asia/Ho_Chi_Minh")
   currency String? @default("VND")
-
+  
   // Metadata
   metadata Json? // Additional branch data
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relations
   partner  Partner?  @relation("PartnerBranches", fields: [partnerId], references: [id], onDelete: Cascade)
   mixLogs  MixLog[]  @relation("BranchMixLog")
   bookings Booking[] @relation("BranchBooking")
   invoices Invoice[] @relation("BranchInvoice")
-
+  
   users             User[]                  @relation("BranchUsers")
   productStock      ProductStock[]
   stockTransactions StockTransaction[]
@@ -2913,22 +2915,22 @@ model BranchStaffAssignment {
   id       String @id @default(cuid())
   staffId  String
   branchId String
-
+  
   // Assignment type
   assignmentType String  @default("FULL_TIME") // FULL_TIME | PART_TIME | ROTATING
   isPrimary      Boolean @default(false) // Primary branch
-
+  
   // Schedule (for rotating staff)
   schedule Json? // Schedule configuration
-
+  
   // Status
   isActive  Boolean   @default(true)
   startDate DateTime  @default(now())
   endDate   DateTime?
-
+  
   staff  User   @relation("StaffBranchAssignment", fields: [staffId], references: [id], onDelete: Cascade)
   branch Branch @relation("BranchStaffAssignment", fields: [branchId], references: [id], onDelete: Cascade)
-
+  
   @@unique([staffId, branchId])
   @@index([staffId])
   @@index([branchId])
@@ -2939,21 +2941,21 @@ model BranchInventory {
   id        String @id @default(cuid())
   branchId  String
   productId String
-
+  
   // Stock
   stock         Float @default(0)
   reservedStock Float @default(0) // Reserved for bookings
-
+  
   // Safety stock
   safetyStock  Float? // Minimum stock level
   reorderPoint Float? // Reorder point
-
+  
   // Last updated
   lastUpdated DateTime @default(now())
-
+  
   branch  Branch  @relation("BranchInventoryBranch", fields: [branchId], references: [id], onDelete: Cascade)
   product Product @relation("BranchInventoryProduct", fields: [productId], references: [id], onDelete: Cascade)
-
+  
   @@unique([branchId, productId])
   @@index([branchId])
   @@index([productId])
@@ -2962,44 +2964,44 @@ model BranchInventory {
 model BranchPerformance {
   id       String @id @default(cuid())
   branchId String
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY
-
+  
   // Revenue
   revenue Float  @default(0)
   profit  Float  @default(0)
   margin  Float? // Profit margin (%)
-
+  
   // Customer metrics
   totalCustomers     Int    @default(0)
   newCustomers       Int    @default(0)
   returningCustomers Int    @default(0)
   returnRate         Float? // Return rate (%)
-
+  
   // Service metrics
   totalServices  Int    @default(0)
   avgServiceTime Float? // Average service time (minutes)
   conversionRate Float? // Conversion rate (%)
-
+  
   // Cost metrics
   productCost Float @default(0)
   staffCost   Float @default(0)
   otherCosts  Float @default(0)
-
+  
   // Quality metrics
   avgQualityScore Float? // Average quality score
   errorRate       Float? // Error rate (%)
   customerRating  Float? // Average customer rating
-
+  
   // Loss metrics
   lossRate    Float? // Loss rate (%)
   wasteAmount Float? // Waste amount
-
+  
   branch Branch @relation("BranchPerformanceBranch", fields: [branchId], references: [id], onDelete: Cascade)
-
+  
   @@unique([branchId, periodStart, periodType])
   @@index([branchId])
   @@index([periodStart])
@@ -3009,27 +3011,27 @@ model BranchPerformance {
 model BranchForecast {
   id       String @id @default(cuid())
   branchId String
-
+  
   // Forecast period
   forecastDate DateTime
   forecastType String // REVENUE | CUSTOMERS | STAFF_NEED | GROWTH
-
+  
   // Forecast data
   predictedValue Float? // Predicted value
   confidence     Float? // Confidence level (0-100)
   factors        Json? // Factors used in forecast
-
+  
   // AI Analysis
   aiAnalysis      String? // AI analysis
   recommendations String[] // Recommendations
-
+  
   // Status
   status String @default("ACTIVE") // ACTIVE | ARCHIVED
-
+  
   createdAt DateTime @default(now())
-
+  
   branch Branch @relation("BranchForecastBranch", fields: [branchId], references: [id], onDelete: Cascade)
-
+  
   @@index([branchId])
   @@index([forecastDate])
   @@index([forecastType])
@@ -3037,25 +3039,25 @@ model BranchForecast {
 
 model CrossBranchQuality {
   id String @id @default(cuid())
-
+  
   // Comparison period
   periodStart DateTime
   periodEnd   DateTime
-
+  
   // Quality metrics by branch
   branchMetrics Json // { branchId: { qualityScore, errorRate, etc. } }
-
+  
   // Comparison
   avgQuality  Float? // Average quality across branches
   bestBranch  String? // Best performing branch ID
   worstBranch String? // Worst performing branch ID
-
+  
   // Analysis
   analysis        String? // Cross-branch analysis
   recommendations String[] // Recommendations for improvement
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([periodStart])
 }
 
@@ -3069,37 +3071,37 @@ model Partner {
   ownerName String?
   phone     String?
   email     String?
-
+  
   // License & Plan
   plan             String    @default("BASIC") // BASIC | PRO | ENTERPRISE
   licenseStatus    String    @default("ACTIVE") // ACTIVE | EXPIRED | SUSPENDED | TRIAL
   licenseStartDate DateTime  @default(now())
   licenseEndDate   DateTime?
-
+  
   // Settings
   timezone String? @default("Asia/Ho_Chi_Minh")
   currency String? @default("VND")
   language String? @default("vi")
-
+  
   // Metadata
   metadata Json? // Additional partner data
   notes    String? // HQ notes
-
+  
   // HQ Control
   isActive        Boolean   @default(true)
   suspendedAt     DateTime?
   suspendedReason String?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relations
   branches      Branch[]              @relation("PartnerBranches")
   users         User[]                @relation("PartnerUsers")
   licenses      License[]             @relation("PartnerLicense")
   performances  PartnerPerformance[]  @relation("PartnerPerformance")
   qualityScores PartnerQualityScore[] @relation("PartnerQuality")
-
+  
   @@index([salonName])
   @@index([plan])
   @@index([licenseStatus])
@@ -3109,35 +3111,35 @@ model Partner {
 model License {
   id        String @id @default(cuid())
   partnerId String
-
+  
   // License details
   plan   String // BASIC | PRO | ENTERPRISE
   price  Float // Monthly price
   period Int // Period in months
-
+  
   // Dates
   startDate DateTime
   endDate   DateTime
   autoRenew Boolean  @default(true)
-
+  
   // Payment
   status          String    @default("ACTIVE") // ACTIVE | EXPIRED | SUSPENDED | CANCELLED
   paymentStatus   String    @default("PENDING") // PENDING | PAID | OVERDUE | CANCELLED
   lastPaymentDate DateTime?
   nextPaymentDate DateTime?
-
+  
   // Payment history
   paymentHistory Json? // Array of payment records
-
+  
   // Notifications
   reminderSent   Boolean   @default(false)
   reminderSentAt DateTime?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   partner Partner @relation("PartnerLicense", fields: [partnerId], references: [id], onDelete: Cascade)
-
+  
   @@index([partnerId])
   @@index([status])
   @@index([plan])
@@ -3147,53 +3149,53 @@ model License {
 model PartnerPerformance {
   id        String @id @default(cuid())
   partnerId String
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // WEEKLY | MONTHLY | QUARTERLY
-
+  
   // Revenue
   revenue Float  @default(0)
   profit  Float  @default(0)
   margin  Float? // Profit margin (%)
-
+  
   // Customer metrics
   totalCustomers     Int    @default(0)
   newCustomers       Int    @default(0)
   returningCustomers Int    @default(0)
   returnRate         Float? // Return rate (%)
-
+  
   // Service metrics
   totalServices  Int    @default(0)
   avgServiceTime Float? // Average service time (minutes)
   conversionRate Float? // Conversion rate (%)
   upsaleRate     Float? // Upsale rate (%)
-
+  
   // Cost metrics
   productCost Float @default(0)
   staffCost   Float @default(0)
   otherCosts  Float @default(0)
-
+  
   // Quality metrics
   avgQualityScore Float? // Average quality score
   errorRate       Float? // Error rate (%)
   customerRating  Float? // Average customer rating
-
+  
   // Loss metrics
   lossRate    Float? // Loss rate (%)
   wasteAmount Float? // Waste amount
-
+  
   // AI Analysis
   aiAnalysis      String? // AI analysis
   strengths       String[] // Strengths
   weaknesses      String[] // Weaknesses
   recommendations String[] // Recommendations
-
+  
   createdAt DateTime @default(now())
-
+  
   partner Partner @relation("PartnerPerformance", fields: [partnerId], references: [id], onDelete: Cascade)
-
+  
   @@unique([partnerId, periodStart, periodType])
   @@index([partnerId])
   @@index([periodStart])
@@ -3203,34 +3205,34 @@ model PartnerPerformance {
 model PartnerQualityScore {
   id        String @id @default(cuid())
   partnerId String
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
-
+  
   // Quality scores
   overallScore     Float // 0-100
   technicalScore   Float? // Technical quality
   serviceScore     Float? // Service quality
   consistencyScore Float? // Consistency score
-
+  
   // SOP Compliance
   sopCompliance Float? // SOP compliance rate (%)
   sopViolations Json? // SOP violations details
-
+  
   // Error analysis
   errorCount     Int   @default(0)
   errorTypes     Json? // Error types breakdown
   criticalErrors Int   @default(0)
-
+  
   // AI Analysis
   aiAnalysis      String? // AI quality analysis
   recommendations String[] // Quality improvement recommendations
-
+  
   createdAt DateTime @default(now())
-
+  
   partner Partner @relation("PartnerQuality", fields: [partnerId], references: [id], onDelete: Cascade)
-
+  
   @@index([partnerId])
   @@index([periodStart])
   @@index([overallScore])
@@ -3240,26 +3242,26 @@ model SOPEnforcement {
   id        String  @id @default(cuid())
   partnerId String? // Null = apply to all partners
   branchId  String? // Null = apply to all branches
-
+  
   // SOP details
   sopId            String? // Reference to ServiceSOP
   sopVersion       String?
   enforcementLevel String  @default("REQUIRED") // REQUIRED | RECOMMENDED | OPTIONAL
-
+  
   // Status
   status String @default("ACTIVE") // ACTIVE | INACTIVE | PENDING
-
+  
   // Dates
   effectiveDate DateTime  @default(now())
   expiryDate    DateTime?
-
+  
   // Monitoring
   monitored       Boolean @default(true)
   violationsCount Int     @default(0)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([partnerId])
   @@index([branchId])
   @@index([status])
@@ -3268,24 +3270,24 @@ model SOPEnforcement {
 model HQNotification {
   id        String  @id @default(cuid())
   partnerId String? // Null = broadcast to all
-
+  
   // Notification details
   type      String // SYSTEM_UPDATE | SOP_UPDATE | ALERT | TRAINING | PAYMENT
   priority  String  @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
   title     String
   message   String
   actionUrl String? // URL to action if needed
-
+  
   // Status
   status String    @default("PENDING") // PENDING | SENT | READ | ACKNOWLEDGED
   sentAt DateTime?
   readAt DateTime?
-
+  
   // Recipients
   recipients Json? // Array of user IDs or roles
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([partnerId])
   @@index([type])
   @@index([status])
@@ -3298,11 +3300,11 @@ model HQNotification {
 
 model VoiceSession {
   id String @id @default(cuid())
-
+  
   // Session type
   sessionType String // PHONE_CALL | VOICE_MESSAGE | INTERCOM | CHAT_VOICE
   channel     String? // PHONE | ZALO | FACEBOOK | WEBSITE | IN_PERSON
-
+  
   // Participants
   customerId    String? // Customer if available
   customerPhone String? // Phone number
@@ -3310,34 +3312,34 @@ model VoiceSession {
   staffId       String? // Staff member if intercom mode
   branchId      String? // Branch context
   partnerId     String? // Partner context
-
+  
   // Session metadata
   startedAt DateTime  @default(now())
   endedAt   DateTime?
   duration  Int? // Duration in seconds
   status    String    @default("ACTIVE") // ACTIVE | COMPLETED | CANCELLED | TRANSFERRED
-
+  
   // Session summary
   summary     String? // AI-generated summary
   intent      String? // Detected intent
   resolved    Boolean @default(false) // Whether issue was resolved
   actionTaken String? // Action taken (BOOKING_CREATED | INFO_PROVIDED | etc.)
-
+  
   // Phone call specific
   callId          String? // External call ID
   callDirection   String? // INBOUND | OUTBOUND
   transferToHuman Boolean @default(false)
   transferReason  String?
-
+  
   // Recording
   recordingUrl String? // Full conversation recording
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relations
   interactions VoiceInteraction[] @relation("SessionInteractions")
-
+  
   @@index([customerId])
   @@index([staffId])
   @@index([branchId])
@@ -3350,35 +3352,35 @@ model VoiceSession {
 model VoiceInteraction {
   id        String @id @default(cuid())
   sessionId String
-
+  
   // Interaction sequence
   sequence Int // Order in conversation
   speaker  String // CUSTOMER | MINA | STAFF
-
+  
   // Voice data
   audioUrl   String? // Audio file URL
   transcript String // Speech-to-text transcript
   language   String? @default("vi") // Language detected
-
+  
   // AI processing
   intent    String? // Detected intent
   entities  Json? // Extracted entities (service, stylist, time, etc.)
   sentiment String? // POSITIVE | NEUTRAL | NEGATIVE
   emotion   String? // HAPPY | FRUSTRATED | CURIOUS | etc.
-
+  
   // Response
   responseText     String? // Mina's response text
   responseAudioUrl String? // Mina's response audio
   responseStyle    String? // FRIENDLY | PROFESSIONAL | TECHNICAL | etc.
-
+  
   // Timing
   timestamp DateTime @default(now())
   duration  Float? // Audio duration in seconds
-
+  
   createdAt DateTime @default(now())
-
+  
   session VoiceSession @relation("SessionInteractions", fields: [sessionId], references: [id], onDelete: Cascade)
-
+  
   @@index([sessionId])
   @@index([sequence])
   @@index([speaker])
@@ -3388,32 +3390,32 @@ model VoiceInteraction {
 
 model VoiceCommand {
   id String @id @default(cuid())
-
+  
   // Command source
   staffId  String // Staff member who issued command
   branchId String? // Branch context
-
+  
   // Command data
   audioUrl    String? // Voice command audio
   transcript  String // Command transcript
   commandType String // CHECK_SCHEDULE | VIEW_CUSTOMER | OPEN_SOP | CREATE_PROFILE | etc.
-
+  
   // Command parameters
   parameters Json? // Extracted parameters
   intent     String // Detected intent
-
+  
   // Execution
   status String  @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED
   result Json? // Command execution result
   error  String? // Error message if failed
-
+  
   // Response
   responseText     String? // Response text
   responseAudioUrl String? // Response audio
-
+  
   executedAt DateTime?
   createdAt  DateTime  @default(now())
-
+  
   @@index([staffId])
   @@index([branchId])
   @@index([commandType])
@@ -3423,25 +3425,25 @@ model VoiceCommand {
 
 model VoiceIntent {
   id String @id @default(cuid())
-
+  
   // Intent classification
   intent     String // BOOKING | PRICE_INQUIRY | SERVICE_ADVICE | CANCEL_BOOKING | etc.
   confidence Float // 0-1 confidence score
-
+  
   // Context
   sessionId     String?
   interactionId String?
-
+  
   // Extracted entities
   entities Json? // { service: "uốn nóng", stylist: "Hải", date: "thứ 7", time: "chiều" }
-
+  
   // Resolution
   resolved         Boolean @default(false)
   resolutionAction String? // Action taken
   bookingId        String? // Created booking ID if applicable
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([intent])
   @@index([sessionId])
   @@index([interactionId])
@@ -3450,47 +3452,47 @@ model VoiceIntent {
 
 model VoiceAnalytics {
   id String @id @default(cuid())
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY
-
+  
   // Metrics
   totalSessions     Int    @default(0)
   totalInteractions Int    @default(0)
   avgDuration       Float? // Average session duration
   avgInteractions   Float? // Average interactions per session
-
+  
   // Intent breakdown
   intentCounts Json? // { BOOKING: 45, PRICE_INQUIRY: 23, ... }
-
+  
   // Resolution metrics
   resolutionRate Float? // % of sessions resolved
   bookingRate    Float? // % of sessions that resulted in booking
-
+  
   // Sentiment analysis
   avgSentiment Float? // Average sentiment score
   positiveRate Float? // % of positive interactions
-
+  
   // Customer satisfaction
   satisfactionScore Float? // Customer satisfaction score
-
+  
   // Phone call metrics
   totalCalls      Int    @default(0)
   avgCallDuration Float? // Average call duration
   transferRate    Float? // % of calls transferred to human
-
+  
   // Voice command metrics
   totalCommands      Int    @default(0)
   commandSuccessRate Float? // % of successful commands
-
+  
   // Branch/Partner context
   branchId  String?
   partnerId String?
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([periodStart])
   @@index([periodType])
   @@index([branchId])
@@ -3503,32 +3505,32 @@ model VoiceAnalytics {
 
 model HairStyleImage {
   id String @id @default(cuid())
-
+  
   // Image info
   imageUrl     String // URL to uploaded image
   imageType    String  @default("HAIR_STYLE") // HAIR_STYLE | REFERENCE | CUSTOMER_PHOTO
   thumbnailUrl String? // Thumbnail URL
-
+  
   // Upload context
   customerId String? // If linked to customer
   staffId    String? // Who uploaded
   branchId   String? // Branch context
   partnerId  String? // Partner context
-
+  
   // Metadata
   originalFileName String?
   fileSize         Int? // File size in bytes
   mimeType         String? // image/jpeg, image/png, etc.
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relations
   styleAnalysis HairStyleAnalysis?
   curlAnalysis  CurlPatternAnalysis?
   colorAnalysis ColorAnalysis?
   formulas      HairFormula[]
-
+  
   @@index([customerId])
   @@index([staffId])
   @@index([branchId])
@@ -3539,41 +3541,41 @@ model HairStyleImage {
 model HairStyleAnalysis {
   id      String @id @default(cuid())
   imageId String @unique
-
+  
   // Style details
   styleType String? // LAYER | BOB | LONG_WAVE | SHORT_CROP | PIXIE | etc.
   length    String? // SHORT | MEDIUM | LONG | EXTRA_LONG
   lengthCm  Float? // Estimated length in cm
-
+  
   // Texture & Volume
   texture       String? // SOFT | THICK | FINE | COARSE | MIXED
   hairThickness String? // THIN | MEDIUM | THICK
   volumeTop     String? // LOW | MEDIUM | HIGH
   volumeSide    String? // LOW | MEDIUM | HIGH
-
+  
   // Condition
   shineLevel  Float? // 0-100
   dryness     Float? // 0-100 (%)
   damageLevel Float? // 0-100 (%)
   porosity    String? // LOW | MEDIUM | HIGH
-
+  
   // Color basic
   colorLevel   Int? // 1-10 (1 = black, 10 = lightest)
   baseTone     String? // WARM | COOL | NEUTRAL
   overallColor String? // Color description
-
+  
   // Pattern
   existingPattern String? // Current curl/pattern description
-
+  
   // AI Analysis
   aiDescription String? // Full AI description
   confidence    Float? // Confidence score 0-1
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   image HairStyleImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
+  
   @@index([styleType])
   @@index([colorLevel])
 }
@@ -3581,79 +3583,79 @@ model HairStyleAnalysis {
 model CurlPatternAnalysis {
   id      String @id @default(cuid())
   imageId String @unique
-
+  
   // Curl pattern detection
   curlPattern     String? // 3.0 | 3.2 | 3.5 | 3.8 | 4.0 | SPRING | C_CURL | S_CURL | STRAIGHT
   curlPatternDesc String? // Description of curl pattern
-
+  
   // Curl characteristics
   bounce        String? // LOW | MEDIUM | HIGH
   density       String? // SPARSE | BALANCED | DENSE
   curlDirection String? // UNIFORM | MIXED | RANDOM
-
+  
   // Measurements
   curlSize      Float? // Average curl size in cm
   curlTightness String? // LOOSE | MEDIUM | TIGHT
-
+  
   // Distribution
   curlDistribution Json? // How curls are distributed across the head
-
+  
   // AI Analysis
   aiDescription String?
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   image HairStyleImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
+  
   @@index([curlPattern])
 }
 
 model ColorAnalysis {
   id      String @id @default(cuid())
   imageId String @unique
-
+  
   // Base tone
   baseLevel Int? // 1-10
   baseTone  String? // WARM | COOL | NEUTRAL
   baseColor String? // Color name
-
+  
   // Mid tone
   midLevel Int?
   midTone  String?
   midColor String?
-
+  
   // End tone
   endLevel Int?
   endTone  String?
   endColor String?
-
+  
   // Highlights
   hasHighlights         Boolean @default(false)
   highlightLevel        Int?
   highlightTone         String?
   highlightColor        String?
   highlightDistribution String? // BALAYAGE | FOIL | FULL_HEAD
-
+  
   // Overall color
   undertone        String? // WARM | COOL | NEUTRAL | OLIVE | PINK
   saturation       Float? // 0-100
   lightness        Float? // 0-100
   overallColorDesc String? // Overall color description
-
+  
   // Color technique detected
   technique String? // SOLID | OMBRE | BALAYAGE | HIGHLIGHT | BABYLIGHT | FOILAYAGE
-
+  
   // AI Analysis
   aiDescription String?
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   image HairStyleImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
+  
   @@index([baseLevel])
   @@index([technique])
 }
@@ -3661,10 +3663,10 @@ model ColorAnalysis {
 model HairFormula {
   id      String @id @default(cuid())
   imageId String
-
+  
   // Formula type
   formulaType String // PERM_HOT | PERM_COLD | PERM_ACID | COLOR | BOTH
-
+  
   // Perm formula
   permProduct  String? // Plexis product name
   permStrength String? // S1 | S2 | Acid | etc.
@@ -3672,36 +3674,36 @@ model HairFormula {
   permTime     Int? // Processing time in minutes
   permHeat     Float? // Temperature in Celsius
   permSteps    Json? // Step-by-step procedure
-
+  
   // Color formula
   colorTubes Json? // Array of {tube: "7NB", parts: 6}
   colorOxy   Json? // {strength: "6%", parts: 1.5}
   colorTime  Int? // Processing time in minutes
   colorSteps Json? // Step-by-step procedure
-
+  
   // Pre-treatment
   preTreatment String? // Pre-treatment recommendations
-
+  
   // Post-treatment
   postTreatment String? // Post-treatment recommendations
-
+  
   // Warnings & Notes
   warnings String[] // Array of warnings
   notes    String[] // Additional notes
-
+  
   // Risk assessment
   riskLevel   String? // LOW | MEDIUM | HIGH
   riskFactors String[] // Risk factors identified
-
+  
   // AI Generated
   aiGenerated Boolean @default(true)
   confidence  Float? // Confidence score
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   image HairStyleImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
+  
   @@index([imageId])
   @@index([formulaType])
   @@index([riskLevel])
@@ -3710,36 +3712,36 @@ model HairFormula {
 model HairProcedure {
   id      String @id @default(cuid())
   imageId String
-
+  
   // Analysis references
   styleAnalysisId String?
   curlAnalysisId  String?
   colorAnalysisId String?
   formulaId       String?
-
+  
   // Complete procedure
   procedureType String // PERM | COLOR | BOTH | CUT
-
+  
   // Full procedure steps
   preProcedure  Json? // Pre-procedure steps
   mainProcedure Json // Main procedure steps (required)
   postProcedure Json? // Post-procedure steps
-
+  
   // Product recommendations
   products Json? // Recommended products
-
+  
   // Estimated time
   estimatedTime Int? // Total time in minutes
-
+  
   // Aftercare
   aftercare Json? // Aftercare instructions
-
+  
   // Complete SOP text
   fullSOP String? // Complete SOP in text format
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([imageId])
   @@index([procedureType])
 }
@@ -3750,12 +3752,12 @@ model HairProcedure {
 
 model HairAnalysisVideo {
   id String @id @default(cuid())
-
+  
   // Video info
   videoUrl     String // URL to uploaded video
   thumbnailUrl String? // Thumbnail URL
   videoType    String  @default("HAIR_ANALYSIS") // HAIR_ANALYSIS | ELASTICITY_TEST | MOVEMENT_TEST
-
+  
   // Video metadata
   duration   Float? // Duration in seconds
   frameCount Int? // Total frames extracted
@@ -3763,20 +3765,20 @@ model HairAnalysisVideo {
   resolution String? // Video resolution (e.g., "1920x1080")
   fileSize   Int? // File size in bytes
   mimeType   String? // video/mp4, video/mov, etc.
-
+  
   // Upload context
   customerId String? // If linked to customer
   staffId    String? // Who uploaded/recorded
   branchId   String? // Branch context
   partnerId  String? // Partner context
   bookingId  String? // If linked to booking
-
+  
   // Original filename
   originalFileName String?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // Relations
   frames             VideoFrame[]
   movementAnalysis   HairMovementAnalysis?
@@ -3784,7 +3786,7 @@ model HairAnalysisVideo {
   surfaceAnalysis    HairSurfaceAnalysis?
   damageMapping      HairDamageMapping?
   recommendation     HairVideoRecommendation?
-
+  
   @@index([customerId])
   @@index([staffId])
   @@index([branchId])
@@ -3795,20 +3797,20 @@ model HairAnalysisVideo {
 model VideoFrame {
   id      String @id @default(cuid())
   videoId String
-
+  
   // Frame info
   frameNumber Int // Frame sequence number
   timestamp   Float // Timestamp in seconds
   imageUrl    String // Extracted frame image URL
-
+  
   // Frame analysis
   analyzed     Boolean @default(false)
   analysisData Json? // Frame-specific analysis data
-
+  
   createdAt DateTime @default(now())
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([videoId])
   @@index([frameNumber])
   @@index([timestamp])
@@ -3817,32 +3819,32 @@ model VideoFrame {
 model HairMovementAnalysis {
   id      String @id @default(cuid())
   videoId String @unique
-
+  
   // Movement scores
   movementScore Float? // 0-100 overall movement quality
   bounceScore   Float? // 0-100 bounce/springiness
   frizzScore    Float? // 0-100 (lower = less frizz)
   fiberCohesion Float? // 0-100 (how well fibers stick together)
   softnessScore Float? // 0-100 (soft vs hard)
-
+  
   // Movement characteristics
   movementType        String? // SMOOTH | CHOPPY | RIGID | FLUID
   bounceLevel         String? // LOW | MEDIUM | HIGH
   frizzLevel          String? // LOW | MEDIUM | HIGH
   densityDistribution Json? // Thickness at different parts
-
+  
   // Hair interaction
   fiberInteraction String? // STABLE | UNSTABLE | CLUMPED | SEPARATED
-
+  
   // AI Analysis
   aiDescription String? // Full AI description
   confidence    Float? // Confidence score
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([movementScore])
   @@index([bounceScore])
 }
@@ -3850,35 +3852,35 @@ model HairMovementAnalysis {
 model HairElasticityAnalysis {
   id      String @id @default(cuid())
   videoId String @unique
-
+  
   // Elasticity metrics
   stretchPercent  Float? // Stretch percentage (0-100)
   snapbackRate    Float? // How fast it returns (0-100)
   elasticityScore Float? // Overall elasticity score (0-100)
-
+  
   // Risk assessment
   gumHairRisk  String? // LOW | MEDIUM | HIGH (risk of "gum hair")
   breakageRisk String? // LOW | MEDIUM | HIGH
   damageRisk   String? // LOW | MEDIUM | HIGH
-
+  
   // Test results
   testType        String? // MANUAL_STRETCH | AUTOMATED | VISUAL
   stretchDistance Float? // Distance stretched in cm
   recoveryTime    Float? // Time to recover in seconds
-
+  
   // Elasticity status
   elasticityStatus String? // HEALTHY | MODERATE | POOR | CRITICAL
-
+  
   // AI Analysis
   aiDescription   String?
   recommendations String[] // Recommendations based on elasticity
   confidence      Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([elasticityScore])
   @@index([damageRisk])
 }
@@ -3886,33 +3888,33 @@ model HairElasticityAnalysis {
 model HairSurfaceAnalysis {
   id      String @id @default(cuid())
   videoId String @unique
-
+  
   // Surface metrics
   shineLevel    Float? // 0-100 (shininess)
   porosityLevel String? // LOW | MEDIUM | HIGH
   drynessLevel  Float? // 0-100 (% dryness)
-
+  
   // Light analysis
   lightAbsorption Float? // 0-100 (how much light absorbed)
   lightReflection Float? // 0-100 (how much light reflected)
   colorUptake     Float? // 0-100 (predicted color absorption)
-
+  
   // Texture indicators
   smoothnessScore Float? // 0-100 (surface smoothness)
   roughnessScore  Float? // 0-100 (surface roughness)
-
+  
   // Condition assessment
   surfaceCondition String? // EXCELLENT | GOOD | FAIR | POOR | CRITICAL
-
+  
   // AI Analysis
   aiDescription String?
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([shineLevel])
   @@index([porosityLevel])
   @@index([drynessLevel])
@@ -3921,42 +3923,42 @@ model HairSurfaceAnalysis {
 model HairDamageMapping {
   id      String @id @default(cuid())
   videoId String @unique
-
+  
   // Damage zones
   damageZones Json? // Array of damage zones with percentages
   // Format: [{zone: "ends", percentage: 28, severity: "SEVERE", type: "BURNED"}, ...]
-
+  
   // Overall damage
   overallDamage Float? // Overall damage percentage (0-100)
   damageLevel   String? // NONE | MILD | MODERATE | SEVERE | CRITICAL
-
+  
   // Damage types detected
   damageTypes String[] // BURNED | DRY | BREAKAGE | SPLIT_ENDS | COLOR_DAMAGE | etc.
-
+  
   // Zone breakdown
   endsDamage  Float? // Damage at ends (%)
   midDamage   Float? // Damage at mid-length (%)
   rootDamage  Float? // Damage at roots (%)
   crownDamage Float? // Damage at crown (%)
   sidesDamage Float? // Damage at sides (%)
-
+  
   // Severity by zone
   endsSeverity String? // NONE | MILD | MODERATE | SEVERE | CRITICAL
   midSeverity  String?
   rootSeverity String?
-
+  
   // Damage visualization
   damageMapUrl String? // URL to damage visualization map
-
+  
   // AI Analysis
   aiDescription String?
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([overallDamage])
   @@index([damageLevel])
 }
@@ -3964,48 +3966,48 @@ model HairDamageMapping {
 model HairVideoRecommendation {
   id      String @id @default(cuid())
   videoId String @unique
-
+  
   // Overall assessment
   hairHealthScore Float? // 0-100 overall hair health
   healthStatus    String? // EXCELLENT | GOOD | FAIR | POOR | CRITICAL
-
+  
   // Service suitability
   permHotSuitable    Boolean? // Can perm hot be done?
   permColdSuitable   Boolean? // Can perm cold be done?
   permAcidSuitable   Boolean? // Can perm acid be done?
   colorLightSuitable Boolean? // Can light color be done?
   colorDarkSuitable  Boolean? // Can dark color be done?
-
+  
   // Risk assessment
   overallRisk String? // LOW | MEDIUM | HIGH | CRITICAL
   riskFactors String[] // Array of risk factors
-
+  
   // Product recommendations
   recommendedProducts String[] // Recommended products
-
+  
   // Technique recommendations
   recommendedTechniques String[] // Recommended techniques
-
+  
   // Treatment plan
   treatmentPlan Json? // Pre-treatment plan if needed
   recoveryPlan  Json? // Recovery plan if damaged
-
+  
   // Formula suggestions
   permFormula  Json? // Suggested perm formula
   colorFormula Json? // Suggested color formula
-
+  
   // Full recommendation text
   fullRecommendation String? // Complete recommendation in text
-
+  
   // AI Analysis
   aiDescription String?
   confidence    Float?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   video HairAnalysisVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
+  
   @@index([hairHealthScore])
   @@index([healthStatus])
   @@index([overallRisk])
@@ -4018,41 +4020,41 @@ model HairVideoRecommendation {
 model CustomerPersonalityProfile {
   id         String @id @default(cuid())
   customerId String @unique
-
+  
   // Hair Preferences
   curlPreference   String? // LOOSE | MEDIUM | TIGHT | STRAIGHT
   lengthPreference String? // SHORT | MEDIUM | LONG | EXTRA_LONG
   stylePreference  String? // NATURAL | GLAM | CASUAL | ELEGANT
-
+  
   // Color Preferences
   colorPreference          String[] // Array of preferred colors (e.g., ["brown", "mocha", "beige"])
   colorTonePreference      String? // WARM | COOL | NEUTRAL
   colorIntensityPreference String? // LIGHT | MEDIUM | DARK
-
+  
   // Style Vibe
   styleVibe   String[] // FEMININE | MINIMAL | SEDUCTIVE | YOUTHFUL | KOREAN | MATURE
   personality String? // GENTLE | BOLD | ELEGANT | CASUAL | SOPHISTICATED
-
+  
   // Habits
   hairCareHabits String[] // LOW_MAINTENANCE | HEAT_STYLING | FREQUENT_DYEING | NEGLECTFUL
   lifestyle      String? // BUSY | RELAXED | ACTIVE
-
+  
   // Communication Style
   communicationStyle String? // QUIET | CHATTY | DETAIL_ORIENTED | DECISIVE
   followUpPreference String? // SHORT | DETAILED | REMINDER_HEAVY
-
+  
   // AI Analysis
   personalitySummary String? // AI-generated summary
   aestheticProfile   Json? // Detailed aesthetic profile
   preferencesScore   Json? // Preference confidence scores
-
+  
   // Learning data
   interactionsCount Int      @default(0) // Number of interactions with Mina
   lastUpdated       DateTime @updatedAt
   createdAt         DateTime @default(now())
-
+  
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([styleVibe])
 }
@@ -4060,37 +4062,37 @@ model CustomerPersonalityProfile {
 model StylistSignatureStyle {
   id      String @id @default(cuid())
   staffId String @unique
-
+  
   // Expertise areas
   specialties String[] // PERM_HOT | PERM_COLD | COLOR_COLD | COLOR_WARM | BOB | LAYER | etc.
-
+  
   // Style characteristics
   preferredCurlSize   String[] // ["3.2", "3.5", "3.8"] - Preferred curl sizes
   preferredColorTones String[] // Preferred color tones
   preferredTechniques String[] // Preferred techniques
-
+  
   // Signature traits
   signatureStyle String? // Description of signature style
   styleStrength  Json? // Strength in different areas
   typicalResults Json? // Typical results achieved
-
+  
   // Customer feedback
   averageRating        Float? // Average customer rating
   customerSatisfaction Float? // Overall satisfaction
-
+  
   // AI-learned patterns
   commonFormulas    Json? // Common formulas used
   successfulStyles  Json? // Most successful styles
   preferredSettings Json? // Preferred settings/parameters
-
+  
   // Learning data
   servicesCount Int      @default(0) // Number of services performed
   lastAnalyzed  DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
+  
   staff User @relation(fields: [staffId], references: [id], onDelete: Cascade)
-
+  
   @@index([staffId])
   @@index([specialties])
 }
@@ -4099,39 +4101,39 @@ model PersonalizedRecommendation {
   id         String  @id @default(cuid())
   customerId String
   stylistId  String? // Recommended stylist
-
+  
   // Recommendation context
   recommendationType String // STYLE | COLOR | TREATMENT | PRODUCT | SERVICE
   priority           Int    @default(0) // Priority score (higher = more relevant)
-
+  
   // Recommendation details
   recommendedStyle    String? // Style name
   recommendedColor    String? // Color name
   recommendedService  String? // Service name
   recommendedProducts String[] // Recommended products
-
+  
   // Reasoning
   reasoning              String? // Why this recommendation
   personalizationFactors Json? // Factors that led to this recommendation
   confidence             Float? // Confidence score 0-1
-
+  
   // Match scores
   customerMatchScore Float? // How well it matches customer preferences
   stylistMatchScore  Float? // How well stylist can execute
-
+  
   // AI generated
   aiGenerated     Boolean @default(true)
   fullExplanation String? // Full explanation for customer
-
+  
   // Status
   status      String    @default("ACTIVE") // ACTIVE | ACCEPTED | REJECTED | EXPIRED
   presentedAt DateTime? // When presented to customer
   acceptedAt  DateTime? // When accepted
   rejectedAt  DateTime? // When rejected
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([stylistId])
   @@index([recommendationType])
@@ -4142,33 +4144,33 @@ model PersonalizedRecommendation {
 model MinaMemory {
   id         String @id @default(cuid())
   customerId String
-
+  
   // Memory type
   memoryType String // PREFERENCE | HABIT | FEEDBACK | INTERACTION | PATTERN
   category   String? // Hair preference, color preference, seating, timing, etc.
-
+  
   // Memory content
   key     String // Memory key (e.g., "prefers_brown_over_cool_brown")
   value   String? // Memory value
   details Json? // Additional details
-
+  
   // Context
   source   String? // CONVERSATION | BOOKING | SERVICE | FEEDBACK
   sourceId String? // ID of source (booking, service, etc.)
-
+  
   // Confidence
   confidence     Float @default(0.5) // How confident we are about this memory
   confirmedCount Int   @default(1) // Number of times confirmed
-
+  
   // Usage
   lastUsed   DateTime? // When this memory was last used
   usageCount Int       @default(0) // How many times used
-
+  
   // Temporal
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   expiresAt DateTime? // If memory might expire
-
+  
   @@index([customerId])
   @@index([memoryType])
   @@index([category])
@@ -4181,35 +4183,35 @@ model PersonalizedFollowUp {
   customerId String
   bookingId  String? // Related booking
   serviceId  String? // Related service
-
+  
   // Follow-up type
   followUpType String // POST_SERVICE | REMINDER | CHECK_IN | PROMOTION | CUSTOM
   priority     String @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
-
+  
   // Personalization
   tone    String? // Friendly tone based on customer personality
   length  String? // SHORT | MEDIUM | LONG based on communication style
   content String // Personalized content
-
+  
   // Timing
   scheduledAt DateTime? // When to send
   sentAt      DateTime? // When sent
   readAt      DateTime? // When read
-
+  
   // Response
   responseReceived Boolean @default(false)
   responseContent  String? // Customer response
-
+  
   // Status
   status String @default("PENDING") // PENDING | SENT | READ | RESPONDED | CANCELLED
-
+  
   // AI generated
   aiGenerated            Boolean @default(true)
   personalizationFactors Json? // Factors used for personalization
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([bookingId])
   @@index([followUpType])
@@ -4220,33 +4222,33 @@ model PersonalizedFollowUp {
 model PersonalizationMetric {
   id         String @id @default(cuid())
   customerId String
-
+  
   // Metrics
   personalizationScore   Float? // Overall personalization score (0-100)
   recommendationAccuracy Float? // How accurate recommendations are
   customerSatisfaction   Float? // Satisfaction with personalization
-
+  
   // Usage metrics
   recommendationsReceived Int @default(0)
   recommendationsAccepted Int @default(0)
   recommendationsRejected Int @default(0)
-
+  
   // Engagement metrics
   minaInteractions  Int    @default(0) // Total interactions with Mina
   followUpResponses Int    @default(0) // Responses to follow-ups
   bookingFrequency  Float? // Bookings per month
-
+  
   // Preference evolution
   preferencesUpdated   Int       @default(0) // Times preferences updated
   lastPreferenceUpdate DateTime?
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // WEEKLY | MONTHLY | QUARTERLY | YEARLY
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([customerId])
   @@index([periodStart])
   @@index([periodType])
@@ -4257,28 +4259,28 @@ model CustomerStyleHistory {
   customerId String
   bookingId  String?
   serviceId  String?
-
+  
   // Style details
   styleName   String? // Style name
   styleType   String? // PERM | COLOR | CUT | TREATMENT
   curlPattern String? // Curl pattern if perm
   colorTone   String? // Color tone if color
   length      String? // Length after service
-
+  
   // Preferences expressed
   customerFeedback String? // Customer feedback about style
   likedFeatures    String[] // Features customer liked
   dislikedFeatures String[] // Features customer didn't like
-
+  
   // Outcome
   satisfaction Float? // Customer satisfaction (0-100)
   returnIntent Boolean? // Did customer want to return
-
+  
   // Used for learning
   usedForLearning Boolean @default(false)
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([customerId])
   @@index([bookingId])
   @@index([styleType])
@@ -4291,34 +4293,34 @@ model CustomerStyleHistory {
 
 model Revenue {
   id String @id @default(cuid())
-
+  
   // Revenue details
   date          DateTime @default(now())
   amount        Float // Revenue amount in VND
   source        String // SERVICE | PRODUCT | COMBO | UPSELL | TIPS | PARTNER_FEE | PREPAYMENT
   paymentMethod String? // CASH | CARD | BANK_TRANSFER | E_WALLET
   currency      String   @default("VND")
-
+  
   // Context
   branchId   String? // Branch context
   partnerId  String? // Partner context (if franchise fee)
   customerId String? // Customer who paid
   staffId    String? // Staff who generated revenue
-
+  
   // Source details
   serviceId String? // If from service
   invoiceId String? // Related invoice
   bookingId String? // Related booking
   productId String? // If from product sale
-
+  
   // Metadata
   description String? // Description
   notes       String? // Additional notes
   receiptUrl  String? // Receipt/invoice image
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([date])
   @@index([branchId])
   @@index([partnerId])
@@ -4328,7 +4330,7 @@ model Revenue {
 
 model Expense {
   id String @id @default(cuid())
-
+  
   // Expense details
   date        DateTime @default(now())
   amount      Float // Expense amount in VND
@@ -4336,31 +4338,31 @@ model Expense {
   subCategory String? // Sub-category for detailed tracking
   description String // Description
   currency    String   @default("VND")
-
+  
   // Context
   branchId  String? // Branch context
   partnerId String? // Partner context
-
+  
   // Payment details
   paymentMethod String? // CASH | CARD | BANK_TRANSFER
   vendor        String? // Vendor/supplier name
-
+  
   // Documentation
   receiptUrl    String? // Receipt/invoice image
   invoiceNumber String? // Invoice number
-
+  
   // Approval
   approvedBy String? // User ID who approved
   approvedAt DateTime?
   status     String    @default("PENDING") // PENDING | APPROVED | REJECTED
-
+  
   // Recurring
   isRecurring     Boolean @default(false)
   recurringPeriod String? // MONTHLY | WEEKLY | DAILY | YEARLY
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([date])
   @@index([branchId])
   @@index([category])
@@ -4369,29 +4371,29 @@ model Expense {
 
 model COGSCalculation {
   id String @id @default(cuid())
-
+  
   // Context
   serviceId String? // Service context
   bookingId String? // Booking context
   invoiceId String? // Invoice context
-
+  
   // Product usage
   productsUsed Json // Array of {productId, quantity, unitCost, totalCost}
-
+  
   // Calculation
   totalCOGS Float // Total cost of goods sold
   quantity  Float? // Quantity/units
-
+  
   // Per-unit calculation
   cogsPerUnit Float? // COGS per service unit
-
+  
   // Details
   date     DateTime @default(now())
   branchId String? // Branch context
   staffId  String? // Staff who performed service
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([date])
   @@index([serviceId])
   @@index([branchId])
@@ -4399,48 +4401,48 @@ model COGSCalculation {
 
 model ProfitCalculation {
   id String @id @default(cuid())
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY | QUARTERLY | YEARLY
-
+  
   // Context
   branchId  String? // Branch-specific or null for all branches
   partnerId String? // Partner-specific or null for all
-
+  
   // Revenue
   totalRevenue Float @default(0)
-
+  
   // COGS
   totalCOGS Float @default(0)
-
+  
   // Operating Expenses
   operatingExpenses Float @default(0) // Staff, utility, rent, etc.
-
+  
   // Gross Profit
   grossProfit Float  @default(0)
   grossMargin Float? // Gross margin percentage
-
+  
   // Operating Profit
   operatingProfit Float  @default(0)
   operatingMargin Float? // Operating margin percentage
-
+  
   // Net Profit
   netProfit Float  @default(0)
   netMargin Float? // Net margin percentage
-
+  
   // Other metrics
   ebitda         Float? // EBITDA
   breakEvenPoint Float? // Break-even point
-
+  
   // Breakdown
   expenseBreakdown Json? // Breakdown by category
   revenueBreakdown Json? // Breakdown by source
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([periodStart])
   @@index([periodType])
   @@index([branchId])
@@ -4449,38 +4451,38 @@ model ProfitCalculation {
 
 model Cashflow {
   id String @id @default(cuid())
-
+  
   // Date
   date DateTime @default(now())
-
+  
   // Inflow (tiền vào)
   totalInflow     Float @default(0)
   inflowBreakdown Json? // Breakdown by source
-
+  
   // Outflow (tiền ra)
   totalOutflow     Float @default(0)
   outflowBreakdown Json? // Breakdown by category
-
+  
   // Net cashflow
   netCashflow Float // totalInflow - totalOutflow
-
+  
   // Balance
   openingBalance Float? // Opening balance
   closingBalance Float? // Closing balance
-
+  
   // Context
   branchId  String? // Branch context
   partnerId String? // Partner context
-
+  
   // Payment methods
   cashAmount     Float? @default(0)
   cardAmount     Float? @default(0)
   transferAmount Float? @default(0)
   eWalletAmount  Float? @default(0)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@unique([date, branchId])
   @@index([date])
   @@index([branchId])
@@ -4488,38 +4490,38 @@ model Cashflow {
 
 model FinancialForecast {
   id String @id @default(cuid())
-
+  
   // Forecast period
   forecastDate DateTime // Date of forecast
   periodStart  DateTime // Forecast period start
   periodEnd    DateTime // Forecast period end
   periodType   String // MONTHLY | QUARTERLY | YEARLY
-
+  
   // Forecasted values
   forecastRevenue  Float? // Forecasted revenue
   forecastExpenses Float? // Forecasted expenses
   forecastProfit   Float? // Forecasted profit
-
+  
   // Forecast details
   forecastBreakdown Json? // Detailed forecast breakdown
-
+  
   // Confidence
   confidence Float? // Forecast confidence (0-1)
-
+  
   // Factors
   factors     Json? // Factors influencing forecast
   assumptions Json? // Assumptions made
-
+  
   // Context
   branchId  String? // Branch-specific forecast
   partnerId String? // Partner-specific forecast
-
+  
   // AI Analysis
   aiAnalysis      String? // AI analysis text
   recommendations String[] // Recommendations
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([forecastDate])
   @@index([periodStart])
   @@index([periodType])
@@ -4527,37 +4529,37 @@ model FinancialForecast {
 
 model FinancialRiskAlert {
   id String @id @default(cuid())
-
+  
   // Alert type
   alertType String // COGS_INCREASE | REVENUE_DECREASE | EXPENSE_SPIKE | LOSS_MARGIN | WASTAGE_HIGH | STAFF_COST_HIGH | MARKETING_INEFFICIENT | UPSELL_DECREASE
-
+  
   // Severity
   severity String // LOW | MEDIUM | HIGH | CRITICAL
-
+  
   // Alert details
   title         String
   message       String
   currentValue  Float? // Current value
   previousValue Float? // Previous value
   changePercent Float? // Percentage change
-
+  
   // Context
   branchId    String? // Branch-specific alert
   partnerId   String? // Partner-specific alert
   periodStart DateTime
   periodEnd   DateTime
-
+  
   // Recommendations
   recommendations String[] // AI-generated recommendations
-
+  
   // Status
   status         String    @default("ACTIVE") // ACTIVE | ACKNOWLEDGED | RESOLVED
   acknowledgedBy String? // User ID
   acknowledgedAt DateTime?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([alertType])
   @@index([severity])
   @@index([status])
@@ -4566,34 +4568,34 @@ model FinancialRiskAlert {
 
 model FinancialMetric {
   id String @id @default(cuid())
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY | QUARTERLY | YEARLY
-
+  
   // Key metrics
   totalRevenue  Float @default(0)
   totalExpenses Float @default(0)
   totalCOGS     Float @default(0)
   grossProfit   Float @default(0)
   netProfit     Float @default(0)
-
+  
   // Margins
   grossMargin Float? // %
   netMargin   Float? // %
-
+  
   // Additional metrics
   avgTransactionValue Float? // Average transaction value
   customerCount       Int? // Number of customers
   servicesCount       Int? // Number of services
-
+  
   // Context
   branchId  String? // Branch-specific
   partnerId String? // Partner-specific
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([periodStart])
   @@index([periodType])
   @@index([branchId])
@@ -4606,41 +4608,41 @@ model FinancialMetric {
 
 model PricingRule {
   id String @id @default(cuid())
-
+  
   // Rule type
   ruleType String // TIME_BASED | DEMAND_BASED | STYLIST_LEVEL | PEAK_HOUR | SEASONAL
   ruleName String // Human-readable name
   priority Int    @default(0) // Higher priority = applied first
-
+  
   // Conditions
   conditions Json // Conditions for rule to apply
   // Examples:
   // { timeRange: ["14:00", "18:00"], daysOfWeek: [6], serviceIds: ["service_id"] }
   // { demandLevel: "HIGH", serviceIds: [...] }
   // { stylistLevel: "MASTER", stylistIds: [...] }
-
+  
   // Adjustment
   adjustmentType      String // PERCENTAGE | FIXED_AMOUNT
   adjustmentValue     Float // Percentage (e.g., 8) or fixed amount (e.g., 50000)
   adjustmentDirection String // INCREASE | DECREASE
-
+  
   // Scope
   serviceIds String[] // Which services this applies to (empty = all)
   branchIds  String[] // Which branches (empty = all)
   stylistIds String[] // Which stylists (empty = all)
-
+  
   // Validity
   startDate DateTime? // When rule starts
   endDate   DateTime? // When rule ends
   isActive  Boolean   @default(true)
-
+  
   // Metadata
   description String?
   createdBy   String? // User ID who created
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([ruleType])
   @@index([isActive])
   @@index([priority])
@@ -4648,34 +4650,34 @@ model PricingRule {
 
 model DynamicPricing {
   id String @id @default(cuid())
-
+  
   // Context
   serviceId String
   branchId  String?
   stylistId String?
-
+  
   // Pricing
   basePrice         Float // Original/base price
   adjustedPrice     Float // Price after adjustments
   adjustmentAmount  Float @default(0) // Total adjustment
   adjustmentPercent Float @default(0) // Total adjustment %
-
+  
   // Applied rules
   appliedRules String[] // IDs of pricing rules applied
-
+  
   // Context data
   timeSlot     String? // Time slot (e.g., "14:00-18:00")
   dayOfWeek    Int? // 0-6 (Sunday-Saturday)
   demandLevel  String? // LOW | NORMAL | HIGH | VERY_HIGH
   trafficLevel String? // LOW | NORMAL | HIGH | VERY_HIGH
-
+  
   // Validity
   effectiveFrom  DateTime  @default(now())
   effectiveUntil DateTime?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([serviceId])
   @@index([branchId])
   @@index([stylistId])
@@ -4684,33 +4686,33 @@ model DynamicPricing {
 
 model PeakHourDetection {
   id String @id @default(cuid())
-
+  
   // Date & Time
   date      DateTime @default(now())
   timeSlot  String // e.g., "14:00-15:00"
   dayOfWeek Int // 0-6
-
+  
   // Traffic metrics
   bookingCount      Int @default(0) // Bookings in this slot
   waitingCustomers  Int @default(0) // Customers waiting
   availableSeats    Int @default(0) // Available seats
   availableStylists Int @default(0) // Available stylists
   totalStylists     Int @default(0) // Total stylists
-
+  
   // Online traffic
   onlineInquiries Int @default(0) // Inbox/chat inquiries
   pageViews       Int @default(0) // Website/page views
-
+  
   // Calculated level
   trafficLevel String // LOW | NORMAL | HIGH | VERY_HIGH
   peakScore    Float  @default(0) // 0-100 peak score
-
+  
   // Context
   branchId   String? // Branch context
   serviceIds String[] // Services being viewed/requested
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([date])
   @@index([timeSlot])
   @@index([trafficLevel])
@@ -4719,42 +4721,42 @@ model PeakHourDetection {
 
 model SmartDiscount {
   id String @id @default(cuid())
-
+  
   // Discount type
   discountType String // TIME_BASED | SERVICE_BASED | COMBO | FLASH_SALE | SEASONAL
   discountName String // Human-readable name
-
+  
   // Discount details
   discountValue Float // Discount amount or percentage
   discountUnit  String // PERCENTAGE | FIXED_AMOUNT
   minPurchase   Float? // Minimum purchase required
-
+  
   // Scope
   serviceIds       String[] // Services this discount applies to
   branchIds        String[] // Branches
   customerSegments String[] // Customer segments (e.g., ["NEW", "VIP"])
-
+  
   // Validity
   startTime DateTime
   endTime   DateTime
   isActive  Boolean  @default(true)
-
+  
   // Conditions
   conditions Json? // Additional conditions
   // e.g., { minBookingHours: 24, maxUses: 100 }
-
+  
   // Tracking
   usageCount    Int    @default(0) // How many times used
   maxUsage      Int? // Max usage limit
   revenueImpact Float? // Revenue impact tracking
-
+  
   // AI generated
   aiGenerated Boolean @default(false)
   aiReasoning String? // Why this discount was created
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([discountType])
   @@index([isActive])
   @@index([startTime])
@@ -4763,30 +4765,30 @@ model SmartDiscount {
 
 model PricingHistory {
   id String @id @default(cuid())
-
+  
   // Context
   serviceId String
   branchId  String?
   stylistId String?
-
+  
   // Price change
   previousPrice Float
   newPrice      Float
   changeAmount  Float
   changePercent Float
-
+  
   // Reason
   changeReason String? // Reason for price change
   appliedRules String[] // Rule IDs applied
-
+  
   // Context
   demandLevel  String? // Demand level when changed
   trafficLevel String? // Traffic level when changed
-
+  
   // Metadata
   changedBy String? // User ID or "AUTO"
   changedAt DateTime @default(now())
-
+  
   @@index([serviceId])
   @@index([changedAt])
   @@index([branchId])
@@ -4794,38 +4796,38 @@ model PricingHistory {
 
 model PricingOptimization {
   id String @id @default(cuid())
-
+  
   // Optimization period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY
-
+  
   // Service context
   serviceId String?
   branchId  String?
-
+  
   // Current vs Optimized
   currentRevenue         Float @default(0)
   optimizedRevenue       Float @default(0)
   revenueIncrease        Float @default(0)
   revenueIncreasePercent Float @default(0)
-
+  
   // Current vs Optimized prices
   currentAvgPrice   Float? // Current average price
   optimizedAvgPrice Float? // Optimized average price
-
+  
   // Optimization factors
   optimizationFactors Json? // Factors considered
-
+  
   // Recommendations
   recommendations Json? // Pricing recommendations
   expectedImpact  Json? // Expected impact analysis
-
+  
   // AI Analysis
   aiAnalysis String? // AI analysis text
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([periodStart])
   @@index([serviceId])
   @@index([branchId])
@@ -4837,30 +4839,30 @@ model PricingOptimization {
 
 model MembershipTier {
   id String @id @default(cuid())
-
+  
   // Tier info
   tierLevel String @unique // MEMBER | SILVER | GOLD | DIAMOND
   tierName  String // Display name
   tierOrder Int    @default(0) // For sorting
-
+  
   // Requirements
   minSpending  Float  @default(0) // Minimum spending in VND for this tier
   periodMonths Int    @default(12) // Period to calculate spending (6 or 12 months)
   minVisits    Int? // Minimum visits required
   minLTV       Float? // Minimum LTV required
-
+  
   // Point multiplier
   pointMultiplier Float @default(1.0) // Points multiplier (e.g., 1.2x, 1.5x, 2.0x)
-
+  
   // Benefits (stored as JSON for flexibility)
   benefits Json // { serviceDiscount: 0, productDiscount: 0, ... }
-
+  
   // Status
   isActive Boolean @default(true)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([tierLevel])
   @@index([tierOrder])
 }
@@ -4868,39 +4870,39 @@ model MembershipTier {
 model CustomerMembership {
   id         String @id @default(cuid())
   customerId String @unique
-
+  
   // Current tier
   currentTier String @default("MEMBER") // MEMBER | SILVER | GOLD | DIAMOND
-
+  
   // Spending tracking
   totalSpending  Float     @default(0) // Total lifetime spending
   periodSpending Float     @default(0) // Spending in current period
   periodStart    DateTime? // Start of current period
   periodEnd      DateTime? // End of current period
-
+  
   // Visit tracking
   totalVisits  Int @default(0)
   periodVisits Int @default(0)
-
+  
   // Points
   currentPoints  Float @default(0) // Current available points
   lifetimePoints Float @default(0) // Total points earned
   pointsRedeemed Float @default(0) // Total points redeemed
-
+  
   // Status
   status String @default("ACTIVE") // ACTIVE | SUSPENDED | EXPIRED
-
+  
   // Dates
   joinedAt       DateTime  @default(now())
   tierUpgradedAt DateTime? // Last tier upgrade date
   lastVisitAt    DateTime? // Last visit date
   expiresAt      DateTime? // Membership expiration (if applicable)
-
+  
   customer           Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
   tierUpgradeHistory TierUpgradeHistory[]
   rewardRedemptions  RewardRedemption[]
   pointsTransactions PointsTransaction[]
-
+  
   @@index([customerId])
   @@index([currentTier])
   @@index([status])
@@ -4910,30 +4912,30 @@ model PointsTransaction {
   id           String @id @default(cuid())
   customerId   String
   membershipId String
-
+  
   // Transaction details
   transactionType String // EARNED | REDEEMED | EXPIRED | ADJUSTED
   points          Float // Points amount (positive for earned, negative for redeemed)
-
+  
   // Context
   source   String? // SERVICE | PRODUCT | BONUS | REDEMPTION | ADJUSTMENT
   sourceId String? // ID of source (service, product, reward, etc.)
-
+  
   // Calculation details
   baseAmount       Float? // Base amount spent
   multiplier       Float? // Point multiplier applied
   calculatedPoints Float? // Calculated points before multiplier
-
+  
   // Description
   description String? // Human-readable description
-
+  
   // Expiry
   expiresAt DateTime? // When points expire (if applicable)
-
+  
   createdAt DateTime @default(now())
-
+  
   membership CustomerMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([membershipId])
   @@index([transactionType])
@@ -4944,26 +4946,26 @@ model TierUpgradeHistory {
   id           String @id @default(cuid())
   customerId   String
   membershipId String
-
+  
   // Tier change
   previousTier String
   newTier      String
   changeType   String // UPGRADE | DOWNGRADE | MAINTAIN
-
+  
   // Reasons
   reason      String? // Reason for change
   triggerType String? // AUTO | MANUAL | REVIEW
   criteria    Json? // Criteria that triggered change
-
+  
   // Context
   spendingAtChange Float? // Spending at time of change
   visitsAtChange   Int? // Visits at time of change
   pointsAtChange   Float? // Points at time of change
-
+  
   createdAt DateTime @default(now())
-
+  
   membership CustomerMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-
+  
   @@index([customerId])
   @@index([membershipId])
   @@index([changeType])
@@ -4972,37 +4974,37 @@ model TierUpgradeHistory {
 
 model RewardCatalog {
   id String @id @default(cuid())
-
+  
   // Reward info
   rewardName  String
   rewardType  String // SERVICE | PRODUCT | DISCOUNT | VOUCHER | GIFT
   rewardValue Float? // Value in VND (for discounts/vouchers)
-
+  
   // Point cost
   pointsRequired Float // Points needed to redeem
-
+  
   // Eligibility
   eligibleTiers String[] // Which tiers can redeem (empty = all)
-
+  
   // Details
   description String?
   imageUrl    String?
-
+  
   // Limits
   maxRedemptions     Int? // Max times per customer
   maxTotal           Int? // Max total redemptions
   currentRedemptions Int  @default(0)
-
+  
   // Validity
   startDate DateTime?
   endDate   DateTime?
   isActive  Boolean   @default(true)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   redemptions RewardRedemption[]
-
+  
   @@index([rewardType])
   @@index([isActive])
   @@index([pointsRequired])
@@ -5013,28 +5015,28 @@ model RewardRedemption {
   customerId   String
   membershipId String
   rewardId     String
-
+  
   // Redemption details
   pointsUsed Float // Points used for redemption
   status     String @default("PENDING") // PENDING | COMPLETED | CANCELLED | EXPIRED
-
+  
   // Context
   bookingId String? // If redeemed as part of booking
   serviceId String? // If service reward
-
+  
   // Usage
   usedAt    DateTime? // When reward was used
   expiresAt DateTime? // When reward expires
-
+  
   // Notes
   notes String?
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   membership CustomerMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   reward     RewardCatalog      @relation(fields: [rewardId], references: [id])
-
+  
   @@index([customerId])
   @@index([membershipId])
   @@index([rewardId])
@@ -5044,32 +5046,32 @@ model RewardRedemption {
 model LoyaltyPrediction {
   id         String @id @default(cuid())
   customerId String
-
+  
   // Prediction type
   predictionType String // RETURN_LIKELIHOOD | TIER_CHANGE | CHURN_RISK | UPGRADE_POTENTIAL
-
+  
   // Prediction score
   score Float // 0-100 score
-
+  
   // Details
   predictedValue String? // Predicted outcome
   confidence     Float? // Confidence level (0-1)
-
+  
   // Timeline
   predictedDate DateTime? // When prediction is expected
-
+  
   // Factors
   factors Json? // Factors influencing prediction
-
+  
   // AI Analysis
   aiAnalysis String? // AI-generated analysis
-
+  
   // Status
   status String @default("ACTIVE") // ACTIVE | CONFIRMED | INVALIDATED
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   @@index([customerId])
   @@index([predictionType])
   @@index([score])
@@ -5078,32 +5080,32 @@ model LoyaltyPrediction {
 
 model MembershipMetric {
   id String @id @default(cuid())
-
+  
   // Time period
   periodStart DateTime
   periodEnd   DateTime
   periodType  String // DAILY | WEEKLY | MONTHLY | QUARTERLY | YEARLY
-
+  
   // Tier metrics
   tier String // Tier level
-
+  
   // Metrics
   memberCount   Int   @default(0) // Number of members in this tier
   totalSpending Float @default(0) // Total spending
   avgSpending   Float @default(0) // Average spending per member
   avgLTV        Float @default(0) // Average LTV
-
+  
   // Activity
   totalVisits   Int    @default(0)
   avgVisits     Float  @default(0)
   retentionRate Float? // Retention rate
-
+  
   // Tier changes
   upgrades   Int @default(0) // Upgrades to this tier
   downgrades Int @default(0) // Downgrades from this tier
-
+  
   createdAt DateTime @default(now())
-
+  
   @@index([periodStart])
   @@index([periodType])
   @@index([tier])

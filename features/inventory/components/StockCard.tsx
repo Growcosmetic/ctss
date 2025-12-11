@@ -4,6 +4,7 @@ import React from "react";
 import { Package, TrendingDown, TrendingUp } from "lucide-react";
 import { ProductStock } from "../types";
 import { cn } from "@/lib/utils";
+import { formatUnit } from "@/core/inventory/productUnits";
 
 interface StockCardProps {
   stock: ProductStock;
@@ -61,9 +62,16 @@ export default function StockCard({ stock }: StockCardProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Tồn kho:</span>
-          <span className="text-xl font-bold text-gray-900">
-            {quantity.toLocaleString("vi-VN")} {stock.product?.unit || "pcs"}
-          </span>
+          <div className="text-right">
+            <span className="text-xl font-bold text-gray-900">
+              {quantity.toLocaleString("vi-VN")} {stock.product?.unit || "pcs"}
+            </span>
+            {stock.product?.capacity && stock.product?.capacityUnit && (
+              <div className="text-xs text-gray-500">
+                ({stock.product.capacity}{stock.product.capacityUnit}/đơn vị)
+              </div>
+            )}
+          </div>
         </div>
 
         {minLevel > 0 && (

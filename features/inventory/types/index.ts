@@ -7,7 +7,9 @@ export interface Product {
   name: string;
   sku: string;
   category: "chemical" | "retail" | "treatment" | null;
-  unit: string;
+  unit: string; // Đơn vị đếm (Ống, Chai, Túi, Cái, etc.)
+  capacity?: number | null; // Dung tích/số lượng (15, 100, etc.)
+  capacityUnit?: string | null; // Đơn vị dung tích (ml, l, g, kg, etc.)
   defaultUsage?: number | null;
   branchAware: boolean;
   cost: number;

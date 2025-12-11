@@ -84,11 +84,11 @@ export async function POST(req: Request) {
     }
     if (!existing) {
       existing = await prisma.service.findFirst({
-        where: {
-          name: { equals: name, mode: "insensitive" },
+      where: {
+        name: { equals: name, mode: "insensitive" },
           category: { equals: finalCategory, mode: "insensitive" },
-        },
-      });
+      },
+    });
     }
 
     if (existing) {

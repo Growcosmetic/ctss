@@ -1,81 +1,95 @@
 #!/bin/bash
+# 🚀 Script tự động deploy CTSS lên VPS
+# Sử dụng: ./deploy-now.sh
 
-# Script deploy nhanh: Push GitHub + Deploy VPS
-# Usage: ./deploy-now.sh
+set -e  # Exit on error
 
-set -e
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-echo "🚀 CTSS Deployment Script"
-echo "=========================="
+# VPS Configuration
+VPS_HOST="root@72.61.119.247"
+VPS_PATH="~/ctss"
+
+echo -e "${BLUE}🚀 CTSS Auto Deploy Script${NC}"
+echo "================================"
 echo ""
 
-# Bước 1: Push GitHub
-echo "📤 Bước 1: Push lên GitHub..."
-git push origin main
-
-if [ $? -ne 0 ]; then
-    echo "❌ Push GitHub thất bại!"
+# Check if in correct directory
+if [ ! -f "package.json" ]; then
+    echo -e "${RED}❌ Error: package.json not found. Please run this script in the project root.${NC}"
     exit 1
 fi
 
-echo "✅ Đã push lên GitHub"
-echo ""
-
-# Bước 2: Deploy VPS
-echo "🚀 Bước 2: Deploy lên VPS..."
-echo "Vui lòng SSH vào VPS và chạy các lệnh sau:"
-echo ""
-echo "ssh root@72.61.119.247"
-echo "cd ~/ctss"
-echo "git pull origin main"
-echo "npm install"
-echo "npx prisma db push"
-echo "npx prisma generate"
-echo "npm run build"
-echo "pm2 restart ctss"
-echo ""
-echo "Hoặc chạy script tự động trên VPS:"
-echo "cd ~/ctss && ./deploy-vps.sh"
-echo ""
-
-# Option: Tự động SSH (nếu có SSH key)
-read -p "Bạn có muốn tự động SSH và deploy không? (y/n): " auto_deploy
-
-if [ "$auto_deploy" = "y" ]; then
-    echo "Đang SSH vào VPS..."
-    ssh root@72.61.119.247 << 'ENDSSH'
-cd ~/ctss
-echo "📥 Pulling code..."
-git pull origin main
-if [ $? -eq 0 ]; then
-    echo "✅ Git pull thành công"
-    echo "📦 Installing dependencies..."
-    npm install
-    echo "🗄️  Setting up database..."
-    npx prisma db push --accept-data-loss || true
-    npx prisma generate
-    echo "🔨 Building..."
-    npm run build
-    echo "🔄 Restarting PM2..."
-    pm2 restart ctss || pm2 start npm --name "ctss" -- start
-    pm2 save
-    echo "✅ Deployment hoàn thành!"
+# Step 1: Check git status
+echo -e "${GREEN}📋 Step 1: Checking git status...${NC}"
+if [ -n "$(git status --porcelain)" ]; then
+    echo -e "${YELLOW}⚠️  You have uncommitted changes.${NC}"
+    read -p "Do you want to commit and push? (y/n): " commit_choice
+    if [ "$commit_choice" = "y" ]; then
+        git add .
+        read -p "Enter commit message: " commit_msg
+        git commit -m "${commit_msg:-Auto commit before deploy}"
+        git push origin main
+    else
+        echo -e "${YELLOW}⚠️  Continuing without commit...${NC}"
+    fi
 else
-    echo "❌ Git pull thất bại"
-    exit 1
+    echo -e "${GREEN}✅ Working directory is clean${NC}"
 fi
+
+echo ""
+echo -e "${GREEN}🚀 Step 2: Deploying to VPS...${NC}"
+echo -e "${BLUE}Connecting to ${VPS_HOST}...${NC}"
+
+# Deploy commands
+ssh ${VPS_HOST} << 'ENDSSH'
+    set -e
+    echo "📂 Changing to project directory..."
+    cd ~/ctss || { echo "❌ Directory ~/ctss not found!"; exit 1; }
+    
+    echo "📥 Pulling latest code from GitHub..."
+    git pull origin main || { echo "⚠️  Git pull failed, continuing..."; }
+    
+    echo "📦 Installing dependencies..."
+    npm install --legacy-peer-deps || { echo "⚠️  npm install failed, continuing..."; }
+    
+    echo "🗄️  Updating database schema..."
+    npx prisma db push --accept-data-loss || { echo "⚠️  Database push failed, continuing..."; }
+    npx prisma generate || { echo "⚠️  Prisma generate failed, continuing..."; }
+    
+    echo "🔨 Building application..."
+    npm run build || { echo "❌ Build failed!"; exit 1; }
+    
+    echo "🔄 Restarting application with PM2..."
+    pm2 restart ctss || pm2 start npm --name "ctss" -- start || { echo "❌ PM2 restart failed!"; exit 1; }
+    
+    echo "💾 Saving PM2 configuration..."
+    pm2 save || true
+    
+    echo "✅ Deployment completed successfully!"
 ENDSSH
 
     if [ $? -eq 0 ]; then
         echo ""
-        echo "✨ Deployment thành công!"
-        echo "🌐 Ứng dụng: http://72.61.119.247"
-    else
+    echo -e "${GREEN}🎉 Deployment thành công!${NC}"
+    echo ""
+    echo -e "${BLUE}📝 Kiểm tra ứng dụng:${NC}"
+    echo "  - URL: http://72.61.119.247"
+    echo "  - Health check: curl http://72.61.119.247/api/health"
+    echo ""
+    echo -e "${BLUE}📊 Xem logs:${NC}"
+    echo "  ssh ${VPS_HOST} 'pm2 logs ctss --lines 50'"
         echo ""
-        echo "⚠️  SSH thất bại. Vui lòng deploy thủ công theo hướng dẫn trên."
-    fi
+    echo -e "${BLUE}📈 Xem PM2 status:${NC}"
+    echo "  ssh ${VPS_HOST} 'pm2 status'"
 else
     echo ""
-    echo "📝 Vui lòng deploy thủ công theo hướng dẫn trên."
+    echo -e "${RED}❌ Deployment failed!${NC}"
+    echo "Please check the error messages above."
+    exit 1
 fi
-

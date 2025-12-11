@@ -536,10 +536,10 @@ export default function ServicesPage() {
               <FileSpreadsheet size={18} className="mr-2" />
               Nhập từ Excel
             </Button>
-            <Button onClick={() => setIsFormOpen(true)}>
-              <Plus size={18} className="mr-2" />
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus size={18} className="mr-2" />
               Tạo dịch vụ mới
-            </Button>
+          </Button>
           </div>
         </div>
 
@@ -555,7 +555,7 @@ export default function ServicesPage() {
                 }}
                 onKeyPress={(e) => {
                   if (e.key === "Enter") {
-                    fetchServices();
+                  fetchServices();
                   }
                 }}
               />
@@ -977,10 +977,10 @@ export default function ServicesPage() {
                 </div>
               </div>
               {selectedService.servicePrices && selectedService.servicePrices.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-2">Lịch sử giá</p>
-                  <div className="space-y-2">
-                    {selectedService.servicePrices.map((price) => (
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-2">Lịch sử giá</p>
+                <div className="space-y-2">
+                  {selectedService.servicePrices.map((price) => (
                     <div
                       key={price.id}
                       className="flex items-center justify-between p-2 bg-gray-50 rounded"
@@ -1001,9 +1001,9 @@ export default function ServicesPage() {
                         </span>
                       )}
                     </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
+              </div>
               )}
             </div>
           </Modal>

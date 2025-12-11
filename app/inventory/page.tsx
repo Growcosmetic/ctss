@@ -14,9 +14,9 @@ export default function InventoryPage() {
   if (authLoading) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
       </MainLayout>
     );
   }
@@ -29,17 +29,17 @@ export default function InventoryPage() {
   if (!hasAnyRole(["ADMIN", "MANAGER", "RECEPTIONIST"])) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Bạn không có quyền truy cập trang này</p>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-            >
-              Về Dashboard
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Bạn không có quyền truy cập trang này</p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Về Dashboard
+          </button>
         </div>
+      </div>
       </MainLayout>
     );
   }

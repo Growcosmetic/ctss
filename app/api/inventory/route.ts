@@ -53,25 +53,25 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const [products, total] = await Promise.all([
-        prisma.product.findMany({
-          where,
-          skip,
-          take: limit,
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
           orderBy: { name: "asc" },
-        }),
-        prisma.product.count({ where }),
-      ]);
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-      return successResponse({
-        products,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      });
+    return successResponse({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
     } catch (dbError: any) {
       // Fallback to empty array if database fails
       if (dbError.message?.includes("denied access") || 

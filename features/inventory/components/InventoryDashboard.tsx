@@ -375,13 +375,6 @@ export default function InventoryDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Tạo sản phẩm mới
-                  </Button>
-                  <Button
                     onClick={handleCopyFromBranch}
                     variant="outline"
                     className="flex items-center gap-2"
@@ -434,6 +427,7 @@ export default function InventoryDashboard() {
               setAssigningLocationStock(stock);
               setIsAssignLocationModalOpen(true);
             }}
+            onCreateProduct={() => setIsCreateModalOpen(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             filterCategory={filterCategory}

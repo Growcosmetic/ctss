@@ -6,12 +6,14 @@ import StockCard from "./StockCard";
 import StockListView from "./StockListView";
 import EditProductModal from "./EditProductModal";
 import AssignLocationModal from "./AssignLocationModal";
-import { Grid3x3, List, Search, Filter } from "lucide-react";
+import { Grid3x3, List, Search, Filter, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface ProductListPageProps {
   stocks: ProductStock[];
   onEdit: (stock: ProductStock) => void;
   onAssignLocation: (stock: ProductStock) => void;
+  onCreateProduct?: () => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   filterCategory: string;
@@ -27,6 +29,7 @@ export default function ProductListPage({
   stocks,
   onEdit,
   onAssignLocation,
+  onCreateProduct,
   searchTerm,
   onSearchChange,
   filterCategory,
@@ -80,10 +83,23 @@ export default function ProductListPage({
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Danh sách sản phẩm</h2>
-        <p className="text-gray-600 mt-1">
-          Tổng cộng: {filteredStocks.length} sản phẩm
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Danh sách sản phẩm</h2>
+            <p className="text-gray-600 mt-1">
+              Tổng cộng: {filteredStocks.length} sản phẩm
+            </p>
+          </div>
+          {onCreateProduct && (
+            <Button
+              onClick={onCreateProduct}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4" />
+              Thêm sản phẩm
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Search and Filters */}

@@ -252,8 +252,8 @@ export default function InventoryDashboard() {
           </div>
         </div>
 
-      {/* Content */}
-      <div className="space-y-6">
+        {/* Content */}
+        <div className="space-y-6">
         {/* Alerts */}
         {alerts.length > 0 && (
           <div className="mb-6">
@@ -474,12 +474,13 @@ export default function InventoryDashboard() {
           )}
         </div>
 
-        {/* Recent Transactions */}
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Giao dịch gần đây
-          </h2>
-          <StockTransactionList transactions={transactions} />
+          {/* Recent Transactions */}
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Giao dịch gần đây
+            </h2>
+            <StockTransactionList transactions={transactions} />
+          </div>
         </div>
       </div>
     </div>

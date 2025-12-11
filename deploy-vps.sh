@@ -1,36 +1,48 @@
 #!/bin/bash
-# ============================================
-# LỆNH DEPLOY LÊN VPS - COPY VÀ CHẠY TRÊN VPS
-# ============================================
 
-echo "🚀 Bắt đầu deploy..."
+# Script deploy CTSS lên VPS Hostinger
+# Sử dụng: ./deploy-vps.sh
 
-cd ~/ctss
+set -e
 
-echo "📥 Pulling code từ GitHub..."
+VPS_USER="user"
+VPS_HOST="72.61.119.247"
+VPS_PATH="/home/user/ctss"
+
+echo "🚀 Bắt đầu deploy lên VPS..."
+
+# Bước 1: Push code lên GitHub
+echo "📤 Đang push code lên GitHub..."
+git add -A
+git commit -m "Deploy: $(date +%Y-%m-%d_%H:%M:%S)" || echo "No changes to commit"
+git push origin main
+
+echo "✅ Đã push lên GitHub"
+
+# Bước 2: SSH vào VPS và deploy
+echo "🔌 Đang kết nối VPS và deploy..."
+
+ssh ${VPS_USER}@${VPS_HOST} << 'ENDSSH'
+cd /home/user/ctss
+
+echo "📥 Đang pull code mới nhất..."
 git pull origin main
 
-echo "📦 Cài đặt dependencies..."
-npm install --legacy-peer-deps
+echo "📦 Đang cài đặt dependencies..."
+npm install
 
-echo "🗄️  Cập nhật database schema..."
-npx prisma db push --accept-data-loss
+echo "🗄️ Đang sync database..."
 npx prisma generate
+npx prisma db push --accept-data-loss
 
-echo "🔨 Build ứng dụng..."
+echo "🏗️ Đang build ứng dụng..."
 npm run build
 
-echo "🔄 Khởi động lại PM2..."
+echo "🔄 Đang restart PM2..."
 pm2 restart ctss || pm2 start npm --name "ctss" -- start
 
-echo "💾 Lưu cấu hình PM2..."
-pm2 save
-
-echo ""
 echo "✅ Deploy hoàn tất!"
-echo ""
-echo "📊 Kiểm tra:"
-echo "  pm2 status"
-echo "  pm2 logs ctss --lines 50"
-echo ""
-echo "🌐 Truy cập: http://72.61.119.247/inventory"
+pm2 status
+ENDSSH
+
+echo "🎉 Deploy thành công!"

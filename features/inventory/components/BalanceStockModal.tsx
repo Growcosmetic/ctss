@@ -138,3 +138,5 @@ export default function BalanceStockModal({ stock, isOpen, onClose, onSuccess }:
     </div>
   );
 }
+
+export default BalanceStockModal;

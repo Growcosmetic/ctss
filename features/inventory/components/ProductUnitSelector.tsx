@@ -35,13 +35,16 @@ export default function ProductUnitSelector({
           disabled={disabled}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option value="">Chọn đơn vị đếm</option>
+          <option value="">-- Chọn đơn vị đếm --</option>
           {COUNTING_UNIT_OPTIONS.map((unit) => (
             <option key={unit} value={unit}>
               {unit}
             </option>
           ))}
         </select>
+        <p className="mt-1 text-xs text-gray-500">
+          Các loại: Ống, Chai, Hủ, Lọ, Túi, Hộp, Cái, Gói, Bộ, Cuộn, Tờ, Lon, Thùng...
+        </p>
       </div>
 
       {/* Dung tích / Số lượng */}
@@ -69,7 +72,7 @@ export default function ProductUnitSelector({
             disabled={disabled}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
-            <option value="">Chọn đơn vị</option>
+            <option value="">-- Chọn đơn vị --</option>
             {CAPACITY_UNIT_OPTIONS.map((unit) => (
               <option key={unit} value={unit}>
                 {unit}
@@ -78,7 +81,7 @@ export default function ProductUnitSelector({
           </select>
         </div>
         <p className="mt-1 text-xs text-gray-500">
-          Ví dụ: 15ml, 100g, 1l (để trống nếu không có)
+          Các loại: ml, l, g, kg, mg, cl, dl (để trống nếu không có dung tích)
         </p>
       </div>
 

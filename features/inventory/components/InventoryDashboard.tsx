@@ -6,9 +6,10 @@ import { getStockLevels, getLowStockAlerts, getStockTransactions } from "../serv
 import { ProductStock, LowStockAlert, StockTransaction } from "../types";
 import StockCard from "./StockCard";
 import StockListView from "./StockListView";
+import CategorySidebar from "./CategorySidebar";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter } from "lucide-react";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";
@@ -20,10 +21,12 @@ export default function InventoryDashboard() {
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     // Wait for branch to load, then load inventory data
@@ -141,6 +144,35 @@ export default function InventoryDashboard() {
     });
   }, [stocks, searchTerm, filterCategory, filterStatus]);
 
+  // Pagination
+  const totalPages = Math.ceil(filteredStocks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedStocks = filteredStocks.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, filterStatus]);
+
+  // Export to Excel handler
+  const handleExportExcel = () => {
+    // TODO: Implement Excel export
+    alert("Tính năng xuất Excel đang phát triển");
+  };
+
+  // Import from Excel handler
+  const handleImportExcel = () => {
+    // TODO: Implement Excel import
+    alert("Tính năng nhập Excel đang phát triển");
+  };
+
+  // Copy from branch handler
+  const handleCopyFromBranch = () => {
+    // TODO: Implement copy from branch
+    alert("Tính năng chép từ chi nhánh đang phát triển");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -150,40 +182,75 @@ export default function InventoryDashboard() {
   }
 
   return (
-    <div className="w-full">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Package className="w-6 h-6" />
-              Quản lý kho
-            </h1>
-            {currentBranch && (
-              <p className="text-sm text-gray-600 mt-1">
-                Chi nhánh: {currentBranch.name}
-                {currentBranch.id === "default-branch" && (
-                  <span className="ml-2 text-xs text-gray-400">(Chưa có chi nhánh thật)</span>
-                )}
-              </p>
-            )}
-            {!currentBranch && !branchLoading && (
-              <p className="text-sm text-gray-500 mt-1">
-                Vui lòng chọn chi nhánh để xem kho hàng
-              </p>
-            )}
+    <div className="w-full flex gap-6">
+      {/* Sidebar */}
+      <CategorySidebar
+        stocks={stocks}
+        selectedCategory={filterCategory}
+        onCategorySelect={setFilterCategory}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Package className="w-6 h-6" />
+                Quản lý kho
+              </h1>
+              {currentBranch && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Chi nhánh: {currentBranch.name}
+                  {currentBranch.id === "default-branch" && (
+                    <span className="ml-2 text-xs text-gray-400">(Chưa có chi nhánh thật)</span>
+                  )}
+                </p>
+              )}
+              {!currentBranch && !branchLoading && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Vui lòng chọn chi nhánh để xem kho hàng
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleCopyFromBranch}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Chép từ chi nhánh
+              </Button>
+              <Button
+                onClick={handleImportExcel}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Nhập từ Excel
+              </Button>
+              <Button
+                onClick={handleExportExcel}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Xuất ra Excel
+              </Button>
+              <Button
+                onClick={handleSeedData}
+                disabled={seeding}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Database className="w-4 h-4" />
+                {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={handleSeedData}
-            disabled={seeding}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Database className="w-4 h-4" />
-            {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
-          </Button>
         </div>
-      </div>
 
       {/* Content */}
       <div className="space-y-6">
@@ -215,48 +282,49 @@ export default function InventoryDashboard() {
                 </span>
               )}
             </h2>
-            <div className="flex items-center gap-2">
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded transition ${
-                    viewMode === "grid"
-                      ? "bg-white text-blue-600 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                  title="Xem dạng lưới"
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded transition ${
-                    viewMode === "list"
-                      ? "bg-white text-blue-600 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                  title="Xem dạng danh sách"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Search and Filters */}
           {stocks.length > 0 && (
             <div className="mb-4 space-y-3">
               {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm sản phẩm, SKU..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+              <div className="flex items-center gap-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm theo tên hoặc mô tả sản phẩm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-2 rounded transition ${
+                      viewMode === "grid"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                    title="Xem dạng lưới"
+                  >
+                    <Grid3x3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-2 rounded transition ${
+                      viewMode === "list"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                    title="Xem dạng danh sách"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Filters */}
@@ -266,20 +334,6 @@ export default function InventoryDashboard() {
                   <span className="text-sm text-gray-600">Lọc:</span>
                 </div>
                 
-                {/* Category Filter */}
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">Tất cả danh mục</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-
                 {/* Status Filter */}
                 <select
                   value={filterStatus}
@@ -324,17 +378,104 @@ export default function InventoryDashboard() {
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredStocks.map((stock) => (
+              {paginatedStocks.map((stock) => (
                 <StockCard key={stock.id} stock={stock} />
               ))}
             </div>
           ) : (
-            <StockListView stocks={filteredStocks} />
+            <>
+              <StockListView stocks={paginatedStocks} />
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-6 flex items-center justify-between bg-white px-4 py-3 border border-gray-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700">
+                      Hiện {startIndex + 1} đến {Math.min(endIndex, filteredStocks.length)} của {filteredStocks.length} kết quả
+                    </span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="ml-4 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value={10}>Hiển thị 10</option>
+                      <option value={20}>Hiển thị 20</option>
+                      <option value={50}>Hiển thị 50</option>
+                      <option value={100}>Hiển thị 100</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Trang đầu
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-1.5 text-sm rounded-lg ${
+                              currentPage === pageNum
+                                ? "bg-blue-600 text-white"
+                                : "border border-gray-300 hover:bg-gray-50"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Trang cuối
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Recent Transactions */}
-        <div>
+        <div className="mt-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Giao dịch gần đây
           </h2>

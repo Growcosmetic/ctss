@@ -143,7 +143,7 @@ export default function StockListView({ stocks, onEdit, onAssignLocation, onRefr
                     <td className="px-6 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {stock.product?.sku || "N/A"}/{stock.product?.name || "Unknown Product"}
+                          {stock.product?.name || "Unknown Product"}
                         </div>
                         {stock.product?.sku && (
                           <div className="text-xs text-gray-500 mt-1 font-mono">

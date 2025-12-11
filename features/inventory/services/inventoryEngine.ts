@@ -177,11 +177,21 @@ export async function getStockLevels(
         select: {
           id: true,
           name: true,
+          sku: true,
           unit: true,
           category: true,
           subCategory: true,
           minStock: true,
           maxStock: true,
+          costPrice: true,
+          pricePerUnit: true,
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
         },
       },
       branch: {
@@ -219,9 +229,13 @@ export async function getStockLevels(
     product: {
       id: stock.product.id,
       name: stock.product.name,
+      sku: stock.product.sku || "",
       unit: stock.product.unit,
       category: stock.product.category,
       subCategory: stock.product.subCategory,
+      costPrice: stock.product.costPrice ? Number(stock.product.costPrice) : null,
+      pricePerUnit: stock.product.pricePerUnit ? Number(stock.product.pricePerUnit) : null,
+      supplier: stock.product.supplier,
     },
     branch: stock.branch,
     location: stock.location,

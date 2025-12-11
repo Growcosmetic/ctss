@@ -14,7 +14,14 @@ export interface Product {
   branchAware: boolean;
   cost: number;
   price: number;
+  costPrice?: number | null; // Giá nhập trung bình
+  pricePerUnit?: number | null; // Giá bán
   isActive: boolean;
+  supplier?: {
+    id: string;
+    name: string;
+    code: string;
+  } | null;
 }
 
 export interface ProductStock {

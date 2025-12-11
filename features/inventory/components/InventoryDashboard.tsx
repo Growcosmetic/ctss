@@ -183,7 +183,15 @@ export default function InventoryDashboard() {
       if (filterStatus !== "all") {
         const quantity = stock.quantity;
         const minLevel = stock.minLevel || 0;
-        if (filterStatus === "critical") {
+        if (filterStatus === "in_stock") {
+          matchesStatus = quantity > 0;
+        } else if (filterStatus === "out_of_stock") {
+          matchesStatus = quantity === 0;
+        } else if (filterStatus === "low_stock") {
+          matchesStatus = minLevel > 0 && quantity <= minLevel && quantity > 0;
+        } else if (filterStatus === "negative") {
+          matchesStatus = quantity < 0;
+        } else if (filterStatus === "critical") {
           matchesStatus = quantity <= 0;
         } else if (filterStatus === "low") {
           matchesStatus = minLevel > 0 && quantity <= minLevel && quantity > 0;
@@ -457,6 +465,33 @@ export default function InventoryDashboard() {
 
         {/* Stock Levels */}
         <div className="mb-6">
+          {/* Total Value Summary */}
+          {stocks.length > 0 && (
+            <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">TỔNG GIÁ TRỊ KHO (THEO GIÁ NHẬP TB)</p>
+                  <p className="text-2xl font-bold text-blue-900 mt-1">
+                    {stocks.reduce((sum, stock) => {
+                      const costPrice = stock.product?.costPrice || 0;
+                      return sum + (stock.quantity * costPrice);
+                    }, 0).toLocaleString("vi-VN")} ₫
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirm("Bạn có chắc muốn cân bằng tất cả kho về 0? Hành động này không thể hoàn tác!")) {
+                      alert("Tính năng đang được phát triển");
+                    }
+                  }}
+                  className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cân bằng về 0
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Tồn kho hiện tại
@@ -511,24 +546,81 @@ export default function InventoryDashboard() {
                 </div>
               </div>
 
-              {/* Filters */}
+              {/* Status Filter Tabs */}
+              <div className="flex items-center gap-2 border-b border-gray-200">
+                <button
+                  onClick={() => {
+                    setFilterStatus("all");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    filterStatus === "all"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Tất cả ({stocks.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterStatus("in_stock");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    filterStatus === "in_stock"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Còn hàng ({stocks.filter(s => s.quantity > 0).length})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterStatus("low_stock");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    filterStatus === "low_stock"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Sắp hết ({stocks.filter(s => s.minLevel && s.quantity <= s.minLevel && s.quantity > 0).length})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterStatus("out_of_stock");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    filterStatus === "out_of_stock"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Hết hàng ({stocks.filter(s => s.quantity === 0).length})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterStatus("negative");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    filterStatus === "negative"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Bị âm ({stocks.filter(s => s.quantity < 0).length})
+                </button>
+              </div>
+
+              {/* Additional Filters */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-600">Lọc:</span>
                 </div>
-                
-                {/* Status Filter */}
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="critical">Hết hàng</option>
-                  <option value="low">Sắp hết</option>
-                  <option value="normal">Bình thường</option>
-                </select>
 
                 {/* Location Filter */}
                 <select
@@ -599,6 +691,7 @@ export default function InventoryDashboard() {
                   setAssigningLocationStock(stock);
                   setIsAssignLocationModalOpen(true);
                 }}
+                onRefresh={loadData}
               />
               
               {/* Pagination */}

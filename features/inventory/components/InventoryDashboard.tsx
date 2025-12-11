@@ -290,15 +290,17 @@ export default function InventoryDashboard() {
 
   return (
     <div className="w-full flex gap-6">
-      {/* Sidebar */}
-      <CategorySidebar
-        stocks={stocks}
-        selectedCategory={filterCategory}
-        onCategorySelect={setFilterCategory}
-      />
+      {/* Sidebar - Ẩn khi ở tab "overview" */}
+      {activeTab !== "overview" && (
+        <CategorySidebar
+          stocks={stocks}
+          selectedCategory={filterCategory}
+          onCategorySelect={setFilterCategory}
+        />
+      )}
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className={activeTab === "overview" ? "w-full" : "flex-1"}>
         {/* Header */}
         <div className="mb-6">
           {/* Tabs */}

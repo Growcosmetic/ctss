@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { ProductStock } from "../types";
 import ProductUnitSelector from "./ProductUnitSelector";
+import SupplierSelector from "./SupplierSelector";
 
 interface EditProductModalProps {
   isOpen: boolean;
@@ -26,16 +27,19 @@ export default function EditProductModal({
   
   const [formData, setFormData] = useState({
     name: "",
+    sku: "",
     category: "",
     subCategory: "",
     unit: "",
     capacity: null as number | null,
     capacityUnit: null as string | null,
     pricePerUnit: null as number | null,
+    costPrice: null as number | null,
     minStock: null as number | null,
     maxStock: null as number | null,
-    supplier: "",
+    supplierId: null as string | null,
     notes: "",
+    isActive: true,
   });
 
   // Fetch product details when modal opens
@@ -63,16 +67,19 @@ export default function EditProductModal({
         const product = result.data;
         setFormData({
           name: product.name || "",
+          sku: product.sku || "",
           category: product.category || "",
           subCategory: product.subCategory || "",
           unit: product.unit || "",
           capacity: product.capacity || null,
           capacityUnit: product.capacityUnit || null,
           pricePerUnit: product.pricePerUnit || null,
+          costPrice: (product as any).costPrice || null,
           minStock: product.minStock || null,
           maxStock: product.maxStock || null,
-          supplier: product.supplier || "",
+          supplierId: product.supplierId || null,
           notes: product.notes || "",
+          isActive: (product as any).isActive !== undefined ? (product as any).isActive : true,
         });
       }
     } catch (err: any) {
@@ -105,10 +112,13 @@ export default function EditProductModal({
           capacity: formData.capacity,
           capacityUnit: formData.capacityUnit,
           pricePerUnit: formData.pricePerUnit,
+          costPrice: formData.costPrice,
           minStock: formData.minStock,
           maxStock: formData.maxStock,
-          supplier: formData.supplier || null,
+          supplierId: formData.supplierId || null,
           notes: formData.notes || null,
+          sku: formData.sku || undefined,
+          isActive: formData.isActive,
         }),
       });
 
@@ -157,6 +167,22 @@ export default function EditProductModal({
               <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                 Thông tin sản phẩm
               </h3>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mã SKU
+                </label>
+                <input
+                  type="text"
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Hệ thống sẽ tự sinh mã nếu để trống"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  * Để trống để hệ thống tự sinh mã
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -280,17 +306,57 @@ export default function EditProductModal({
                 </div>
               </div>
 
+              {/* Giá */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Giá vốn (₫)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.costPrice || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        costPrice: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    min="0"
+                    step="1000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Giá bán (₫)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.pricePerUnit || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        pricePerUnit: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    min="0"
+                    step="1000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
               {/* Nhà cung cấp và ghi chú */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nhà cung cấp
                 </label>
-                <input
-                  type="text"
-                  value={formData.supplier}
-                  onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Tên nhà cung cấp"
+                <SupplierSelector
+                  value={formData.supplierId}
+                  onChange={(supplierId) => setFormData({ ...formData, supplierId })}
                 />
               </div>
 
@@ -305,6 +371,20 @@ export default function EditProductModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Ghi chú về sản phẩm"
                 />
+              </div>
+
+              {/* Trạng thái */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="isActive" className="text-sm text-gray-700">
+                  Sản phẩm đang hoạt động (Sẵn sàng bán)
+                </label>
               </div>
             </div>
 

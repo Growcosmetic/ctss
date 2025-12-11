@@ -10,12 +10,15 @@ import CategorySidebar from "./CategorySidebar";
 import EditProductModal from "./EditProductModal";
 import CreateProductModal from "./CreateProductModal";
 import ImportExcelModal from "./ImportExcelModal";
+import AssignLocationModal from "./AssignLocationModal";
+import SupplierListPage from "./SupplierListPage";
 import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";
+type TabMode = "inventory" | "suppliers";
 
 export default function InventoryDashboard() {
   const { currentBranch, loading: branchLoading, loadBranches } = useBranch();
@@ -28,12 +31,17 @@ export default function InventoryDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterLocation, setFilterLocation] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingStock, setEditingStock] = useState<ProductStock | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [assigningLocationStock, setAssigningLocationStock] = useState<ProductStock | null>(null);
+  const [isAssignLocationModalOpen, setIsAssignLocationModalOpen] = useState(false);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<TabMode>("inventory");
 
   useEffect(() => {
     // Wait for branch to load, then load inventory data
@@ -109,6 +117,32 @@ export default function InventoryDashboard() {
     }
   };
 
+  // Load locations when branch changes
+  useEffect(() => {
+    if (currentBranch?.id) {
+      loadLocations();
+    }
+  }, [currentBranch?.id]);
+
+  const loadLocations = async () => {
+    if (!currentBranch?.id) return;
+
+    try {
+      const response = await fetch(`/api/inventory/locations?branchId=${currentBranch.id}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setLocations(result.data || []);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading locations:", error);
+    }
+  };
+
   // Get unique categories
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -127,11 +161,20 @@ export default function InventoryDashboard() {
       const matchesSearch =
         !searchTerm ||
         stock.product?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stock.product?.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+        stock.product?.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.location?.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.location?.zone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.location?.rack?.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Category filter
       const matchesCategory =
         filterCategory === "all" || stock.product?.category === filterCategory;
+
+      // Location filter
+      const matchesLocation =
+        filterLocation === "all" ||
+        (filterLocation === "none" && !stock.locationId) ||
+        stock.locationId === filterLocation;
 
       // Status filter
       let matchesStatus = true;
@@ -147,9 +190,9 @@ export default function InventoryDashboard() {
         }
       }
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
     });
-  }, [stocks, searchTerm, filterCategory, filterStatus]);
+  }, [stocks, searchTerm, filterCategory, filterLocation, filterStatus]);
 
   // Pagination
   const totalPages = Math.ceil(filteredStocks.length / itemsPerPage);
@@ -160,7 +203,7 @@ export default function InventoryDashboard() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterCategory, filterStatus]);
+  }, [searchTerm, filterCategory, filterLocation, filterStatus]);
 
   // Export to Excel handler
   const handleExportExcel = async () => {
@@ -248,72 +291,105 @@ export default function InventoryDashboard() {
       <div className="flex-1">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Package className="w-6 h-6" />
-                Quản lý kho
-              </h1>
-              {currentBranch && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Chi nhánh: {currentBranch.name}
-                  {currentBranch.id === "default-branch" && (
-                    <span className="ml-2 text-xs text-gray-400">(Chưa có chi nhánh thật)</span>
-                  )}
-                </p>
-              )}
-              {!currentBranch && !branchLoading && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Vui lòng chọn chi nhánh để xem kho hàng
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4" />
-                Tạo sản phẩm mới
-              </Button>
-              <Button
-                onClick={handleCopyFromBranch}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Copy className="w-4 h-4" />
-                Chép từ chi nhánh
-              </Button>
-              <Button
-                onClick={handleImportExcel}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                Nhập từ Excel
-              </Button>
-              <Button
-                onClick={handleExportExcel}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Xuất ra Excel
-              </Button>
-              <Button
-                onClick={handleSeedData}
-                disabled={seeding}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Database className="w-4 h-4" />
-                {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
-              </Button>
-            </div>
+          {/* Tabs */}
+          <div className="flex items-center gap-1 border-b border-gray-200 mb-4">
+            <button
+              onClick={() => setActiveTab("inventory")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "inventory"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <Package className="w-4 h-4 inline-block mr-2" />
+              Quản lý kho hàng bán
+            </button>
+            <button
+              onClick={() => setActiveTab("suppliers")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "suppliers"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <Building2 className="w-4 h-4 inline-block mr-2" />
+              Quản lý nhà cung cấp
+            </button>
           </div>
+
+          {activeTab === "inventory" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <Package className="w-6 h-6" />
+                    Quản lý kho
+                  </h1>
+                  {currentBranch && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Chi nhánh: {currentBranch.name}
+                      {currentBranch.id === "default-branch" && (
+                        <span className="ml-2 text-xs text-gray-400">(Chưa có chi nhánh thật)</span>
+                      )}
+                    </p>
+                  )}
+                  {!currentBranch && !branchLoading && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Vui lòng chọn chi nhánh để xem kho hàng
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Tạo sản phẩm mới
+                  </Button>
+                  <Button
+                    onClick={handleCopyFromBranch}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Chép từ chi nhánh
+                  </Button>
+                  <Button
+                    onClick={handleImportExcel}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Nhập từ Excel
+                  </Button>
+                  <Button
+                    onClick={handleExportExcel}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Xuất ra Excel
+                  </Button>
+                  <Button
+                    onClick={handleSeedData}
+                    disabled={seeding}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Database className="w-4 h-4" />
+                    {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Content */}
+        {activeTab === "suppliers" ? (
+          <SupplierListPage />
+        ) : (
         <div className="space-y-6">
         {/* Alerts */}
         {alerts.length > 0 && (
@@ -354,7 +430,7 @@ export default function InventoryDashboard() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Tìm kiếm theo tên hoặc mô tả sản phẩm"
+                    placeholder="Tìm kiếm theo tên, SKU, hoặc vị trí..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -407,13 +483,34 @@ export default function InventoryDashboard() {
                   <option value="normal">Bình thường</option>
                 </select>
 
+                {/* Location Filter */}
+                <select
+                  value={filterLocation}
+                  onChange={(e) => setFilterLocation(e.target.value)}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">Tất cả vị trí</option>
+                  <option value="none">Chưa gán vị trí</option>
+                  {locations.map((location) => (
+                    <option key={location.id} value={location.id}>
+                      {location.code}
+                      {location.zone || location.rack
+                        ? ` (${[location.zone, location.rack, location.shelf, location.bin]
+                            .filter(Boolean)
+                            .join(" - ")})`
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+
                 {/* Clear Filters */}
-                {(searchTerm || filterCategory !== "all" || filterStatus !== "all") && (
+                {(searchTerm || filterCategory !== "all" || filterStatus !== "all" || filterLocation !== "all") && (
                   <button
                     onClick={() => {
                       setSearchTerm("");
                       setFilterCategory("all");
                       setFilterStatus("all");
+                      setFilterLocation("all");
                     }}
                     className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
                   >
@@ -450,6 +547,10 @@ export default function InventoryDashboard() {
                 onEdit={(stock) => {
                   setEditingStock(stock);
                   setIsEditModalOpen(true);
+                }}
+                onAssignLocation={(stock) => {
+                  setAssigningLocationStock(stock);
+                  setIsAssignLocationModalOpen(true);
                 }}
               />
               
@@ -549,6 +650,7 @@ export default function InventoryDashboard() {
             <StockTransactionList transactions={transactions} />
           </div>
         </div>
+        )}
       </div>
 
       {/* Edit Product Modal */}
@@ -579,6 +681,21 @@ export default function InventoryDashboard() {
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={() => {
           loadData();
+        }}
+        branchId={currentBranch?.id}
+      />
+
+      {/* Assign Location Modal */}
+      <AssignLocationModal
+        isOpen={isAssignLocationModalOpen}
+        onClose={() => {
+          setIsAssignLocationModalOpen(false);
+          setAssigningLocationStock(null);
+        }}
+        stock={assigningLocationStock}
+        onSuccess={() => {
+          loadData();
+          loadLocations();
         }}
       />
     </div>

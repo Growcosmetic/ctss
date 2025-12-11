@@ -5,6 +5,7 @@ import { Save, Loader2, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import ProductUnitSelector from "./ProductUnitSelector";
+import SupplierSelector from "./SupplierSelector";
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -32,9 +33,10 @@ export default function CreateProductModal({
     costPrice: null as number | null,
     minStock: null as number | null,
     maxStock: null as number | null,
-    supplier: "",
+    supplierId: null as string | null,
     brand: "",
     notes: "",
+    isActive: true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,9 +69,10 @@ export default function CreateProductModal({
           costPrice: formData.costPrice,
           minStock: formData.minStock,
           maxStock: formData.maxStock,
-          supplier: formData.supplier || null,
+          supplierId: formData.supplierId || null,
           brand: formData.brand || null,
           notes: formData.notes || null,
+          isActive: formData.isActive,
         }),
       });
 
@@ -94,9 +97,10 @@ export default function CreateProductModal({
         costPrice: null,
         minStock: null,
         maxStock: null,
-        supplier: "",
+        supplierId: null,
         brand: "",
         notes: "",
+        isActive: true,
       });
       
       onSuccess?.();
@@ -310,12 +314,9 @@ export default function CreateProductModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nhà cung cấp
             </label>
-            <input
-              type="text"
-              value={formData.supplier}
-              onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Tên nhà cung cấp"
+            <SupplierSelector
+              value={formData.supplierId}
+              onChange={(supplierId) => setFormData({ ...formData, supplierId })}
             />
           </div>
 

@@ -6,19 +6,17 @@ import { Button } from "@/components/ui/Button";
 import { X, Upload, Download, FileSpreadsheet, Check, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-interface ImportExcelModalProps {
+interface ImportSupplierExcelModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  branchId?: string;
 }
 
-export default function ImportExcelModal({
+export default function ImportSupplierExcelModal({
   isOpen,
   onClose,
   onSuccess,
-  branchId,
-}: ImportExcelModalProps) {
+}: ImportSupplierExcelModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
@@ -56,42 +54,27 @@ export default function ImportExcelModal({
   };
 
   const handleDownloadTemplate = () => {
-    // Create Excel template matching the format from Hình 3
     const templateData = [
       {
-        "Tên sản phẩm": "DẦU TRỢ NHUỘM VEROGLA",
-        "Mã sản phẩm": "074469442855",
-        "Thương hiệu": "Joico",
-        "Nhóm sản phẩm": "KỸ THUẬT JOICO",
-        "Mô tả": "",
-        "Đơn vị tính": "Chai",
-        "Dung tích (nếu có)": "1000 ml",
-        "Giá nhập": "260000",
-        "Giá bán": "190000",
+        "Mã nhà cung cấp": "NCC001",
+        "Tên nhà cung cấp": "Công ty TNHH ABC",
+        "Người liên hệ": "Nguyễn Văn A",
+        "Số điện thoại": "0901234567",
+        "Email": "contact@abc.com",
+        "Địa chỉ": "123 Đường XYZ",
+        "Thành phố": "Hà Nội",
+        "Tỉnh/Thành phố": "Hà Nội",
+        "Mã số thuế": "0123456789",
+        "Website": "https://abc.com",
+        "Điều khoản thanh toán": "Net 30",
+        "Ghi chú": "",
       },
     ];
 
     const ws = XLSX.utils.json_to_sheet(templateData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "DANH SÁCH SẢN PHẨM");
-    XLSX.writeFile(wb, "mau_du_lieu_san_pham.xlsx");
-  };
-
-  const parseCapacity = (capacityStr: string): { capacity: number | null; capacityUnit: string | null } => {
-    if (!capacityStr || capacityStr.trim() === "") {
-      return { capacity: null, capacityUnit: null };
-    }
-
-    // Try to parse "1000 ml" or "100 ml" format
-    const match = capacityStr.match(/^(\d+(?:\.\d+)?)\s*(ml|l|g|kg|mg|cl|dl)$/i);
-    if (match) {
-      return {
-        capacity: parseFloat(match[1]),
-        capacityUnit: match[2].toLowerCase(),
-      };
-    }
-
-    return { capacity: null, capacityUnit: null };
+    XLSX.utils.book_append_sheet(wb, ws, "DANH SÁCH NHÀ CUNG CẤP");
+    XLSX.writeFile(wb, "mau_du_lieu_nha_cung_cap.xlsx");
   };
 
   const handleUpload = async () => {
@@ -104,7 +87,6 @@ export default function ImportExcelModal({
     setError("");
 
     try {
-      // Read Excel file
       const fileData = await file.arrayBuffer();
       const workbook = XLSX.read(fileData, { type: "array" });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -114,117 +96,110 @@ export default function ImportExcelModal({
         throw new Error("File Excel không có dữ liệu hoặc không đúng format");
       }
 
-      // Get headers (first row)
       const headers = jsonData[0] as string[];
       
       // Find column indices
+      const codeIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("mã") || h?.toLowerCase().includes("code")
+      );
       const nameIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("tên sản phẩm") || h?.toLowerCase().includes("ten san pham")
+        h?.toLowerCase().includes("tên") || h?.toLowerCase().includes("name")
       );
-      const skuIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("mã sản phẩm") || h?.toLowerCase().includes("ma san pham")
+      const contactIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("người liên hệ") || h?.toLowerCase().includes("contact")
       );
-      const brandIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("thương hiệu") || h?.toLowerCase().includes("thuong hieu")
+      const phoneIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("điện thoại") || h?.toLowerCase().includes("phone")
       );
-      const categoryIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("nhóm sản phẩm") || h?.toLowerCase().includes("nhom san pham")
+      const emailIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("email")
       );
-      const descIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("mô tả") || h?.toLowerCase().includes("mo ta")
+      const addressIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("địa chỉ") || h?.toLowerCase().includes("address")
       );
-      const unitIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("đơn vị tính") || h?.toLowerCase().includes("don vi tinh")
+      const cityIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("thành phố") && !h?.toLowerCase().includes("tỉnh")
       );
-      const capacityIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("dung tích") || h?.toLowerCase().includes("dung tich")
+      const provinceIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("tỉnh") || h?.toLowerCase().includes("province")
       );
-      const costPriceIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("giá nhập") || h?.toLowerCase().includes("gia nhap")
+      const taxCodeIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("mã số thuế") || h?.toLowerCase().includes("tax")
       );
-      const sellPriceIdx = headers.findIndex((h: string) => 
-        h?.toLowerCase().includes("giá bán") || h?.toLowerCase().includes("gia ban")
+      const websiteIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("website")
+      );
+      const paymentTermsIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("điều khoản") || h?.toLowerCase().includes("payment")
+      );
+      const notesIdx = headers.findIndex((h: string) => 
+        h?.toLowerCase().includes("ghi chú") || h?.toLowerCase().includes("note")
       );
 
-      if (nameIdx === -1 || categoryIdx === -1 || unitIdx === -1) {
-        throw new Error("File Excel thiếu các cột bắt buộc: Tên sản phẩm, Nhóm sản phẩm, Đơn vị tính");
+      if (nameIdx === -1) {
+        throw new Error("File Excel thiếu cột bắt buộc: Tên nhà cung cấp");
       }
 
-      // Parse data rows
-      const products = [];
+      const suppliers = [];
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i] as any[];
         if (!row || row.length === 0) continue;
 
         const name = row[nameIdx]?.toString().trim();
-        if (!name) continue; // Skip empty rows
+        if (!name) continue;
 
-        const sku = row[skuIdx]?.toString().trim() || "";
-        const brand = row[brandIdx]?.toString().trim() || "";
-        const category = row[categoryIdx]?.toString().trim();
-        const description = row[descIdx]?.toString().trim() || "";
-        const unit = row[unitIdx]?.toString().trim();
-        const capacityStr = row[capacityIdx]?.toString().trim() || "";
-        const costPrice = row[costPriceIdx] ? parseFloat(row[costPriceIdx].toString().replace(/[^\d.]/g, "")) : null;
-        const sellPrice = row[sellPriceIdx] ? parseFloat(row[sellPriceIdx].toString().replace(/[^\d.]/g, "")) : null;
+        const code = row[codeIdx]?.toString().trim() || "";
+        const contactName = row[contactIdx]?.toString().trim() || "";
+        const phone = row[phoneIdx]?.toString().trim() || "";
+        const email = row[emailIdx]?.toString().trim() || "";
+        const address = row[addressIdx]?.toString().trim() || "";
+        const city = row[cityIdx]?.toString().trim() || "";
+        const province = row[provinceIdx]?.toString().trim() || "";
+        const taxCode = row[taxCodeIdx]?.toString().trim() || "";
+        const website = row[websiteIdx]?.toString().trim() || "";
+        const paymentTerms = row[paymentTermsIdx]?.toString().trim() || "";
+        const notes = row[notesIdx]?.toString().trim() || "";
 
-        if (!category || !unit) {
-          console.warn(`Row ${i + 1}: Thiếu nhóm sản phẩm hoặc đơn vị tính, bỏ qua`);
-          continue;
-        }
-
-        const { capacity, capacityUnit } = parseCapacity(capacityStr);
-
-        // Build notes field
-        let notes = description;
-        if (sku) {
-          notes = `SKU: ${sku}\n${notes}`.trim();
-        }
-        if (brand) {
-          notes = `Thương hiệu: ${brand}\n${notes}`.trim();
-        }
-
-        products.push({
+        suppliers.push({
+          code: code || undefined,
           name,
-          sku: sku || undefined,
-          category,
-          unit,
-          capacity,
-          capacityUnit,
-          pricePerUnit: sellPrice,
-          costPrice,
+          contactName: contactName || null,
+          phone: phone || null,
+          email: email || null,
+          address: address || null,
+          city: city || null,
+          province: province || null,
+          taxCode: taxCode || null,
+          website: website || null,
+          paymentTerms: paymentTerms || null,
           notes: notes || null,
         });
       }
 
-      if (products.length === 0) {
-        throw new Error("Không có sản phẩm hợp lệ nào trong file Excel");
+      if (suppliers.length === 0) {
+        throw new Error("Không có nhà cung cấp hợp lệ nào trong file Excel");
       }
 
       // Send to API
-      const response = await fetch("/api/inventory/import", {
+      const response = await fetch("/api/inventory/suppliers/import", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ 
-          products,
-          branchId: branchId || undefined,
-        }),
+        body: JSON.stringify({ suppliers }),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || "Không thể import sản phẩm");
+        throw new Error(result.error || "Không thể import nhà cung cấp");
       }
 
       setUploaded(true);
-      alert(`✅ Đã import thành công ${products.length} sản phẩm!`);
+      alert(`✅ Đã import thành công ${suppliers.length} nhà cung cấp!`);
       onSuccess?.();
       
-      // Reset after 2 seconds
       setTimeout(() => {
         setFile(null);
         setUploaded(false);
@@ -244,7 +219,7 @@ export default function ImportExcelModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Nhập từ Excel"
+      title="Nhập nhà cung cấp từ Excel"
       size="lg"
     >
       <div className="space-y-6">
@@ -333,10 +308,9 @@ export default function ImportExcelModal({
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <h4 className="font-medium text-gray-900 mb-2">Hướng dẫn:</h4>
           <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-            <li>Các cột bắt buộc: Tên sản phẩm, Nhóm sản phẩm, Đơn vị tính</li>
-            <li>Dung tích: Nhập theo format "100 ml" hoặc "1000 ml"</li>
-            <li>Giá: Nhập số nguyên (ví dụ: 190000)</li>
-            <li>Mã sản phẩm: Nếu để trống, hệ thống sẽ tự sinh</li>
+            <li>Cột bắt buộc: Tên nhà cung cấp</li>
+            <li>Mã nhà cung cấp: Nếu để trống, hệ thống sẽ tự sinh</li>
+            <li>Các cột khác là tùy chọn</li>
           </ul>
         </div>
 

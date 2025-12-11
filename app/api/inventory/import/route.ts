@@ -30,10 +30,42 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { products } = body;
+    const { products, branchId } = body;
 
     if (!products || !Array.isArray(products) || products.length === 0) {
       return errorResponse("Danh sách sản phẩm không hợp lệ", 400);
+    }
+
+    // Get user to determine branch if not provided
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        branch: true,
+      },
+    });
+
+    if (!user) {
+      return errorResponse("User not found", 404);
+    }
+
+    // Determine branchId
+    let finalBranchId = branchId;
+    if (!finalBranchId) {
+      // Try to get from user's branch
+      if (user.branchId) {
+        finalBranchId = user.branchId;
+      } else {
+        // Try to get default branch
+        const defaultBranch = await prisma.branch.findFirst({
+          where: { isActive: true },
+          orderBy: { createdAt: "asc" },
+        });
+        if (defaultBranch) {
+          finalBranchId = defaultBranch.id;
+        } else {
+          return errorResponse("Không tìm thấy chi nhánh. Vui lòng chọn chi nhánh trước khi import.", 400);
+        }
+      }
     }
 
     const createdProducts = [];
@@ -68,25 +100,83 @@ export async function POST(request: NextRequest) {
           notes = `Thương hiệu: ${product.brand}\n${notes}`.trim();
         }
 
-        // Create product
-        const created = await prisma.product.create({
-          data: {
-            name: product.name.trim(),
+        // Check if product already exists (by name and category)
+        let existingProduct = await prisma.product.findFirst({
+          where: {
+            name: { contains: product.name.trim(), mode: "insensitive" },
             category: product.category.trim(),
-            subCategory: product.subCategory?.trim() || null,
-            unit: product.unit.trim(),
-            capacity: product.capacity ? parseFloat(product.capacity.toString()) : null,
-            capacityUnit: product.capacityUnit || null,
-            pricePerUnit: product.pricePerUnit ? parseFloat(product.pricePerUnit.toString()) : null,
-            minStock: product.minStock ? parseFloat(product.minStock.toString()) : null,
-            maxStock: product.maxStock ? parseFloat(product.maxStock.toString()) : null,
-            supplier: product.supplier?.trim() || null,
-            notes: notes || null,
-            branchAware: true,
           },
         });
 
-        createdProducts.push(created);
+        let productToUse;
+        if (existingProduct) {
+          // Update existing product
+          productToUse = await prisma.product.update({
+            where: { id: existingProduct.id },
+            data: {
+              subCategory: product.subCategory?.trim() || existingProduct.subCategory || null,
+              unit: product.unit.trim() || existingProduct.unit,
+              capacity: product.capacity !== undefined && product.capacity !== null ? parseFloat(product.capacity.toString()) : existingProduct.capacity,
+              capacityUnit: product.capacityUnit || existingProduct.capacityUnit || null,
+              pricePerUnit: product.pricePerUnit !== undefined && product.pricePerUnit !== null ? parseFloat(product.pricePerUnit.toString()) : existingProduct.pricePerUnit,
+              minStock: product.minStock !== undefined && product.minStock !== null ? parseFloat(product.minStock.toString()) : existingProduct.minStock,
+              maxStock: product.maxStock !== undefined && product.maxStock !== null ? parseFloat(product.maxStock.toString()) : existingProduct.maxStock,
+              supplier: product.supplier?.trim() || existingProduct.supplier || null,
+              notes: notes || existingProduct.notes || null,
+            },
+          });
+        } else {
+          // Create new product
+          productToUse = await prisma.product.create({
+            data: {
+              name: product.name.trim(),
+              category: product.category.trim(),
+              subCategory: product.subCategory?.trim() || null,
+              unit: product.unit.trim(),
+              capacity: product.capacity ? parseFloat(product.capacity.toString()) : null,
+              capacityUnit: product.capacityUnit || null,
+              pricePerUnit: product.pricePerUnit ? parseFloat(product.pricePerUnit.toString()) : null,
+              minStock: product.minStock ? parseFloat(product.minStock.toString()) : null,
+              maxStock: product.maxStock ? parseFloat(product.maxStock.toString()) : null,
+              supplier: product.supplier?.trim() || null,
+              notes: notes || null,
+              branchAware: true,
+            },
+          });
+        }
+
+        // Create or update ProductStock for the branch
+        const initialQuantity = product.initialStock ? parseFloat(product.initialStock.toString()) : 0;
+        
+        const existingStock = await prisma.productStock.findFirst({
+          where: {
+            productId: productToUse.id,
+            branchId: finalBranchId,
+          },
+        });
+
+        if (existingStock) {
+          // Update existing stock if initialStock is provided
+          if (initialQuantity > 0) {
+            await prisma.productStock.update({
+              where: { id: existingStock.id },
+              data: {
+                quantity: initialQuantity,
+              },
+            });
+          }
+        } else {
+          // Create new ProductStock
+          await prisma.productStock.create({
+            data: {
+              productId: productToUse.id,
+              branchId: finalBranchId,
+              quantity: initialQuantity,
+            },
+          });
+        }
+
+        createdProducts.push(productToUse);
       } catch (error: any) {
         console.error(`Error creating product at row ${i + 1}:`, error);
         if (error.code === "P2002") {

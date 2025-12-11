@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Package, TrendingDown, TrendingUp } from "lucide-react";
+import { Package, TrendingDown, TrendingUp, MapPin } from "lucide-react";
 import { ProductStock } from "../types";
 import { cn } from "@/lib/utils";
 import { formatUnit } from "@/core/inventory/productUnits";
@@ -85,6 +85,20 @@ export default function StockCard({ stock }: StockCardProps) {
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Mức tối đa:</span>
             <span className="font-medium">{maxLevel} {stock.product?.unit || "pcs"}</span>
+          </div>
+        )}
+
+        {stock.location && (
+          <div className="flex items-center gap-1 text-xs text-gray-600 pt-1">
+            <MapPin className="w-3 h-3" />
+            <span className="font-medium">{stock.location.code}</span>
+            {(stock.location.zone || stock.location.rack) && (
+              <span className="text-gray-500">
+                ({[stock.location.zone, stock.location.rack, stock.location.shelf, stock.location.bin]
+                  .filter(Boolean)
+                  .join(" - ")})
+              </span>
+            )}
           </div>
         )}
 

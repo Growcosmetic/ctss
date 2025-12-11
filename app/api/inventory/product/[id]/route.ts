@@ -34,6 +34,15 @@ export async function GET(
 
     const product = await prisma.product.findUnique({
       where: { id: params.id },
+      include: {
+        supplier: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!product) {
@@ -80,37 +89,65 @@ export async function PUT(
     const body = await request.json();
     const {
       name,
+      sku,
       category,
       subCategory,
       unit,
       capacity,
       capacityUnit,
       pricePerUnit,
+      costPrice,
       minStock,
       maxStock,
-      supplier,
+      supplierId,
       notes,
+      isActive,
     } = body;
 
     if (!name || !category || !unit) {
       return errorResponse("Name, category, and unit are required", 400);
     }
 
+    // Check SKU uniqueness if provided
+    if (sku) {
+      const existingSku = await prisma.product.findFirst({
+        where: {
+          sku: sku.trim().toUpperCase(),
+          NOT: { id: params.id },
+        },
+      });
+
+      if (existingSku) {
+        return errorResponse("Mã SKU đã tồn tại", 409);
+      }
+    }
+
+    const updateData: any = {
+      name,
+      category,
+      subCategory: subCategory || null,
+      unit,
+      capacity: capacity !== undefined && capacity !== null ? parseFloat(capacity.toString()) : null,
+      capacityUnit: capacityUnit || null,
+      pricePerUnit: pricePerUnit !== undefined && pricePerUnit !== null ? parseFloat(pricePerUnit.toString()) : null,
+      costPrice: costPrice !== undefined && costPrice !== null ? parseFloat(costPrice.toString()) : null,
+      minStock: minStock !== undefined && minStock !== null ? parseFloat(minStock.toString()) : null,
+      maxStock: maxStock !== undefined && maxStock !== null ? parseFloat(maxStock.toString()) : null,
+      supplierId: supplierId !== undefined ? (supplierId || null) : undefined,
+      notes: notes !== undefined ? (notes || null) : undefined,
+    };
+
+    if (sku !== undefined) {
+      updateData.sku = sku ? sku.trim().toUpperCase() : null;
+    }
+
+    if (isActive !== undefined) {
+      updateData.isActive = isActive;
+    }
+
     const product = await prisma.product.update({
       where: { id: params.id },
-      data: {
-        name,
-        category,
-        subCategory: subCategory || null,
-        unit,
-        capacity: capacity !== undefined && capacity !== null ? parseFloat(capacity.toString()) : null,
-        capacityUnit: capacityUnit || null,
-        pricePerUnit: pricePerUnit !== undefined && pricePerUnit !== null ? parseFloat(pricePerUnit.toString()) : null,
-        minStock: minStock !== undefined && minStock !== null ? parseFloat(minStock.toString()) : null,
-        maxStock: maxStock !== undefined && maxStock !== null ? parseFloat(maxStock.toString()) : null,
-        supplier: supplier || null,
-        notes: notes || null,
-      },
+      data: updateData,
     });
 
     return successResponse(product, "Product updated successfully");

@@ -21,6 +21,7 @@ export interface ProductStock {
   id: string;
   productId: string;
   branchId: string;
+  locationId?: string | null;
   quantity: number;
   minLevel?: number | null;
   maxLevel?: number | null;
@@ -29,6 +30,14 @@ export interface ProductStock {
     id: string;
     name: string;
   };
+  location?: {
+    id: string;
+    code: string;
+    zone?: string | null;
+    rack?: string | null;
+    shelf?: string | null;
+    bin?: string | null;
+  } | null;
 }
 
 export interface StockTransaction {

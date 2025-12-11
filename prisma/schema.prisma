@@ -204,6 +204,7 @@ model Service {
 model Product {
   id           String  @id @default(uuid())
   name         String
+  sku          String? @unique // Mã SKU (tự động sinh nếu không có)
   category     String
   subCategory  String? // Uốn nóng | Uốn lạnh | Treatment | etc.
   unit         String  // Đơn vị đếm (Ống, Chai, Túi, Cái, etc.)
@@ -213,13 +214,15 @@ model Product {
   branchAware  Boolean @default(true)
   
   // Phase 19 fields
-  pricePerUnit Float? // Giá mỗi đơn vị
+  pricePerUnit Float? // Giá bán mỗi đơn vị
+  costPrice    Float? // Giá vốn mỗi đơn vị
   stock        Float?    @default(0) // Tồn kho tổng (nếu không branch-aware)
   minStock     Float? // Tồn kho tối thiểu (cảnh báo)
   maxStock     Float? // Tồn kho tối đa
-  supplier     String? // Nhà cung cấp
+  supplierId   String? // ID nhà cung cấp
   expiryDate   DateTime? // Hạn sử dụng
   imageUrl     String? // Ảnh sản phẩm
+  isActive     Boolean @default(true) // Trạng thái: Sẵn sàng/Ngừng kinh doanh
   notes        String? // Ghi chú
 
   invoiceItems           InvoiceItem[]
@@ -236,9 +239,14 @@ model Product {
   restockTriggers        RestockTrigger[]        @relation("RestockTriggerProduct") // Phase 19J
   branchInventories      BranchInventory[]       @relation("BranchInventoryProduct")
   serviceCosts           ServiceCost[]
+  supplier               Supplier?              @relation(fields: [supplierId], references: [id])
+  stockTransferItems     StockTransferItem[]
   
   @@index([category])
   @@index([name])
+  @@index([sku])
+  @@index([supplierId])
+  @@index([isActive])
 }
 
 ///////////////////////////////////////////////////////////////
@@ -279,27 +287,57 @@ model InvoiceItem {
 ///////////////////////////////////////////////////////////////
 
 model ProductStock {
-  id        String   @id @default(uuid())
+  id         String    @id @default(uuid())
   productId String
   branchId  String
+  locationId String?   // Vị trí trong kho
   quantity  Int
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime   @updatedAt
 
-  product Product @relation(fields: [productId], references: [id])
-  branch  Branch  @relation(fields: [branchId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+  branch   Branch   @relation(fields: [branchId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
+
+  @@index([locationId])
+}
+
+model Location {
+  id          String   @id @default(uuid())
+  branchId    String
+  code        String   // Mã vị trí (ví dụ: A-01-02-03)
+  zone        String?  // Khu vực (ví dụ: Khu A, Khu B)
+  rack        String?  // Giá kệ (ví dụ: Rack 01)
+  shelf       String?  // Kệ (ví dụ: Shelf 02)
+  bin         String?  // Ngăn/Vị trí (ví dụ: Bin 03)
+  description String?  // Mô tả
+  isActive    Boolean  @default(true)
+  capacity    Int?     // Sức chứa (số sản phẩm)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branch        Branch         @relation(fields: [branchId], references: [id])
+  productStocks ProductStock[]
+
+  @@unique([branchId, code])
+  @@index([branchId])
+  @@index([code])
 }
 
 model StockTransaction {
   id        String   @id @default(uuid())
   productId String
   branchId  String
-  type      String
+  type      String   // IN | OUT | ADJUST | TRANSFER | MIX
   quantity  Int
   reason    String?
+  referenceId String? // ID tham chiếu (transferId, receiptId, etc.)
   createdAt DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id])
   branch  Branch  @relation(fields: [branchId], references: [id])
+  
+  @@index([type])
+  @@index([createdAt])
 }
 
 model ServiceProductUsage {
@@ -310,6 +348,79 @@ model ServiceProductUsage {
 
   service Service @relation(fields: [serviceId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+}
+
+///////////////////////////////////////////////////////////////
+// STOCK TRANSFER (Chuyển kho)
+///////////////////////////////////////////////////////////////
+
+model StockTransfer {
+  id            String   @id @default(uuid())
+  transferNumber String   @unique // Số phiếu (ví dụ: CK-2025-001)
+  fromBranchId  String   // Chi nhánh nguồn
+  toBranchId    String   // Chi nhánh đích
+  date          DateTime @default(now())
+  status        String   @default("PENDING") // PENDING | IN_TRANSIT | COMPLETED | CANCELLED
+  createdBy     String   // User ID
+  completedBy   String?  // User ID người hoàn thành
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  fromBranch    Branch   @relation("TransferFrom", fields: [fromBranchId], references: [id])
+  toBranch      Branch   @relation("TransferTo", fields: [toBranchId], references: [id])
+  items         StockTransferItem[]
+  
+  @@index([fromBranchId])
+  @@index([toBranchId])
+  @@index([status])
+  @@index([date])
+}
+
+model StockTransferItem {
+  id            String   @id @default(uuid())
+  transferId    String
+  productId    String
+  quantity     Int
+  costPrice    Float?   // Giá vốn tại thời điểm chuyển
+  notes         String?
+
+  transfer      StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id])
+  
+  @@index([transferId])
+  @@index([productId])
+}
+
+///////////////////////////////////////////////////////////////
+// SUPPLIER MANAGEMENT
+///////////////////////////////////////////////////////////////
+
+model Supplier {
+  id           String   @id @default(uuid())
+  code         String   // Mã nhà cung cấp (ví dụ: NCC001)
+  name         String   // Tên nhà cung cấp
+  contactName  String?  // Tên người liên hệ
+  phone        String?  // Số điện thoại
+  email        String?  // Email
+  address      String?  // Địa chỉ
+  city         String?  // Thành phố
+  province     String?  // Tỉnh/Thành phố
+  country      String?  @default("VN") // Quốc gia
+  taxCode      String?  // Mã số thuế
+  website      String?  // Website
+  paymentTerms String?  // Điều khoản thanh toán (ví dụ: "Net 30")
+  notes        String?  // Ghi chú
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products     Product[]
+
+  @@unique([code])
+  @@index([name])
+  @@index([isActive])
 }
 
 ///////////////////////////////////////////////////////////////
@@ -2897,6 +3008,9 @@ model Branch {
   users             User[]                  @relation("BranchUsers")
   productStock      ProductStock[]
   stockTransactions StockTransaction[]
+  stockTransfersFrom StockTransfer[] @relation("TransferFrom")
+  stockTransfersTo   StockTransfer[] @relation("TransferTo")
+  locations         Location[]
   salaryPayout      SalaryPayout[]
   staffAssessments  SkillAssessment[]       @relation("StaffAssessments")
   staffAssignments  BranchStaffAssignment[] @relation("BranchStaffAssignment")

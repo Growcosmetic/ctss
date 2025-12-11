@@ -124,9 +124,10 @@ export async function POST(request: NextRequest) {
       costPrice,
       minStock,
       maxStock,
-      supplier,
+      supplierId,
       brand,
       notes,
+      isActive,
     } = body;
 
     // Validate required fields
@@ -146,23 +147,34 @@ export async function POST(request: NextRequest) {
       finalSku = `${namePrefix}${timestamp}`;
     }
 
-    // Check if SKU already exists (by checking notes field for now, or we can add SKU field later)
-    // For now, we'll allow duplicate SKUs and store it in notes
-    const skuNote = sku ? `SKU: ${sku}\n${notes || ""}` : (notes || "");
+    // Check if SKU already exists
+    const existingSku = await prisma.product.findUnique({
+      where: { sku: finalSku.trim().toUpperCase() },
+    });
+
+    if (existingSku) {
+      return errorResponse("Mã SKU đã tồn tại", 409);
+    }
+
+    // Build notes (include brand if provided)
+    const skuNote = brand ? `Thương hiệu: ${brand}\n${notes || ""}`.trim() : (notes || "");
 
     const product = await prisma.product.create({
       data: {
         name,
+        sku: finalSku.trim().toUpperCase(),
         category,
         subCategory: subCategory || null,
         unit,
         capacity: capacity ? parseFloat(capacity.toString()) : null,
         capacityUnit: capacityUnit || null,
         pricePerUnit: pricePerUnit ? parseFloat(pricePerUnit.toString()) : null,
+        costPrice: costPrice ? parseFloat(costPrice.toString()) : null,
         minStock: minStock ? parseFloat(minStock.toString()) : null,
         maxStock: maxStock ? parseFloat(maxStock.toString()) : null,
-        supplier: supplier || null,
-        notes: brand ? `Thương hiệu: ${brand}\n${skuNote}`.trim() : skuNote || null,
+        supplierId: supplierId || null,
+        isActive: isActive !== undefined ? isActive : true,
+        notes: skuNote || null,
         branchAware: true,
       },
     });

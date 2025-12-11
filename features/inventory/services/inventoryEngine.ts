@@ -16,6 +16,7 @@ const StockTransactionType = {
   IN: "IN",
   OUT: "OUT",
   ADJUST: "ADJUST",
+  TRANSFER: "TRANSFER",
   MIX: "MIX",
 } as const;
 
@@ -189,6 +190,16 @@ export async function getStockLevels(
           name: true,
         },
       },
+      location: {
+        select: {
+          id: true,
+          code: true,
+          zone: true,
+          rack: true,
+          shelf: true,
+          bin: true,
+        },
+      },
     },
     orderBy: {
       product: {
@@ -201,6 +212,7 @@ export async function getStockLevels(
     id: stock.id,
     productId: stock.productId,
     branchId: stock.branchId,
+    locationId: stock.locationId || null,
     quantity: Number(stock.quantity),
     minLevel: stock.product.minStock ? Number(stock.product.minStock) : null,
     maxLevel: stock.product.maxStock ? Number(stock.product.maxStock) : null,
@@ -212,6 +224,7 @@ export async function getStockLevels(
       subCategory: stock.product.subCategory,
     },
     branch: stock.branch,
+    location: stock.location,
   }));
 }
 

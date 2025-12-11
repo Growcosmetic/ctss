@@ -45,6 +45,13 @@ export default function InventoryDashboard() {
   const [locations, setLocations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<TabMode>("overview");
 
+  // Auto-set viewMode to "list" when on inventory tab
+  useEffect(() => {
+    if (activeTab === "inventory") {
+      setViewMode("list");
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     // Wait for branch to load, then load inventory data
     if (!branchLoading && currentBranch?.id) {

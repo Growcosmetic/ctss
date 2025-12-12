@@ -218,12 +218,6 @@ export default function InventoryDashboard() {
         }
       }
 
-      // Brand filter
-      const matchesBrand =
-        filterBrand === "all" ||
-        stock.product?.supplier?.name === filterBrand ||
-        stock.product?.brand === filterBrand;
-
       return matchesSearch && matchesCategory && matchesBrand && matchesLocation && matchesStatus;
     });
   }, [stocks, searchTerm, filterCategory, filterBrand, filterLocation, filterStatus]);

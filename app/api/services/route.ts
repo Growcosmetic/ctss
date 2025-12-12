@@ -10,6 +10,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
+    const isActive = searchParams.get("isActive");
 
     const where: any = {};
     if (category) {
@@ -21,6 +22,9 @@ export async function GET(req: Request) {
         { description: { contains: search, mode: "insensitive" } },
         { code: { contains: search, mode: "insensitive" } },
       ];
+    }
+    if (isActive !== null && isActive !== undefined) {
+      where.isActive = isActive === "true";
     }
 
     const services = await prisma.service.findMany({

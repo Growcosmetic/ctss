@@ -11,6 +11,7 @@ interface CreateBookingModalProps {
   services: Array<{ id: string; name: string; duration: number }>;
   selectedDate?: Date;
   selectedTime?: string;
+  isWalkIn?: boolean; // Walk-in mode
 }
 
 export interface BookingFormData {
@@ -31,15 +32,23 @@ export default function CreateBookingModal({
   services,
   selectedDate,
   selectedTime,
+  isWalkIn = false,
 }: CreateBookingModalProps) {
+  // Calculate current time rounded to nearest 30 minutes for walk-in
+  const getCurrentTimeRounded = () => {
+    const now = new Date();
+    const roundedMinutes = Math.floor(now.getMinutes() / 30) * 30;
+    return `${now.getHours().toString().padStart(2, "0")}:${roundedMinutes.toString().padStart(2, "0")}`;
+  };
+
   const [formData, setFormData] = useState<BookingFormData>({
     customerName: "",
     phone: "",
     stylistId: stylists[0]?.id || "",
     serviceId: services[0]?.id || "",
     date: selectedDate ? selectedDate.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-    time: selectedTime || "09:00",
-    notes: "",
+    time: isWalkIn ? getCurrentTimeRounded() : (selectedTime || "09:00"),
+    notes: isWalkIn ? "Khách vãng lai" : "",
   });
 
   // Get selected service duration
@@ -55,11 +64,11 @@ export default function CreateBookingModal({
         stylistId: stylists[0]?.id || "",
         serviceId: services[0]?.id || "",
         date: selectedDate ? selectedDate.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-        time: selectedTime || "09:00",
-        notes: "",
+        time: isWalkIn ? getCurrentTimeRounded() : (selectedTime || "09:00"),
+        notes: isWalkIn ? "Khách vãng lai" : "",
       });
     }
-  }, [isOpen, selectedDate, selectedTime, stylists, services]);
+  }, [isOpen, selectedDate, selectedTime, stylists, services, isWalkIn]);
 
   if (!isOpen) return null;
 
@@ -111,7 +120,9 @@ export default function CreateBookingModal({
             borderTopRightRadius: "16px",
           }}
         >
-          <h2 className="text-xl font-bold text-gray-900">Tạo lịch hẹn mới</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            {isWalkIn ? "Khách vãng lai" : "Tạo lịch hẹn mới"}
+          </h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

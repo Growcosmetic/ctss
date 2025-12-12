@@ -105,31 +105,66 @@ export default function BookingDetailDrawer({
 
   if (!isOpen || !booking || !formData) return null;
 
-  const handleSave = () => {
-    const updatedBooking = {
-      ...booking,
-      customerName: formData.customerName,
-      phone: formData.phone,
-      date: formData.date,
-      time: `${formData.hour.toString().padStart(2, "0")}:${formData.minute.toString().padStart(2, "0")}`,
-      duration: formData.duration,
-      notes: formData.notes,
-      serviceName: fakeServices.find((s) => s.id === formData.serviceId)?.name || booking.serviceName,
-      stylistId: formData.stylistId,
-      start: `${formData.hour.toString().padStart(2, "0")}:${formData.minute.toString().padStart(2, "0")}`,
-      end: (() => {
-        const endMinutes = formData.hour * 60 + formData.minute + formData.duration;
-        const endHour = Math.floor(endMinutes / 60);
-        const endMinute = endMinutes % 60;
-        return `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
-      })(),
-    };
+  const handleSave = async () => {
+    if (!booking) return;
 
-    setBookingList(
-      bookingList.map((b) => (b.id === booking.id ? updatedBooking : b))
-    );
-    setIsEditing(false);
-    if (onEdit) onEdit();
+    try {
+      const bookingTime = `${formData.hour.toString().padStart(2, "0")}:${formData.minute.toString().padStart(2, "0")}`;
+      
+      // Update booking via API
+      const response = await fetch(`/api/bookings/${booking.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          staffId: formData.stylistId || null,
+          bookingDate: formData.date,
+          bookingTime: bookingTime,
+          duration: formData.duration,
+          status: booking.status,
+          notes: formData.notes || null,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Update local state
+          const updatedBooking = {
+            ...booking,
+            customerName: formData.customerName,
+            phone: formData.phone,
+            date: formData.date,
+            time: bookingTime,
+            duration: formData.duration,
+            notes: formData.notes,
+            serviceName: fakeServices.find((s) => s.id === formData.serviceId)?.name || booking.serviceName,
+            stylistId: formData.stylistId,
+            start: bookingTime,
+            end: (() => {
+              const endMinutes = formData.hour * 60 + formData.minute + formData.duration;
+              const endHour = Math.floor(endMinutes / 60);
+              const endMinute = endMinutes % 60;
+              return `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
+            })(),
+          };
+
+          setBookingList(
+            bookingList.map((b) => (b.id === booking.id ? updatedBooking : b))
+          );
+          setIsEditing(false);
+          alert("✅ Đã cập nhật thông tin booking");
+          if (onEdit) onEdit();
+        } else {
+          throw new Error(result.error || "Không thể cập nhật booking");
+        }
+      } else {
+        throw new Error("Không thể cập nhật booking");
+      }
+    } catch (error: any) {
+      console.error("Error saving booking:", error);
+      alert(`❌ Lỗi: ${error.message || "Không thể cập nhật booking"}`);
+    }
   };
 
   const handleStatusChange = (newStatus: string) => {
@@ -172,32 +207,95 @@ export default function BookingDetailDrawer({
     }
   };
 
-  const handleCopyBooking = () => {
+  const handleCopyBooking = async () => {
     if (!booking) return;
     
-    // Tạo booking mới từ booking hiện tại
-    const newBooking = {
-      id: `booking-${Date.now()}`,
-      customerName: booking.customerName,
-      phone: booking.phone,
-      serviceName: booking.serviceName,
-      stylistId: booking.stylistId,
-      date: booking.date,
-      start: booking.time,
-      end: (() => {
-        const [hour, minute] = booking.time.split(":").map(Number);
-        const endMinutes = hour * 60 + minute + booking.duration;
-        const endHour = Math.floor(endMinutes / 60);
-        const endMinute = endMinutes % 60;
-        return `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
-      })(),
-      status: "pending" as const,
-      notes: booking.notes,
-    };
+    try {
+      // Tìm customer ID từ phone hoặc name
+      const customerResponse = await fetch(`/api/customers?search=${encodeURIComponent(booking.phone || booking.customerName)}`, {
+        credentials: "include",
+      });
+      
+      let customerId = null;
+      if (customerResponse.ok) {
+        const customerResult = await customerResponse.json();
+        if (customerResult.success && customerResult.data?.customers?.length > 0) {
+          customerId = customerResult.data.customers[0].id;
+        }
+      }
 
-    setBookingList([...bookingList, newBooking]);
-    alert(`Đã tạo bản sao booking cho ${booking.customerName}`);
-    onClose();
+      // Nếu không tìm thấy customer, tạo mới
+      if (!customerId) {
+        const createCustomerResponse = await fetch("/api/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: booking.customerName,
+            phone: booking.phone,
+          }),
+        });
+        
+        if (createCustomerResponse.ok) {
+          const createResult = await createCustomerResponse.json();
+          if (createResult.success) {
+            customerId = createResult.data.id;
+          }
+        }
+      }
+
+      if (!customerId) {
+        throw new Error("Không thể tìm hoặc tạo khách hàng");
+      }
+
+      // Tìm service ID
+      const service = fakeServices.find((s) => s.name === booking.serviceName);
+      if (!service) {
+        throw new Error("Không tìm thấy dịch vụ");
+      }
+
+      // Tạo booking mới qua API
+      const [hour, minute] = booking.time.split(":").map(Number);
+      const bookingTime = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+      
+      const createResponse = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          customerId,
+          staffId: booking.stylistId || null,
+          bookingDate: booking.date,
+          bookingTime: bookingTime,
+          duration: booking.duration || service.duration,
+          notes: `Sao chép từ booking ${booking.id}. ${booking.notes || ""}`,
+          items: [{
+            serviceId: service.id,
+            price: service.price,
+            duration: service.duration,
+          }],
+        }),
+      });
+
+      if (createResponse.ok) {
+        const result = await createResponse.json();
+        if (result.success) {
+          alert(`✅ Đã tạo bản sao booking cho ${booking.customerName}`);
+          // Refresh booking list
+          if (onEdit) {
+            onEdit(); // Trigger refresh
+          }
+          onClose();
+        } else {
+          throw new Error(result.error || "Không thể tạo booking");
+        }
+      } else {
+        throw new Error("Không thể tạo booking");
+      }
+    } catch (error: any) {
+      console.error("Error copying booking:", error);
+      alert(`❌ Lỗi: ${error.message || "Không thể sao chép booking"}`);
+    }
   };
 
   const handlePrint = () => {

@@ -50,16 +50,11 @@ export default function BookingPage() {
   };
 
   // Handle walk-in booking (quick create)
+  const [isWalkInMode, setIsWalkInMode] = useState(false);
+  
   const handleWalkInBooking = () => {
-    // Tạo booking walk-in với thời gian hiện tại
-    const now = new Date();
-    const roundedMinutes = Math.floor(now.getMinutes() / 30) * 30;
-    const currentTime = `${now.getHours().toString().padStart(2, "0")}:${roundedMinutes.toString().padStart(2, "0")}`;
-    const todayStr = format(now, "yyyy-MM-dd");
-    
-    // Mở modal với dữ liệu walk-in
+    setIsWalkInMode(true);
     setIsCreateModalOpen(true);
-    // TODO: Pass walk-in flag to CreateBookingModal
   };
 
   const handleSubmitBooking = (data: BookingFormData) => {
@@ -141,40 +136,105 @@ export default function BookingPage() {
 
   const handleViewHistory = () => {
     if (selectedBooking) {
-      // TODO: Navigate to customer history page or open modal
-      console.log("View history for customer:", selectedBooking.customerName);
-      alert(`Xem lịch sử khách hàng: ${selectedBooking.customerName}`);
+      // Navigate to customer detail page
+      const customerPhone = selectedBooking.phone;
+      if (customerPhone) {
+        window.location.href = `/crm?search=${encodeURIComponent(customerPhone)}`;
+      }
     }
   };
 
-  const handleQuickEdit = (booking: any, field: "time" | "stylist" | "service") => {
-    // Mở drawer với booking và chế độ edit
-    const originalBooking = bookingList.find((b) => b.id === booking.id);
-    if (originalBooking) {
-      const stylist = fakeStylists.find((s) => s.id === booking.stylistId);
-      setSelectedBooking({
-        ...booking,
-        phone: originalBooking.phone,
-        stylistName: stylist?.name || "",
-        notes: originalBooking.notes,
-      });
-      setIsDetailDrawerOpen(true);
-      // Tự động focus vào field được chọn
-      setTimeout(() => {
-        if (field === "time") {
-          // Focus vào time input trong drawer
-          const timeInput = document.querySelector('[data-field="time"]') as HTMLElement;
-          timeInput?.click();
-        } else if (field === "stylist") {
-          const stylistSelect = document.querySelector('[data-field="stylist"]') as HTMLElement;
-          stylistSelect?.click();
-        } else if (field === "service") {
-          const serviceSelect = document.querySelector('[data-field="service"]') as HTMLElement;
-          serviceSelect?.click();
+  // Quick Edit Handler
+  const handleQuickEdit = async (booking: any, field: "time" | "stylist" | "service") => {
+    if (!booking) return;
+
+    try {
+      if (field === "time") {
+        // Prompt for new time
+        const newTime = prompt("Nhập thời gian mới (HH:mm):", booking.start || booking.time);
+        if (!newTime || !/^\d{2}:\d{2}$/.test(newTime)) return;
+
+        const response = await fetch(`/api/bookings/${booking.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            bookingTime: newTime,
+            bookingDate: booking.date,
+            staffId: booking.stylistId || null,
+            status: booking.status,
+            notes: booking.notes || null,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setBookingList(
+              bookingList.map((b) =>
+                b.id === booking.id ? { ...b, start: newTime, time: newTime } : b
+              )
+            );
+            alert("✅ Đã cập nhật thời gian");
+          }
         }
-      }, 100);
+      } else if (field === "stylist") {
+        // Show stylist selector
+        const stylistOptions = fakeStylists.map((s) => `${s.id}:${s.name}`).join("\n");
+        const selected = prompt(`Chọn stylist:\n${stylistOptions}\n\nNhập ID:`, booking.stylistId);
+        if (!selected) return;
+
+        const stylist = fakeStylists.find((s) => s.id === selected);
+        if (!stylist) {
+          alert("❌ Stylist không hợp lệ");
+          return;
+        }
+
+        const response = await fetch(`/api/bookings/${booking.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            staffId: selected,
+            bookingDate: booking.date,
+            bookingTime: booking.start || booking.time,
+            status: booking.status,
+            notes: booking.notes || null,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setBookingList(
+              bookingList.map((b) =>
+                b.id === booking.id ? { ...b, stylistId: selected } : b
+              )
+            );
+            alert(`✅ Đã chuyển sang stylist: ${stylist.name}`);
+          }
+        }
+      } else if (field === "service") {
+        // Show service selector
+        const serviceOptions = fakeServices.map((s) => `${s.id}:${s.name}`).join("\n");
+        const selected = prompt(`Chọn dịch vụ:\n${serviceOptions}\n\nNhập ID:`, "");
+        if (!selected) return;
+
+        const service = fakeServices.find((s) => s.id === selected);
+        if (!service) {
+          alert("❌ Dịch vụ không hợp lệ");
+          return;
+        }
+
+        alert(`✅ Đã đổi dịch vụ sang: ${service.name}\n(Lưu ý: Cần cập nhật booking services trong database)`);
+        // TODO: Update booking services in database
+      }
+    } catch (error: any) {
+      console.error("Error in quick edit:", error);
+      alert(`❌ Lỗi: ${error.message || "Không thể cập nhật"}`);
     }
   };
+
 
   const handleCheckIn = (bookingId: string) => {
     // Update booking status to IN_PROGRESS
@@ -282,11 +342,15 @@ export default function BookingPage() {
       {/* Create Booking Modal */}
       <CreateBookingModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setIsWalkInMode(false);
+        }}
         onSubmit={handleSubmitBooking}
         stylists={fakeStylists}
         services={fakeServices}
         selectedDate={selectedDate}
+        isWalkIn={isWalkInMode}
       />
 
       {/* Booking Detail Drawer */}

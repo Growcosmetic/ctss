@@ -103,6 +103,61 @@ model User {
   touchpoints         CustomerTouchpoint[]    @relation("TouchpointStaff") // Phase 20
   signatureStyle      StylistSignatureStyle?
   branchAssignments   BranchStaffAssignment[] @relation("StaffBranchAssignment")
+  staff               Staff?                  @relation("UserStaff")
+}
+
+///////////////////////////////////////////////////////////////
+// STAFF (Nhân viên)
+///////////////////////////////////////////////////////////////
+
+model Staff {
+  id            String   @id @default(uuid())
+  userId        String   @unique // Link to User
+  employeeId   String?  @unique // Mã nhân viên
+  position     String?  // Vị trí: Stylist, Assistant, Receptionist, etc.
+  hireDate     DateTime? // Ngày vào làm
+  salary       Float?   // Lương cơ bản
+  commissionRate Float? // Tỷ lệ hoa hồng (%)
+  specialization String? // Chuyên môn
+  isActive     Boolean  @default(true) // Trạng thái hoạt động
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation("UserStaff", fields: [userId], references: [id], onDelete: Cascade)
+  staffServices StaffService[] // Dịch vụ nhân viên có thể làm
+  shifts       StaffShift[] // Ca làm việc
+
+  @@index([userId])
+  @@index([employeeId])
+  @@index([position])
+  @@index([isActive])
+}
+
+model StaffService {
+  id        String @id @default(uuid())
+  staffId   String
+  serviceId String
+
+  staff  Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, serviceId])
+  @@index([staffId])
+  @@index([serviceId])
+}
+
+model StaffShift {
+  id       String   @id @default(uuid())
+  staffId String
+  date     DateTime
+  startTime String? // HH:mm format
+  endTime   String? // HH:mm format
+  notes    String?
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([date])
 }
 
 ///////////////////////////////////////////////////////////////
@@ -197,6 +252,7 @@ model Service {
   commissionRecords CommissionRecord[]
   usage             ServiceProductUsage[]
   serviceCosts      ServiceCost[] // Phase 19H
+  staffServices     StaffService[]
 
   @@index([code])
   @@index([category])

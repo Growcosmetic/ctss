@@ -16,7 +16,7 @@ import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
 import InventoryOverview from "./InventoryOverview";
 import ProductListPage from "./ProductListPage";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2, LayoutDashboard, List as ListIcon } from "lucide-react";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2, LayoutDashboard, List as ListIcon, ChevronDown, BarChart3, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";

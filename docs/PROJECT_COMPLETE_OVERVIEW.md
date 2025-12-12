@@ -937,22 +937,41 @@ ctss/
 
 ### **Module Dashboards**
 4. ✅ **CRM Dashboard** (`/crm/dashboard`) - Quản lý khách hàng, insights, segmentation, tags
-5. ✅ **Financial Dashboard** (`/reports`) - Báo cáo tài chính, doanh thu, lợi nhuận, cashflow
-6. ✅ **Operations Dashboard** (`/operations`) - Vận hành, workflow console, quality control
-7. ✅ **Training Dashboard** (`/training/dashboard`) - Đào tạo, modules, progress, certifications
-8. ✅ **Inventory Dashboard** (`/inventory`) - Kho hàng, tồn kho, phiếu nhập/xuất, low stock alerts
-9. ✅ **Stylist Coach Dashboard** (`/stylist-coach/dashboard`) - Phân tích tóc, công thức, lịch sử, AI insights
-10. ✅ **Staff Dashboard** (`/staff` hoặc `/staff-management`) - Quản lý nhân viên, lịch làm việc, performance
+5. ✅ **Operations Dashboard** (`/operations`) - Vận hành, workflow console, quality control
+6. ✅ **Training Dashboard** (`/training/dashboard`) - Đào tạo, modules, progress, certifications
+7. ✅ **Inventory Dashboard** (`/inventory`) - Kho hàng, tồn kho, phiếu nhập/xuất, low stock alerts
+8. ✅ **Stylist Coach Dashboard** (`/stylist-coach/dashboard`) - Phân tích tóc, công thức, lịch sử, AI insights
+9. ✅ **Staff Dashboard** (`/staff` và `/staff-management`) - Quản lý nhân viên, lịch làm việc, performance
+10. ✅ **Booking Dashboard** (`/booking`) - Lịch hẹn, calendar view, drag & drop, booking management
+11. ✅ **Services Dashboard** (`/services` và `/services/cost`) - Quản lý dịch vụ, tính giá dịch vụ
+12. ✅ **SOP Dashboard** (`/sop`) - SOP Master System, compliance tracking
+13. ✅ **Workflow Console** (`/workflow-console`) - Quản lý workflow, automation rules
+14. ✅ **Loss Control Dashboard** (`/loss-control`) - Kiểm soát thất thoát, fraud detection, loss alerts
+15. ✅ **Salary Dashboard** (`/salary`) - Quản lý lương, tính lương, lịch sử lương
 
 ### **Reports & Analytics**
-11. ✅ **Reports Dashboard** (`/reports`) - Báo cáo tổng quan
-12. ✅ **Daily Reports** (`/reports/daily`) - Báo cáo ngày
-13. ✅ **Monthly Reports** (`/reports/monthly`) - Báo cáo tháng
+16. ✅ **Reports Dashboard** (`/reports`) - Báo cáo tổng quan, tài chính, doanh thu, lợi nhuận, cashflow
+17. ✅ **Daily Reports** (`/reports/daily`) - Báo cáo ngày
+18. ✅ **Monthly Reports** (`/reports/monthly`) - Báo cáo tháng
+19. ⚠️ **Financial Dashboard** (`/api/financial/dashboard`) - API đã có, **có thể tạo page riêng** hoặc dùng trong `/reports`
+
+### **Marketing Dashboards**
+20. ✅ **Marketing Content** (`/marketing/content`) - Tạo nội dung marketing với AI
+21. ✅ **Marketing Reels** (`/marketing/reels`) - Tạo reels/shorts với AI
+22. ✅ **Marketing Remarketing** (`/marketing/remarketing`) - Remarketing AI, phân tích remarketing
+23. ✅ **Marketing CTA** (`/marketing/cta`) - CTA optimizer, tối ưu call-to-action
+24. ✅ **Marketing Library** (`/marketing/library`) - Thư viện nội dung marketing
+25. ⚠️ **Marketing Dashboard** (`/api/marketing/dashboard`) - API đã có, **có thể tạo page tổng quan**
+
+### **Quality & Control**
+26. ⚠️ **Quality Dashboard** (`/api/quality/dashboard`) - API đã có, **có thể tạo page riêng**
 
 ### **Customer-Facing**
-14. ✅ **Customer App Dashboard** (`/customer-app/home`) - Dashboard dành cho khách hàng với booking, loyalty, promotions
+27. ✅ **Customer App Dashboard** (`/customer-app/home`) - Dashboard dành cho khách hàng với booking, loyalty, promotions
 
-**Tổng cộng: 14 dashboards (13 đã có UI, 1 cần tạo UI cho CEO Control Tower)**
+**Tổng cộng: 27 dashboards/pages**
+- ✅ **22 đã có UI page đầy đủ**
+- ⚠️ **5 có API nhưng chưa có UI page riêng** (có thể tạo thêm hoặc dùng trong các page hiện có)
 
 ---
 
@@ -961,6 +980,7 @@ ctss/
 **CTSS là hệ thống salon 5.0 hoàn chỉnh nhất với:**
 - ✅ **35 Phases** đầy đủ
 - ✅ **63+ Pages**
+- ✅ **27 Dashboards** (22 có UI đầy đủ, 5 có API)
 - ✅ **348+ API Endpoints**
 - ✅ **80+ Database Models**
 - ✅ **32+ Feature Modules**

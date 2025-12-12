@@ -44,6 +44,8 @@ export default function InventoryDashboard() {
   const [isAssignLocationModalOpen, setIsAssignLocationModalOpen] = useState(false);
   const [locations, setLocations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<TabMode>("overview");
+  const [valuationMethod, setValuationMethod] = useState<"cost" | "selling">("cost");
+  const [filterBrand, setFilterBrand] = useState<string>("all");
 
   // Auto-set viewMode to "list" when on inventory tab
   useEffect(() => {
@@ -182,6 +184,12 @@ export default function InventoryDashboard() {
         stock.product?.brand === filterCategory ||
         stock.product?.category === filterCategory;
 
+      // Brand filter
+      const matchesBrand =
+        filterBrand === "all" ||
+        stock.product?.supplier?.name === filterBrand ||
+        stock.product?.brand === filterBrand;
+
       // Location filter
       const matchesLocation =
         filterLocation === "all" ||
@@ -210,9 +218,37 @@ export default function InventoryDashboard() {
         }
       }
 
-      return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
+      // Brand filter
+      const matchesBrand =
+        filterBrand === "all" ||
+        stock.product?.supplier?.name === filterBrand ||
+        stock.product?.brand === filterBrand;
+
+      return matchesSearch && matchesCategory && matchesBrand && matchesLocation && matchesStatus;
     });
-  }, [stocks, searchTerm, filterCategory, filterLocation, filterStatus]);
+  }, [stocks, searchTerm, filterCategory, filterBrand, filterLocation, filterStatus]);
+
+  // Get unique brands for filter
+  const uniqueBrands = useMemo(() => {
+    const brands = new Set<string>();
+    stocks.forEach((stock) => {
+      const brand = stock.product?.supplier?.name || stock.product?.brand;
+      if (brand) {
+        brands.add(brand);
+      }
+    });
+    return Array.from(brands).sort();
+  }, [stocks]);
+
+  // Calculate total inventory value based on valuation method
+  const totalInventoryValue = useMemo(() => {
+    return stocks.reduce((sum, stock) => {
+      const price = valuationMethod === "cost" 
+        ? (stock.product?.costPrice || 0)
+        : (stock.product?.pricePerUnit || stock.product?.price || 0);
+      return sum + (stock.quantity * price);
+    }, 0);
+  }, [stocks, valuationMethod]);
 
   // Pagination
   const totalPages = Math.ceil(filteredStocks.length / itemsPerPage);
@@ -458,25 +494,48 @@ export default function InventoryDashboard() {
           {stocks.length > 0 && (
             <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">TỔNG GIÁ TRỊ KHO (THEO GIÁ NHẬP TB)</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-600">
+                      TỔNG GIÁ TRỊ KHO ({valuationMethod === "cost" ? "THEO GIÁ NHẬP TB" : "THEO GIÁ BÁN"})
+                    </p>
+                    <div className="relative">
+                      <select
+                        value={valuationMethod}
+                        onChange={(e) => setValuationMethod(e.target.value as "cost" | "selling")}
+                        className="appearance-none bg-transparent border-none text-gray-600 text-sm cursor-pointer pr-6 focus:outline-none"
+                      >
+                        <option value="cost">THEO GIÁ NHẬP TB</option>
+                        <option value="selling">THEO GIÁ BÁN</option>
+                      </select>
+                      <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
+                    </div>
+                  </div>
                   <p className="text-2xl font-bold text-blue-900 mt-1">
-                    {stocks.reduce((sum, stock) => {
-                      const costPrice = stock.product?.costPrice || 0;
-                      return sum + (stock.quantity * costPrice);
-                    }, 0).toLocaleString("vi-VN")} ₫
+                    {totalInventoryValue.toLocaleString("vi-VN")} ₫
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    if (confirm("Bạn có chắc muốn cân bằng tất cả kho về 0? Hành động này không thể hoàn tác!")) {
-                      alert("Tính năng đang được phát triển");
-                    }
-                  }}
-                  className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cân bằng về 0
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      alert("Tính năng Báo Cáo Kho đang được phát triển");
+                    }}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    Báo Cáo Kho
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm("Bạn có chắc muốn cân bằng tất cả kho về 0? Hành động này không thể hoàn tác!")) {
+                        alert("Tính năng đang được phát triển");
+                      }
+                    }}
+                    className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cân bằng về 0
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -613,6 +672,23 @@ export default function InventoryDashboard() {
                   <span className="text-sm text-gray-600">Lọc:</span>
                 </div>
 
+                {/* Brand Filter */}
+                <select
+                  value={filterBrand}
+                  onChange={(e) => {
+                    setFilterBrand(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">Tất cả nhãn hiệu</option>
+                  {uniqueBrands.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+
                 {/* Location Filter */}
                 <select
                   value={filterLocation}
@@ -634,11 +710,12 @@ export default function InventoryDashboard() {
                 </select>
 
                 {/* Clear Filters */}
-                {(searchTerm || filterCategory !== "all" || filterStatus !== "all" || filterLocation !== "all") && (
+                {(searchTerm || filterCategory !== "all" || filterBrand !== "all" || filterStatus !== "all" || filterLocation !== "all") && (
                   <button
                     onClick={() => {
                       setSearchTerm("");
                       setFilterCategory("all");
+                      setFilterBrand("all");
                       setFilterStatus("all");
                       setFilterLocation("all");
                     }}

@@ -179,27 +179,26 @@ export default function StockListView({ stocks, onEdit, onAssignLocation, onRefr
                     {/* Stock Quantity */}
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {isLow && !isCritical && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 font-medium">
-                            Sắp hết
+                        {isCritical ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium">
+                            <span>Hết hàng</span>
+                            <span className="font-semibold">{stock.quantity.toLocaleString("vi-VN")}</span>
+                          </span>
+                        ) : isNegative ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-200 text-red-900 text-sm font-medium">
+                            <span>Bị âm</span>
+                            <span className="font-semibold">{stock.quantity.toLocaleString("vi-VN")}</span>
+                          </span>
+                        ) : isLow ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
+                            <span>Sắp hết</span>
+                            <span className="font-semibold">{stock.quantity.toLocaleString("vi-VN")}</span>
+                          </span>
+                        ) : (
+                          <span className="text-sm font-semibold text-gray-900">
+                            {stock.quantity.toLocaleString("vi-VN")}
                           </span>
                         )}
-                        {isCritical && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 font-medium">
-                            Hết hàng
-                          </span>
-                        )}
-                        {isNegative && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-red-200 text-red-900 font-medium">
-                            Bị âm
-                          </span>
-                        )}
-                        <span className={cn(
-                          "text-sm font-semibold",
-                          isCritical ? "text-red-600" : isLow ? "text-yellow-600" : isNegative ? "text-red-800" : "text-gray-900"
-                        )}>
-                          {stock.quantity.toLocaleString("vi-VN")}
-                        </span>
                       </div>
                     </td>
                     

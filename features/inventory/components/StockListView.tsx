@@ -143,13 +143,15 @@ export default function StockListView({ stocks, onEdit, onAssignLocation, onRefr
                     <td className="px-6 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {stock.product?.name || "Unknown Product"}
+                          {stock.product?.sku ? (
+                            <span>
+                              <span className="font-mono text-gray-600">{stock.product.sku}</span>
+                              {stock.product?.name && ` ${stock.product.name}`}
+                            </span>
+                          ) : (
+                            stock.product?.name || "Unknown Product"
+                          )}
                         </div>
-                        {stock.product?.sku && (
-                          <div className="text-xs text-gray-500 mt-1 font-mono">
-                            {stock.product.sku}
-                          </div>
-                        )}
                       </div>
                     </td>
                     

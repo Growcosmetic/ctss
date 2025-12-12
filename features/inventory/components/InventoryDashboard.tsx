@@ -673,7 +673,6 @@ export default function InventoryDashboard() {
                 )}
               </div>
             </div>
-          )}
 
           {/* Stock Display */}
           {stocks.length === 0 ? (

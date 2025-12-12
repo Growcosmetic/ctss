@@ -18,27 +18,29 @@ export default function CategorySidebar({
   const [newGroupName, setNewGroupName] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["all"]));
 
-  // Calculate category counts
+  // Calculate group counts - Group by supplier name or brand
   const categoryCounts = React.useMemo(() => {
     const counts: Record<string, number> = { all: stocks.length };
     
     stocks.forEach((stock) => {
-      const category = stock.product?.category || "Khác";
-      counts[category] = (counts[category] || 0) + 1;
+      // Ưu tiên supplier name, sau đó brand, cuối cùng category
+      const groupName = stock.product?.supplier?.name || stock.product?.brand || stock.product?.category || "Khác";
+      counts[groupName] = (counts[groupName] || 0) + 1;
     });
 
     return counts;
   }, [stocks]);
 
-  // Get unique categories
+  // Get unique groups - Supplier/Brand/Category
   const categories = React.useMemo(() => {
-    const cats = new Set<string>();
+    const groups = new Set<string>();
     stocks.forEach((stock) => {
-      if (stock.product?.category) {
-        cats.add(stock.product.category);
+      const groupName = stock.product?.supplier?.name || stock.product?.brand || stock.product?.category;
+      if (groupName) {
+        groups.add(groupName);
       }
     });
-    return Array.from(cats).sort();
+    return Array.from(groups).sort();
   }, [stocks]);
 
   const toggleCategory = (category: string) => {

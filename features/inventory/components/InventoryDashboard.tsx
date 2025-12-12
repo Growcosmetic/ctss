@@ -175,9 +175,12 @@ export default function InventoryDashboard() {
         stock.location?.zone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         stock.location?.rack?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Category filter
+      // Category/Group filter - Filter by supplier name, brand, or category
       const matchesCategory =
-        filterCategory === "all" || stock.product?.category === filterCategory;
+        filterCategory === "all" || 
+        stock.product?.supplier?.name === filterCategory ||
+        stock.product?.brand === filterCategory ||
+        stock.product?.category === filterCategory;
 
       // Location filter
       const matchesLocation =
@@ -449,37 +452,7 @@ export default function InventoryDashboard() {
           <SupplierListPage />
         ) : (
         <div className="space-y-6">
-        {/* Alerts */}
-        {alerts.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Cảnh báo tồn kho thấp
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {alerts.map((alert) => {
-                // Tìm stock tương ứng với alert
-                const stock = stocks.find(s => s.productId === alert.productId);
-                return (
-                  <LowStockAlertCard 
-                    key={alert.productId} 
-                    alert={alert}
-                    onClick={() => {
-                      if (stock) {
-                        setEditingStock(stock);
-                        setIsEditModalOpen(true);
-                      }
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Stock Levels */}
+        {/* Stock Levels - List View là phần chính */}
         <div className="mb-6">
           {/* Total Value Summary */}
           {stocks.length > 0 && (
@@ -509,14 +482,17 @@ export default function InventoryDashboard() {
           )}
 
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Tồn kho hiện tại
-              {filteredStocks.length !== stocks.length && (
-                <span className="ml-2 text-sm font-normal text-gray-500">
-                  ({filteredStocks.length}/{stocks.length})
-                </span>
-              )}
-            </h2>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Tổng cộng: {stocks.length} sản phẩm</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Tồn kho hiện tại
+                {filteredStocks.length !== stocks.length && (
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({filteredStocks.length}/{stocks.length})
+                  </span>
+                )}
+              </h2>
+            </div>
           </div>
 
           {/* Search and Filters - Luôn hiển thị */}

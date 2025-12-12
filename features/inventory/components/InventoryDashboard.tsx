@@ -519,9 +519,8 @@ export default function InventoryDashboard() {
             </h2>
           </div>
 
-          {/* Search and Filters */}
-          {stocks.length > 0 && (
-            <div className="mb-4 space-y-3">
+          {/* Search and Filters - Luôn hiển thị */}
+          <div className="mb-4 space-y-3">
               {/* Search Bar */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 relative">

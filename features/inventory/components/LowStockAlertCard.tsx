@@ -39,9 +39,11 @@ export default function LowStockAlertCard({ alert, onClick }: LowStockAlertCardP
 
   return (
     <div
+      onClick={onClick}
       className={cn(
-        "rounded-xl p-4 border-2",
-        getSeverityColor()
+        "rounded-xl p-4 border-2 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]",
+        getSeverityColor(),
+        onClick && "hover:border-red-600"
       )}
     >
       <div className="flex items-start gap-3">

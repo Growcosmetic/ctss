@@ -94,6 +94,7 @@ model User {
   roleplaySessions    RoleplaySession[]
   certifications      Certification[]
   operationLogs       OperationLog[]
+  stockIssues         StockIssue[]             @relation("IssueStaff")
   staffAssessments    SkillAssessment[]       @relation("StaffAssessments")
   stockLogsCreated    StockLog[]              @relation("StockLogCreator")
   mixLogs             MixLog[]                @relation("MixLogStaff")
@@ -241,6 +242,8 @@ model Product {
   serviceCosts           ServiceCost[]
   supplier               Supplier?              @relation(fields: [supplierId], references: [id])
   stockTransferItems     StockTransferItem[]
+  receiptItems           StockReceiptItem[]     @relation("ReceiptProduct")
+  issueItems             StockIssueItem[]       @relation("IssueProduct")
   
   @@index([category])
   @@index([name])
@@ -394,6 +397,110 @@ model StockTransferItem {
 }
 
 ///////////////////////////////////////////////////////////////
+// STOCK RECEIPT (Phiếu nhập kho)
+///////////////////////////////////////////////////////////////
+
+model StockReceipt {
+  id            String   @id @default(uuid())
+  receiptNumber String   @unique // Số phiếu (ví dụ: PN-2025-001)
+  branchId      String
+  supplierId    String?  // Nhà cung cấp
+  date          DateTime @default(now())
+  status        String   @default("DRAFT") // DRAFT | APPROVED | COMPLETED | CANCELLED
+  importType    String?  // Phân loại nhập: NHAP_MUA_TU_NCC | NHAP_HANG_TRA_LAI | NHAP_DONG_GOI
+  totalAmount   Float    @default(0)
+  totalDiscount Float    @default(0) // Giảm giá toàn bộ (số tiền)
+  discountPercent Float? @default(0) // Giảm giá toàn bộ (%)
+  finalAmount   Float    @default(0) // Tổng tiền sau giảm giá
+  createdBy     String   // User ID
+  approvedBy    String?  // User ID người duyệt
+  approvedAt    DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  branch        Branch   @relation("ReceiptBranch", fields: [branchId], references: [id])
+  supplier      Supplier? @relation("ReceiptSupplier", fields: [supplierId], references: [id])
+  items         StockReceiptItem[]
+  
+  @@index([branchId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([importType])
+  @@index([date])
+  @@index([receiptNumber])
+}
+
+model StockReceiptItem {
+  id            String   @id @default(uuid())
+  receiptId     String
+  productId     String
+  quantity      Int
+  unitPrice     Float    // Giá nhập đơn vị
+  discountPercent Float? @default(0) // Giảm giá % cho sản phẩm này
+  discountAmount Float? @default(0) // Giảm giá số tiền cho sản phẩm này
+  totalPrice    Float    // Tổng giá = (quantity * unitPrice) - discountAmount
+  notes         String?
+
+  receipt       StockReceipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  product       Product       @relation("ReceiptProduct", fields: [productId], references: [id])
+  
+  @@index([receiptId])
+  @@index([productId])
+}
+
+///////////////////////////////////////////////////////////////
+// STOCK ISSUE (Phiếu xuất kho)
+///////////////////////////////////////////////////////////////
+
+model StockIssue {
+  id            String   @id @default(uuid())
+  issueNumber   String   @unique // Số phiếu (ví dụ: PX-2025-001)
+  branchId      String
+  reason        String   // XUAT_TIEU_HAO | XUAT_DAO_TAO | XUAT_BAN_HOC_VIEN | XUAT_TRA_HANG_NCC | XUAT_HUY_HONG_HOC | XUAT_CHO_TANG | XUAT_DONG_GOI | XUAT_HANG_SVC | XUAT_KHAC | BAN_HANG | SU_DUNG | BAN_NHAN_VIEN
+  recipientId   String?  // Người nhận (User ID hoặc Customer ID)
+  recipientName String?  // Tên người nhận (nếu không có trong hệ thống)
+  staffId       String?  // Nhân viên (nếu xuất cho nhân viên)
+  date          DateTime @default(now())
+  status        String   @default("DRAFT") // DRAFT | APPROVED | COMPLETED | CANCELLED
+  totalAmount   Float    @default(0)
+  createdBy     String   // User ID
+  approvedBy    String?  // User ID người duyệt
+  approvedAt    DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  branch        Branch   @relation("IssueBranch", fields: [branchId], references: [id])
+  staff         User?    @relation("IssueStaff", fields: [staffId], references: [id])
+  items         StockIssueItem[]
+  
+  @@index([branchId])
+  @@index([staffId])
+  @@index([recipientId])
+  @@index([reason])
+  @@index([status])
+  @@index([date])
+  @@index([issueNumber])
+}
+
+model StockIssueItem {
+  id            String   @id @default(uuid())
+  issueId       String
+  productId     String
+  quantity      Int
+  unitPrice     Float?   // Giá xuất đơn vị (nếu có)
+  totalPrice    Float?   // Tổng giá = quantity * unitPrice
+  notes         String?
+
+  issue         StockIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  product       Product     @relation("IssueProduct", fields: [productId], references: [id])
+  
+  @@index([issueId])
+  @@index([productId])
+}
+
+///////////////////////////////////////////////////////////////
 // SUPPLIER MANAGEMENT
 ///////////////////////////////////////////////////////////////
 
@@ -417,6 +524,7 @@ model Supplier {
   updatedAt    DateTime @updatedAt
 
   products     Product[]
+  receipts     StockReceipt[] @relation("ReceiptSupplier")
 
   @@unique([code])
   @@index([name])
@@ -3010,6 +3118,8 @@ model Branch {
   stockTransactions StockTransaction[]
   stockTransfersFrom StockTransfer[] @relation("TransferFrom")
   stockTransfersTo   StockTransfer[] @relation("TransferTo")
+  stockReceipts     StockReceipt[]  @relation("ReceiptBranch")
+  stockIssues        StockIssue[]    @relation("IssueBranch")
   locations         Location[]
   salaryPayout      SalaryPayout[]
   staffAssessments  SkillAssessment[]       @relation("StaffAssessments")

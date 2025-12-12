@@ -16,11 +16,14 @@ import LowStockAlertCard from "./LowStockAlertCard";
 import StockTransactionList from "./StockTransactionList";
 import InventoryOverview from "./InventoryOverview";
 import ProductListPage from "./ProductListPage";
-import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2, LayoutDashboard, List as ListIcon, ChevronDown, BarChart3, FileSpreadsheet } from "lucide-react";
+import StockReceiptList from "./StockReceiptList";
+import StockIssueList from "./StockIssueList";
+import { Package, AlertTriangle, Loader2, Database, Grid3x3, List, Search, Filter, Download, Upload, Copy, ChevronLeft, ChevronRight, Plus, MapPin, Building2, LayoutDashboard, List as ListIcon, ChevronDown, BarChart3, FileSpreadsheet, FileText, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type ViewMode = "grid" | "list";
 type TabMode = "overview" | "products" | "suppliers" | "inventory";
+type InventorySubTab = "stock" | "receipts" | "issues";
 
 export default function InventoryDashboard() {
   const { currentBranch, loading: branchLoading, loadBranches } = useBranch();
@@ -44,6 +47,7 @@ export default function InventoryDashboard() {
   const [isAssignLocationModalOpen, setIsAssignLocationModalOpen] = useState(false);
   const [locations, setLocations] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<TabMode>("overview");
+  const [inventorySubTab, setInventorySubTab] = useState<InventorySubTab>("stock");
   const [valuationMethod, setValuationMethod] = useState<"cost" | "selling">("cost");
   const [filterBrand, setFilterBrand] = useState<string>("all");
 
@@ -376,7 +380,7 @@ export default function InventoryDashboard() {
               }`}
             >
               <Package className="w-4 h-4 inline-block mr-2" />
-              Quản lý kho hàng bán
+              Quản lý kho hàng
             </button>
             <button
               onClick={() => setActiveTab("suppliers")}
@@ -397,7 +401,7 @@ export default function InventoryDashboard() {
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                     <Package className="w-6 h-6" />
-                    Quản lý kho
+                    Quản lý kho hàng
                   </h1>
                   {currentBranch && (
                     <p className="text-sm text-gray-600 mt-1">
@@ -413,41 +417,80 @@ export default function InventoryDashboard() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleCopyFromBranch}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Chép từ chi nhánh
-                  </Button>
-                  <Button
-                    onClick={handleImportExcel}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Nhập từ Excel
-                  </Button>
-                  <Button
-                    onClick={handleExportExcel}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Xuất ra Excel
-                  </Button>
-                  <Button
-                    onClick={handleSeedData}
-                    disabled={seeding}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Database className="w-4 h-4" />
-                    {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
-                  </Button>
-                </div>
+                {inventorySubTab === "stock" && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleCopyFromBranch}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Chép từ chi nhánh
+                    </Button>
+                    <Button
+                      onClick={handleImportExcel}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Nhập từ Excel
+                    </Button>
+                    <Button
+                      onClick={handleExportExcel}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Xuất ra Excel
+                    </Button>
+                    <Button
+                      onClick={handleSeedData}
+                      disabled={seeding}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Database className="w-4 h-4" />
+                      {seeding ? "Đang tạo..." : "Tạo dữ liệu mẫu"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Sub-tabs cho Quản lý kho hàng */}
+              <div className="flex items-center gap-1 border-b border-gray-200 mb-4">
+                <button
+                  onClick={() => setInventorySubTab("stock")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    inventorySubTab === "stock"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <ListIcon className="w-4 h-4 inline-block mr-2" />
+                  Danh sách tồn kho
+                </button>
+                <button
+                  onClick={() => setInventorySubTab("receipts")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    inventorySubTab === "receipts"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <ArrowDownCircle className="w-4 h-4 inline-block mr-2" />
+                  Phiếu nhập kho
+                </button>
+                <button
+                  onClick={() => setInventorySubTab("issues")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    inventorySubTab === "issues"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <ArrowUpCircle className="w-4 h-4 inline-block mr-2" />
+                  Phiếu xuất kho
+                </button>
               </div>
             </>
           )}
@@ -480,8 +523,28 @@ export default function InventoryDashboard() {
           />
         ) : activeTab === "suppliers" ? (
           <SupplierListPage />
-        ) : (
-        <div className="space-y-6">
+        ) : activeTab === "inventory" ? (
+          <>
+            {inventorySubTab === "receipts" ? (
+              currentBranch?.id && currentBranch.id !== "default-branch" ? (
+                <StockReceiptList branchId={currentBranch.id} />
+              ) : (
+                <div className="bg-white rounded-xl p-8 border border-gray-200 text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Vui lòng chọn chi nhánh để xem phiếu nhập kho</p>
+                </div>
+              )
+            ) : inventorySubTab === "issues" ? (
+              currentBranch?.id && currentBranch.id !== "default-branch" ? (
+                <StockIssueList branchId={currentBranch.id} />
+              ) : (
+                <div className="bg-white rounded-xl p-8 border border-gray-200 text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Vui lòng chọn chi nhánh để xem phiếu xuất kho</p>
+                </div>
+              )
+            ) : (
+              <div className="space-y-6">
         {/* Stock Levels - List View là phần chính */}
         <div className="mb-6">
           {/* Total Value Summary */}
@@ -881,7 +944,9 @@ export default function InventoryDashboard() {
             <StockTransactionList transactions={transactions} />
           </div>
         </div>
-        )}
+            )}
+          </>
+        ) : null}
       </div>
 
       {/* Edit Product Modal */}

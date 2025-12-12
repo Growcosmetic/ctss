@@ -1,0 +1,549 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { FileText, Plus, Edit, Trash2, Search, Loader2, Download, FileSpreadsheet } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import StockReceiptModal from "./StockReceiptModal";
+import * as XLSX from "xlsx";
+
+interface ReceiptItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  product: {
+    id: string;
+    name: string;
+    sku: string | null;
+    unit: string;
+  };
+}
+
+interface StockReceipt {
+  id: string;
+  receiptNumber: string;
+  branchId: string;
+  supplierId: string | null;
+  importType: string | null;
+  date: string;
+  status: string;
+  totalAmount: number;
+  finalAmount: number;
+  notes: string | null;
+  createdAt: string;
+  items: ReceiptItem[];
+  branch: {
+    id: string;
+    name: string;
+  };
+  supplier: {
+    id: string;
+    name: string;
+    code: string;
+  } | null;
+}
+
+interface Supplier {
+  id: string;
+  name: string;
+  code: string;
+}
+
+interface StockReceiptListProps {
+  branchId: string;
+}
+
+export default function StockReceiptList({ branchId }: StockReceiptListProps) {
+  const [receipts, setReceipts] = useState<StockReceipt[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [supplierFilter, setSupplierFilter] = useState<string>("all");
+  const [importTypeFilter, setImportTypeFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingReceipt, setEditingReceipt] = useState<string | undefined>();
+
+  useEffect(() => {
+    loadSuppliers();
+  }, []);
+
+  useEffect(() => {
+    loadReceipts();
+  }, [branchId, statusFilter, supplierFilter, importTypeFilter, dateFrom, dateTo]);
+
+  const loadSuppliers = async () => {
+    try {
+      const response = await fetch("/api/inventory/suppliers?isActive=true", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setSuppliers(result.data || []);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading suppliers:", error);
+    }
+  };
+
+  const loadReceipts = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        branchId,
+        limit: "100",
+      });
+      if (statusFilter !== "all") {
+        params.append("status", statusFilter);
+      }
+      if (supplierFilter !== "all") {
+        params.append("supplierId", supplierFilter);
+      }
+      if (importTypeFilter !== "all") {
+        params.append("importType", importTypeFilter);
+      }
+      if (dateFrom) {
+        params.append("dateFrom", dateFrom);
+      }
+      if (dateTo) {
+        params.append("dateTo", dateTo);
+      }
+      if (searchTerm) {
+        params.append("receiptNumber", searchTerm);
+      }
+
+      const response = await fetch(`/api/inventory/receipts?${params}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setReceipts(result.data.receipts || []);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading receipts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa phiếu nhập này?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/inventory/receipts/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          alert("✅ Xóa phiếu nhập thành công!");
+          loadReceipts();
+        } else {
+          alert(result.error || "Không thể xóa phiếu nhập");
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting receipt:", error);
+      alert("Có lỗi xảy ra khi xóa phiếu nhập");
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      if (receipts.length === 0) {
+        alert("Không có dữ liệu để xuất");
+        return;
+      }
+
+      const exportData = receipts.map((receipt) => ({
+        "Mã phiếu": receipt.receiptNumber,
+        "Ngày nhập": new Date(receipt.date).toLocaleDateString("vi-VN"),
+        "Nhà cung cấp": receipt.supplier ? `${receipt.supplier.code} - ${receipt.supplier.name}` : "",
+        "Phân loại": getImportTypeLabel(receipt.importType || ""),
+        "Tình trạng": getStatusLabel(receipt.status),
+        "Số lượng SP": receipt.items.length,
+        "Tổng tiền": receipt.finalAmount || receipt.totalAmount,
+        "Ghi chú": receipt.notes || "",
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "PHIẾU NHẬP KHO");
+
+      const filename = `danh_sach_phieu_nhap_${new Date().toISOString().split("T")[0]}.xlsx`;
+      XLSX.writeFile(wb, filename);
+
+      alert(`✅ Đã xuất ${receipts.length} phiếu nhập ra file Excel`);
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+      alert("Có lỗi xảy ra khi xuất Excel");
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, { label: string; className: string }> = {
+      DRAFT: { label: "Nháp", className: "bg-gray-100 text-gray-800" },
+      APPROVED: { label: "Đã duyệt", className: "bg-blue-100 text-blue-800" },
+      COMPLETED: { label: "Hoàn thành", className: "bg-green-100 text-green-800" },
+      CANCELLED: { label: "Đã hủy", className: "bg-red-100 text-red-800" },
+    };
+    const badge = badges[status] || badges.DRAFT;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.className}`}>
+        {badge.label}
+      </span>
+    );
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      DRAFT: "Nháp",
+      APPROVED: "Đã duyệt",
+      COMPLETED: "Hoàn thành",
+      CANCELLED: "Đã hủy",
+    };
+    return labels[status] || status;
+  };
+
+  const getImportTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      NHAP_MUA_TU_NCC: "Nhập mua từ NCC",
+      NHAP_HANG_TRA_LAI: "Nhập hàng trả lại từ KH",
+      NHAP_DONG_GOI: "Nhập đóng gói",
+    };
+    return labels[type] || type || "--";
+  };
+
+  const filteredReceipts = receipts.filter((receipt) => {
+    if (searchTerm && !receipt.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+
+  // Set default date range to current month
+  useEffect(() => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    setDateFrom(firstDay.toISOString().split("T")[0]);
+    setDateTo(lastDay.toISOString().split("T")[0]);
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <FileText className="w-6 h-6" />
+          Phiếu nhập kho
+        </h2>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleExportExcel}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Xuất Excel
+          </Button>
+          <Button
+            onClick={() => {
+              setEditingReceipt(undefined);
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Tạo phiếu nhập
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Mã phiếu nhập
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm mã phiếu..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tất cả các chi nhánh
+            </label>
+            <select
+              disabled
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+            >
+              <option>Chi nhánh hiện tại</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tất cả nhà cung cấp
+            </label>
+            <select
+              value={supplierFilter}
+              onChange={(e) => setSupplierFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Tất cả nhà cung cấp</option>
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.code} - {supplier.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hiện tất cả tình trạng
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="DRAFT">Nháp</option>
+              <option value="APPROVED">Đã duyệt</option>
+              <option value="COMPLETED">Hoàn thành</option>
+              <option value="CANCELLED">Đã hủy</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tất cả phân loại
+            </label>
+            <select
+              value={importTypeFilter}
+              onChange={(e) => setImportTypeFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Tất cả phân loại</option>
+              <option value="NHAP_MUA_TU_NCC">Nhập mua từ NCC</option>
+              <option value="NHAP_HANG_TRA_LAI">Nhập hàng trả lại từ KH</option>
+              <option value="NHAP_DONG_GOI">Nhập đóng gói</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Từ ngày
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Đến ngày
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      ) : filteredReceipts.length === 0 ? (
+        <div className="bg-white rounded-xl p-8 border border-gray-200 text-center">
+          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">
+            {searchTerm ? "Không tìm thấy phiếu nhập" : "Chưa có phiếu nhập nào"}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Mã
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Ngày tạo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Người tạo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Nhà cung cấp
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Phân loại
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Tình trạng
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Chi nhánh
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                    Tổng tiền
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredReceipts.map((receipt) => (
+                  <tr key={receipt.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {receipt.receiptNumber}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {new Date(receipt.date).toLocaleDateString("vi-VN")}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        Hệ thống
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {receipt.supplier
+                          ? `${receipt.supplier.code} - ${receipt.supplier.name}`
+                          : "--"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {getImportTypeLabel(receipt.importType || "")}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(receipt.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {receipt.branch.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {(receipt.finalAmount || receipt.totalAmount).toLocaleString("vi-VN")} ₫
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="text-blue-600 hover:text-blue-900">
+                          Xem
+                        </button>
+                        {receipt.status === "DRAFT" && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditingReceipt(receipt.id);
+                                setIsModalOpen(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(receipt.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination */}
+          <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div className="text-sm text-gray-700">
+              Hiện 1 đến {filteredReceipts.length} của {filteredReceipts.length} dữ liệu
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100">
+                Đầu tiên
+              </button>
+              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100">
+                Trước đó
+              </button>
+              <button className="px-3 py-1 text-sm border border-blue-500 bg-blue-50 text-blue-700 rounded">
+                1
+              </button>
+              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100">
+                Tiếp theo
+              </button>
+              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100">
+                Cuối cùng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal */}
+      <StockReceiptModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingReceipt(undefined);
+        }}
+        onSuccess={() => {
+          loadReceipts();
+          setIsModalOpen(false);
+          setEditingReceipt(undefined);
+        }}
+        branchId={branchId}
+        receiptId={editingReceipt}
+      />
+    </div>
+  );
+}

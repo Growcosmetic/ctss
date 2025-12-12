@@ -459,9 +459,22 @@ export default function InventoryDashboard() {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {alerts.map((alert) => (
-                <LowStockAlertCard key={alert.productId} alert={alert} />
-              ))}
+              {alerts.map((alert) => {
+                // Tìm stock tương ứng với alert
+                const stock = stocks.find(s => s.productId === alert.productId);
+                return (
+                  <LowStockAlertCard 
+                    key={alert.productId} 
+                    alert={alert}
+                    onClick={() => {
+                      if (stock) {
+                        setEditingStock(stock);
+                        setIsEditModalOpen(true);
+                      }
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

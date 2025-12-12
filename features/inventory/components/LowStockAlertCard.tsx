@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 
 interface LowStockAlertCardProps {
   alert: LowStockAlert;
+  onClick?: () => void;
 }
 
-export default function LowStockAlertCard({ alert }: LowStockAlertCardProps) {
+export default function LowStockAlertCard({ alert, onClick }: LowStockAlertCardProps) {
   const getSeverityColor = () => {
     switch (alert.severity) {
       case "CRITICAL":

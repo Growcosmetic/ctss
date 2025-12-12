@@ -930,15 +930,29 @@ ctss/
 
 ## 📊 **DASHBOARDS**
 
-1. ✅ **CEO Control Tower** - Tổng quan toàn bộ
-2. ✅ **Financial Dashboard** - Tài chính chi tiết
-3. ✅ **CRM Dashboard** - Quản lý khách hàng
-4. ✅ **Operations Dashboard** - Vận hành
-5. ✅ **Training Dashboard** - Đào tạo
-6. ✅ **Inventory Dashboard** - Kho hàng
-7. ✅ **Marketing Dashboard** - Marketing
-8. ✅ **Staff Dashboard** - Nhân viên
-9. ✅ **Customer App** - Dành cho khách
+### **Main Dashboards**
+1. ✅ **Main Dashboard** (`/dashboard`) - Dashboard chính với KPIs, stats, alerts, quick actions
+2. ⚠️ **CEO Control Tower** (`/api/control-tower/dashboard`) - API đã có, **cần tạo UI page** (`/control-tower`)
+3. ✅ **Branch Dashboard** (`/branches/[id]/dashboard`) - Dashboard theo chi nhánh với KPIs riêng
+
+### **Module Dashboards**
+4. ✅ **CRM Dashboard** (`/crm/dashboard`) - Quản lý khách hàng, insights, segmentation, tags
+5. ✅ **Financial Dashboard** (`/reports`) - Báo cáo tài chính, doanh thu, lợi nhuận, cashflow
+6. ✅ **Operations Dashboard** (`/operations`) - Vận hành, workflow console, quality control
+7. ✅ **Training Dashboard** (`/training/dashboard`) - Đào tạo, modules, progress, certifications
+8. ✅ **Inventory Dashboard** (`/inventory`) - Kho hàng, tồn kho, phiếu nhập/xuất, low stock alerts
+9. ✅ **Stylist Coach Dashboard** (`/stylist-coach/dashboard`) - Phân tích tóc, công thức, lịch sử, AI insights
+10. ✅ **Staff Dashboard** (`/staff` hoặc `/staff-management`) - Quản lý nhân viên, lịch làm việc, performance
+
+### **Reports & Analytics**
+11. ✅ **Reports Dashboard** (`/reports`) - Báo cáo tổng quan
+12. ✅ **Daily Reports** (`/reports/daily`) - Báo cáo ngày
+13. ✅ **Monthly Reports** (`/reports/monthly`) - Báo cáo tháng
+
+### **Customer-Facing**
+14. ✅ **Customer App Dashboard** (`/customer-app/home`) - Dashboard dành cho khách hàng với booking, loyalty, promotions
+
+**Tổng cộng: 14 dashboards (13 đã có UI, 1 cần tạo UI cho CEO Control Tower)**
 
 ---
 

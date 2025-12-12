@@ -770,6 +770,36 @@ export default function InventoryDashboard() {
               )}
             </>
           )}
+
+          {/* Alerts - Di chuyển xuống dưới list view */}
+          {alerts.length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Cảnh báo tồn kho thấp
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {alerts.map((alert) => {
+                  // Tìm stock tương ứng với alert
+                  const stock = stocks.find(s => s.productId === alert.productId);
+                  return (
+                    <LowStockAlertCard 
+                      key={alert.productId} 
+                      alert={alert}
+                      onClick={() => {
+                        if (stock) {
+                          setEditingStock(stock);
+                          setIsEditModalOpen(true);
+                        }
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
           {/* Recent Transactions */}

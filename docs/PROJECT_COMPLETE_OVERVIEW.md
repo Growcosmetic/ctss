@@ -966,12 +966,67 @@ ctss/
 ### **Quality & Control**
 26. ⚠️ **Quality Dashboard** (`/api/quality/dashboard`) - API đã có, **có thể tạo page riêng**
 
-### **Customer-Facing**
-27. ✅ **Customer App Dashboard** (`/customer-app/home`) - Dashboard dành cho khách hàng với booking, loyalty, promotions
+### **Additional API Dashboards** (Có API nhưng chưa có UI page riêng)
+27. ⚠️ **Voice Dashboard** (`/api/voice/dashboard`) - API đã có, **có thể tích hợp vào Operations hoặc tạo page riêng**
+28. ⚠️ **Membership Dashboard** (`/api/membership/dashboard`) - API đã có, **có thể tích hợp vào CRM hoặc tạo page riêng**
+29. ⚠️ **Pricing Dashboard** (`/api/pricing/dashboard`) - API đã có, **có thể tích hợp vào Services hoặc tạo page riêng**
+30. ⚠️ **Personalization Dashboard** (`/api/personalization/dashboard`) - API đã có, **có thể tích hợp vào CRM hoặc tạo page riêng**
+31. ⚠️ **Partner HQ Dashboard** (`/api/partner/hq/dashboard`) - API đã có, **có thể tạo page riêng cho quản lý đối tác**
+32. ⚠️ **Hair Health Dashboard** (`/api/hair-health/dashboard`) - API đã có, **có thể tích hợp vào Stylist Coach hoặc tạo page riêng**
+33. ⚠️ **Sales Dashboard** (`/api/sales/dashboard`) - API đã có, **có thể tích hợp vào Reports hoặc tạo page riêng**
 
-**Tổng cộng: 27 dashboards/pages**
-- ✅ **22 đã có UI page đầy đủ**
-- ⚠️ **5 có API nhưng chưa có UI page riêng** (có thể tạo thêm hoặc dùng trong các page hiện có)
+### **Customer-Facing**
+34. ✅ **Customer App Dashboard** (`/customer-app/home`) - Dashboard dành cho khách hàng với booking, loyalty, promotions
+
+**Tổng cộng: 34 dashboards/pages**
+- ✅ **23 đã có UI page đầy đủ**
+- ⚠️ **11 có API nhưng chưa có UI page riêng** (có thể tạo thêm hoặc tích hợp vào các page hiện có)
+
+### **📋 DANH SÁCH 11 DASHBOARDS CÓ API NHƯNG CHƯA CÓ UI PAGE RIÊNG:**
+
+1. ⚠️ **CEO Control Tower** 
+   - API: `/api/control-tower/dashboard`
+   - Gợi ý: Tạo page `/control-tower` - Dashboard tổng quan cho CEO với tất cả KPIs quan trọng
+
+2. ⚠️ **Financial Dashboard**
+   - API: `/api/financial/dashboard`
+   - Gợi ý: Tích hợp vào `/reports` hoặc tạo page riêng `/reports/financial` - Báo cáo tài chính chi tiết
+
+3. ⚠️ **Marketing Dashboard**
+   - API: `/api/marketing/dashboard`
+   - Gợi ý: Tạo page `/marketing/dashboard` - Dashboard tổng quan marketing với metrics, ROI, campaigns
+
+4. ⚠️ **Quality Dashboard**
+   - API: `/api/quality/dashboard`
+   - Gợi ý: Tạo page `/quality` hoặc tích hợp vào `/operations` - Chất lượng dịch vụ, compliance, audits
+
+5. ⚠️ **Voice Dashboard**
+   - API: `/api/voice/dashboard`
+   - Gợi ý: Tích hợp vào `/operations` hoặc tạo page `/voice` - Phân tích cuộc gọi, voice analytics
+
+6. ⚠️ **Membership Dashboard**
+   - API: `/api/membership/dashboard`
+   - Gợi ý: Tích hợp vào `/crm` hoặc tạo page `/membership` - Quản lý thành viên, loyalty programs
+
+7. ⚠️ **Pricing Dashboard**
+   - API: `/api/pricing/dashboard`
+   - Gợi ý: Tích hợp vào `/services` hoặc tạo page `/pricing` - Phân tích giá, dynamic pricing, pricing strategies
+
+8. ⚠️ **Personalization Dashboard**
+   - API: `/api/personalization/dashboard`
+   - Gợi ý: Tích hợp vào `/crm` hoặc tạo page `/personalization` - Cá nhân hóa trải nghiệm khách hàng
+
+9. ⚠️ **Partner HQ Dashboard**
+   - API: `/api/partner/hq/dashboard`
+   - Gợi ý: Tạo page `/partner/hq` - Dashboard quản lý đối tác, franchise, multi-brand
+
+10. ⚠️ **Hair Health Dashboard**
+    - API: `/api/hair-health/dashboard`
+    - Gợi ý: Tích hợp vào `/stylist-coach` hoặc tạo page `/hair-health` - Phân tích sức khỏe tóc, tracking
+
+11. ⚠️ **Sales Dashboard**
+    - API: `/api/sales/dashboard`
+    - Gợi ý: Tích hợp vào `/reports` hoặc tạo page `/sales` - Báo cáo bán hàng, sales performance, conversion
 
 ---
 
@@ -980,7 +1035,7 @@ ctss/
 **CTSS là hệ thống salon 5.0 hoàn chỉnh nhất với:**
 - ✅ **35 Phases** đầy đủ
 - ✅ **63+ Pages**
-- ✅ **27 Dashboards** (22 có UI đầy đủ, 5 có API)
+- ✅ **34 Dashboards** (23 có UI đầy đủ, 11 có API)
 - ✅ **348+ API Endpoints**
 - ✅ **80+ Database Models**
 - ✅ **32+ Feature Modules**

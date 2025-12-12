@@ -11,6 +11,8 @@ import StaffPerformanceTable from "@/features/dashboard/components/StaffPerforma
 import BookingTimeline from "@/features/dashboard/components/BookingTimeline";
 import AlertsPanel from "@/features/dashboard/components/AlertsPanel";
 import QuickActionsBar from "@/features/dashboard/components/QuickActionsBar";
+import KPICards from "@/components/dashboard/KPICards";
+import DashboardModuleGrid from "@/components/dashboard/DashboardModuleGrid";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -86,9 +88,20 @@ export default function DashboardPage() {
           {/* Header */}
           <DashboardHeader onRefresh={refresh} refreshing={loading} />
 
-          {/* Today's Stats */}
+          {/* KPI Cards - 4 cards ngang */}
           {data?.stats && (
-            <TodayStatsCard stats={data.stats} showRevenue={showRevenue} />
+            <KPICards
+              stats={{
+                bookingsToday: data.stats.totalBookings,
+                bookingsThisMonth: data.stats.totalBookings, // Có thể tính từ API
+                revenueToday: data.stats.totalRevenue,
+                invoicesToday: data.stats.completedBookings, // Tạm dùng completed
+                newCustomers: data.stats.newCustomers,
+                returningCustomers: data.stats.returningCustomers,
+                totalStaff: 10, // Sẽ lấy từ API
+                activeStaff: 8, // Sẽ lấy từ API
+              }}
+            />
           )}
 
           {/* Quick Actions */}
@@ -96,6 +109,12 @@ export default function DashboardPage() {
             onCreateBooking={handleCreateBooking}
             onAddWalkIn={handleAddWalkIn}
           />
+
+          {/* Module Grid - Cards các module */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Các Module</h2>
+            <DashboardModuleGrid />
+          </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

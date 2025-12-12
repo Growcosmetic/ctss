@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Menu, X } from "lucide-react";
+import { Bell, Search, User, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
@@ -39,7 +39,7 @@ export default function Header() {
         className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
         title={sidebarOpen ? "Ẩn menu" : "Hiện menu"}
       >
-        {sidebarOpen ? <X size={20} className="text-gray-600" /> : <Menu size={20} className="text-gray-600" />}
+        {sidebarOpen ? <ChevronLeft size={20} className="text-gray-600" /> : <ChevronRight size={20} className="text-gray-600" />}
       </button>
 
       {/* Search */}

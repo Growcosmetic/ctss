@@ -3,6 +3,7 @@
 // ============================================
 
 export enum CTSSRole {
+  OWNER = "OWNER", // Phase 8: Salon owner (can manage subscription & staff)
   ADMIN = "ADMIN",
   MANAGER = "MANAGER",
   RECEPTIONIST = "RECEPTIONIST",

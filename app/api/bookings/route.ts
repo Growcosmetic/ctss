@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { parseISO } from "date-fns";
 import { checkBookingConflicts } from "@/lib/bookingUtils";
-import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
+import { requireSalonId, getSalonFilter, verifySalonAccess } from "@/lib/api-helpers";
+import { requireLimit, trackUsage } from "@/lib/subscription/guards";
 
 // GET /api/bookings - Get all bookings
 export async function GET(request: NextRequest) {
@@ -109,33 +110,15 @@ export async function POST(request: NextRequest) {
       return errorResponse("Staff ID is required", 400);
     }
 
-    // Verify customer belongs to current salon
-    const customer = await prisma.customer.findUnique({
-      where: { id: customerId },
-      select: { salonId: true },
-    });
-
-    if (!customer) {
-      return errorResponse("Customer not found", 404);
+    // Verify customer and staff belong to the current salon
+    await verifySalonAccess(salonId, "customer", customerId);
+    
+    if (staffId) {
+      await verifySalonAccess(salonId, "user", staffId);
     }
 
-    if (customer.salonId !== salonId) {
-      return errorResponse("Access denied: Customer does not belong to your salon", 403);
-    }
-
-    // Verify staff belongs to current salon
-    const staff = await prisma.user.findUnique({
-      where: { id: staffId },
-      select: { salonId: true },
-    });
-
-    if (!staff) {
-      return errorResponse("Staff not found", 404);
-    }
-
-    if (staff.salonId !== salonId) {
-      return errorResponse("Access denied: Staff does not belong to your salon", 403);
-    }
+    // Phase 8: Check booking limit
+    await requireLimit(request, "bookings");
 
     // Get service duration if items provided
     let totalDuration = duration;
@@ -232,6 +215,9 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    // Phase 8: Track usage (after transaction commits)
+    await trackUsage(salonId, "bookings", 1);
+
     return successResponse(booking, "Booking created successfully", 201);
   } catch (error: any) {
     if (error.message?.includes("conflict")) {
@@ -239,6 +225,9 @@ export async function POST(request: NextRequest) {
         "Khung giờ này đã được đặt. Vui lòng chọn thời gian khác.",
         409
       );
+    }
+    if (error.message?.includes("Feature") || error.message?.includes("Limit exceeded")) {
+      return errorResponse(error.message, 403);
     }
     return errorResponse(error.message || "Failed to create booking", 500);
   }

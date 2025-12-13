@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId, verifySalonAccess } from "@/lib/api-helpers";
 
 // GET /api/customers/[id] - Get customer by ID
 export async function GET(
@@ -8,16 +9,24 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify customer belongs to current salon
+    await verifySalonAccess(salonId, "customer", params.id);
+
     const customer = await prisma.customer.findUnique({
       where: { id: params.id },
       include: {
         bookings: {
           take: 5,
           orderBy: { date: "desc" },
+          where: { salonId }, // Filter bookings by salonId
         },
         invoices: {
           take: 5,
           orderBy: { date: "desc" },
+          where: { salonId }, // Filter invoices by salonId
         },
       },
     });
@@ -28,6 +37,9 @@ export async function GET(
 
     return successResponse(customer);
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Customer not found", error.statusCode);
+    }
     return errorResponse(error.message || "Failed to fetch customer", 500);
   }
 }
@@ -38,6 +50,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify customer belongs to current salon
+    await verifySalonAccess(salonId, "customer", params.id);
+
     const body = await request.json();
     const {
       firstName,
@@ -67,6 +85,9 @@ export async function PUT(
 
     return successResponse(customer, "Customer updated successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Customer not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Customer not found", 404);
     }
@@ -83,12 +104,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify customer belongs to current salon
+    await verifySalonAccess(salonId, "customer", params.id);
+
     await prisma.customer.delete({
       where: { id: params.id },
     });
 
     return successResponse(null, "Customer deleted successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Customer not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Customer not found", 404);
     }

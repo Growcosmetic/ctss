@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId, verifySalonAccess } from "@/lib/api-helpers";
 
 // GET /api/bookings/[id] - Get booking by ID
 export async function GET(
@@ -8,6 +9,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify booking belongs to current salon
+    await verifySalonAccess(salonId, "booking", params.id);
+
     const booking = await prisma.booking.findUnique({
       where: { id: params.id },
       include: {
@@ -35,6 +42,9 @@ export async function GET(
 
     return successResponse(booking);
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Booking not found", error.statusCode);
+    }
     return errorResponse(error.message || "Failed to fetch booking", 500);
   }
 }
@@ -45,6 +55,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify booking belongs to current salon
+    await verifySalonAccess(salonId, "booking", params.id);
+
     const body = await request.json();
     const {
       staffId,
@@ -79,6 +95,9 @@ export async function PUT(
 
     return successResponse(booking, "Booking updated successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Booking not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Booking not found", 404);
     }
@@ -92,6 +111,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify booking belongs to current salon
+    await verifySalonAccess(salonId, "booking", params.id);
+
     const body = await request.json();
     const { cancelledBy } = body;
 
@@ -106,6 +131,9 @@ export async function DELETE(
 
     return successResponse(booking, "Booking cancelled successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Booking not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Booking not found", 404);
     }

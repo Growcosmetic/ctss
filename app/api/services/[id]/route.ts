@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId, verifySalonAccess } from "@/lib/api-helpers";
 
 // GET /api/services/[id] - Get service by ID
 export async function GET(
@@ -8,6 +9,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify service belongs to current salon
+    await verifySalonAccess(salonId, "service", params.id);
+
     const service = await prisma.service.findUnique({
       where: { id: params.id },
       // Note: category is a String field, not a relation, so we don't include it
@@ -19,6 +26,9 @@ export async function GET(
 
     return successResponse(service);
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Service not found", error.statusCode);
+    }
     return errorResponse(error.message || "Failed to fetch service", 500);
   }
 }
@@ -29,6 +39,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify service belongs to current salon
+    await verifySalonAccess(salonId, "service", params.id);
+
     const body = await request.json();
     const {
       category,
@@ -72,6 +88,9 @@ export async function PUT(
 
     return successResponse(service, "Service updated successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Service not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Service not found", 404);
     }
@@ -85,6 +104,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify service belongs to current salon
+    await verifySalonAccess(salonId, "service", params.id);
+
     await prisma.service.update({
       where: { id: params.id },
       data: {
@@ -94,6 +119,9 @@ export async function DELETE(
 
     return successResponse(null, "Service deactivated successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Service not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Service not found", 404);
     }

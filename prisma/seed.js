@@ -219,6 +219,164 @@ async function main() {
     console.log(`✅ Test data for ${secondSalon.name} completed!`);
   }
 
+  // Phase 8: Seed subscription plans
+  console.log("🌱 Seeding subscription plans...");
+  const { SubscriptionPlan } = require("@prisma/client");
+  const PLAN_CONFIGS = {
+    FREE: {
+      displayName: "Miễn phí",
+      price: 0,
+      features: {
+        POS: false,
+        AI: false,
+        REPORTS: false,
+        MARKETING: false,
+        ANALYTICS: false,
+        INVENTORY: true,
+        TRAINING: false,
+        CRM_AUTOMATION: false,
+        MULTI_BRANCH: false,
+        API_ACCESS: false,
+      },
+      limits: {
+        staff: 3,
+        bookings: 100,
+        customers: 500,
+        invoices: 100,
+        storage: 1,
+      },
+    },
+    BASIC: {
+      displayName: "Cơ bản",
+      price: 500000,
+      features: {
+        POS: true,
+        AI: false,
+        REPORTS: true,
+        MARKETING: false,
+        ANALYTICS: false,
+        INVENTORY: true,
+        TRAINING: false,
+        CRM_AUTOMATION: false,
+        MULTI_BRANCH: false,
+        API_ACCESS: false,
+      },
+      limits: {
+        staff: 10,
+        bookings: 1000,
+        customers: 2000,
+        invoices: 1000,
+        storage: 5,
+      },
+    },
+    PRO: {
+      displayName: "Chuyên nghiệp",
+      price: 1500000,
+      features: {
+        POS: true,
+        AI: true,
+        REPORTS: true,
+        MARKETING: true,
+        ANALYTICS: true,
+        INVENTORY: true,
+        TRAINING: true,
+        CRM_AUTOMATION: true,
+        MULTI_BRANCH: false,
+        API_ACCESS: false,
+      },
+      limits: {
+        staff: 50,
+        bookings: 10000,
+        customers: 10000,
+        invoices: 10000,
+        storage: 50,
+      },
+    },
+    ENTERPRISE: {
+      displayName: "Doanh nghiệp",
+      price: 5000000,
+      features: {
+        POS: true,
+        AI: true,
+        REPORTS: true,
+        MARKETING: true,
+        ANALYTICS: true,
+        INVENTORY: true,
+        TRAINING: true,
+        CRM_AUTOMATION: true,
+        MULTI_BRANCH: true,
+        API_ACCESS: true,
+      },
+      limits: {
+        staff: 999999,
+        bookings: 999999,
+        customers: 999999,
+        invoices: 999999,
+        storage: 500,
+      },
+    },
+  };
+
+  for (const [planName, config] of Object.entries(PLAN_CONFIGS)) {
+    const plan = await prisma.plan.upsert({
+      where: { name: planName },
+      update: {
+        displayName: config.displayName,
+        price: config.price,
+        features: config.features,
+        limits: config.limits,
+      },
+      create: {
+        name: planName,
+        displayName: config.displayName,
+        price: config.price,
+        features: config.features,
+        limits: config.limits,
+        isActive: true,
+      },
+    });
+    console.log(`  ✅ Plan: ${plan.displayName}`);
+  }
+
+  // Assign FREE plan to default salon if no subscription exists
+  const freePlan = await prisma.plan.findUnique({
+    where: { name: SubscriptionPlan.FREE },
+  });
+
+  if (defaultSalon && freePlan) {
+    const existingSubscription = await prisma.subscription.findUnique({
+      where: { salonId: defaultSalon.id },
+    });
+
+    if (!existingSubscription) {
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 days trial
+
+      await prisma.subscription.create({
+        data: {
+          salonId: defaultSalon.id,
+          planId: freePlan.id,
+          status: "TRIAL",
+          trialEndsAt,
+          currentPeriodStart: new Date(),
+          currentPeriodEndsAt: trialEndsAt,
+        },
+      });
+
+      await prisma.salon.update({
+        where: { id: defaultSalon.id },
+        data: {
+          planId: freePlan.id,
+          planStatus: "TRIAL",
+          trialEndsAt,
+          currentPeriodEndsAt: trialEndsAt,
+        },
+      });
+
+      console.log(`  ✅ Assigned FREE plan to default salon`);
+    }
+  }
+
   console.log("✨ Seeding completed!");
 }
 

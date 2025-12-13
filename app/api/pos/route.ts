@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
+import { requireFeature, requireLimit, trackUsage } from "@/lib/subscription/guards";
 
 // GET /api/pos - Get all POS orders
 export async function GET(request: NextRequest) {
@@ -101,6 +102,12 @@ export async function POST(request: NextRequest) {
   try {
     // Require salonId for multi-tenant isolation
     const salonId = await requireSalonId(request);
+
+    // Phase 8: Require POS feature
+    await requireFeature(request, "POS");
+
+    // Phase 8: Check invoice limit
+    await requireLimit(request, "invoices");
 
     const body = await request.json();
     const {
@@ -208,8 +215,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Phase 8: Track usage
+    await trackUsage(salonId, "invoices", 1);
+
     return successResponse(order, "Order created successfully", 201);
   } catch (error: any) {
+    if (error.message?.includes("Feature") || error.message?.includes("Limit exceeded")) {
+      return errorResponse(error.message, 403);
+    }
     return errorResponse(error.message || "Failed to create order", 500);
   }
 }

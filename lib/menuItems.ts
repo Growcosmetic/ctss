@@ -234,6 +234,14 @@ export const MENU_ITEMS: MenuItemData[] = [
     roles: ["ADMIN"],
   },
   {
+    key: "subscription",
+    label: "Gói Dịch vụ",
+    path: "/system/subscription",
+    group: "Hệ thống",
+    icon: Building2,
+    roles: ["OWNER"], // Phase 8: Only OWNER can manage subscription
+  },
+  {
     key: "settings",
     label: "Settings",
     path: "/settings",

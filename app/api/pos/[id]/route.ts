@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId, verifySalonAccess } from "@/lib/api-helpers";
 
 // GET /api/pos/[id] - Get POS order by ID
 export async function GET(
@@ -8,6 +9,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify order belongs to current salon
+    await verifySalonAccess(salonId, "posOrder", params.id);
+
     const order = await prisma.posOrder.findUnique({
       where: { id: params.id },
       include: {
@@ -39,6 +46,9 @@ export async function GET(
 
     return successResponse(order);
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Order not found", error.statusCode);
+    }
     return errorResponse(error.message || "Failed to fetch order", 500);
   }
 }
@@ -49,6 +59,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify order belongs to current salon
+    await verifySalonAccess(salonId, "posOrder", params.id);
+
     const body = await request.json();
     const {
       status,
@@ -99,6 +115,9 @@ export async function PUT(
 
     return successResponse(updatedOrder, "Order updated successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Order not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Order not found", 404);
     }
@@ -112,6 +131,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
+    // Verify order belongs to current salon
+    await verifySalonAccess(salonId, "posOrder", params.id);
+
     const order = await prisma.posOrder.findUnique({
       where: { id: params.id },
       include: { posItems: true },
@@ -157,6 +182,9 @@ export async function DELETE(
 
     return successResponse(cancelledOrder, "Order cancelled successfully");
   } catch (error: any) {
+    if (error.statusCode === 404 || error.statusCode === 401) {
+      return errorResponse(error.message || "Order not found", error.statusCode);
+    }
     if (error.code === "P2025") {
       return errorResponse("Order not found", 404);
     }

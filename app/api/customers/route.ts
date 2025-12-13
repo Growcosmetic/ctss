@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
+import { requireLimit, trackUsage } from "@/lib/subscription/guards";
 
 // GET /api/customers - Get all customers
 export async function GET(request: NextRequest) {
@@ -669,6 +670,9 @@ export async function POST(request: NextRequest) {
       return errorResponse("Name and phone are required", 400);
     }
 
+    // Phase 8: Check customer limit
+    await requireLimit(request, "customers");
+
     try {
       const customer = await prisma.customer.create({
         data: {
@@ -680,6 +684,9 @@ export async function POST(request: NextRequest) {
           notes,
         },
       });
+
+      // Phase 8: Track usage
+      await trackUsage(salonId, "customers", 1);
 
       return successResponse(customer, "Customer created successfully", 201);
     } catch (error: any) {
@@ -713,6 +720,9 @@ export async function POST(request: NextRequest) {
       return errorResponse(error.message || "Failed to create customer", 500);
     }
   } catch (error: any) {
+    if (error.message?.includes("Feature") || error.message?.includes("Limit exceeded")) {
+      return errorResponse(error.message, 403);
+    }
     return errorResponse(error.message || "Failed to create customer", 500);
   }
 }

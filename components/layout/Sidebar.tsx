@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Sparkles,
   CheckCircle,
   Phone,
@@ -25,137 +26,222 @@ import {
   DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
 import { useUIStore } from "@/store/useUIStore";
-
-interface MenuItem {
-  href: string;
-  label: string;
-  icon: any;
-  roles: CTSSRole[];
-}
-
-interface MenuGroup {
-  label: string;
-  icon: any;
-  roles: CTSSRole[];
-  items: MenuItem[];
-}
-
-const menuGroups: MenuGroup[] = [
+import { MENU_ITEMS, GROUP_ORDER, GROUP_ICONS, MenuItemData } from "@/lib/menuItems";
   {
-    label: "Dashboard",
+    key: "dashboard-main",
+    label: "Main Dashboard",
+    path: "/dashboard",
+    group: "Dashboard",
     icon: LayoutDashboard,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-    items: [
-      { href: "/dashboard", label: "Main Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"] },
-      { href: "/control-tower", label: "CEO Control Tower", icon: LayoutDashboard, roles: ["ADMIN"] },
-    ],
   },
   {
-    label: "Đặt lịch",
+    key: "dashboard-ceo",
+    label: "CEO Control Tower",
+    path: "/control-tower",
+    group: "Dashboard",
+    icon: LayoutDashboard,
+    roles: ["ADMIN"],
+  },
+  {
+    key: "booking-calendar",
+    label: "Booking Calendar",
+    path: "/booking",
+    group: "Đặt lịch",
     icon: Calendar,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-    items: [
-      { href: "/booking", label: "Booking Calendar", icon: Calendar, roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"] },
-    ],
   },
   {
-    label: "Khách hàng",
+    key: "crm-dashboard",
+    label: "CRM Dashboard",
+    path: "/crm",
+    group: "Khách hàng",
     icon: Users,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST"],
-    items: [
-      { href: "/crm", label: "CRM Dashboard", icon: Users, roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST"] },
-      { href: "/membership", label: "Membership", icon: Award, roles: ["ADMIN", "MANAGER"] },
-      { href: "/personalization", label: "Personalization", icon: Target, roles: ["ADMIN", "MANAGER"] },
-    ],
   },
   {
-    label: "Dịch vụ",
+    key: "membership",
+    label: "Membership",
+    path: "/membership",
+    group: "Khách hàng",
+    icon: Award,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "personalization",
+    label: "Personalization",
+    path: "/personalization",
+    group: "Khách hàng",
+    icon: Target,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "services",
+    label: "Services",
+    path: "/services",
+    group: "Dịch vụ",
     icon: Scissors,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-    items: [
-      { href: "/services", label: "Services", icon: Scissors, roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"] },
-      { href: "/pricing", label: "Pricing", icon: DollarSign, roles: ["ADMIN", "MANAGER"] },
-    ],
   },
   {
-    label: "Kho hàng",
+    key: "pricing",
+    label: "Pricing",
+    path: "/pricing",
+    group: "Dịch vụ",
+    icon: DollarSign,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "inventory",
+    label: "Inventory",
+    path: "/inventory",
+    group: "Kho hàng",
     icon: Package,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST"],
-    items: [
-      { href: "/inventory", label: "Inventory", icon: Package, roles: ["ADMIN", "MANAGER", "RECEPTIONIST"] },
-    ],
   },
   {
-    label: "Nhân viên",
+    key: "staff",
+    label: "Staff",
+    path: "/staff",
+    group: "Nhân viên",
     icon: UserCircle,
-    roles: ["ADMIN", "MANAGER", "STYLIST", "ASSISTANT"],
-    items: [
-      { href: "/staff", label: "Staff", icon: UserCircle, roles: ["STYLIST", "ASSISTANT"] },
-      { href: "/staff-management", label: "Staff Management", icon: UserCircle, roles: ["ADMIN", "MANAGER"] },
-    ],
+    roles: ["STYLIST", "ASSISTANT"],
   },
   {
-    label: "Bán hàng",
+    key: "staff-management",
+    label: "Staff Management",
+    path: "/staff-management",
+    group: "Nhân viên",
+    icon: UserCircle,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "pos",
+    label: "POS",
+    path: "/pos",
+    group: "Bán hàng",
     icon: ShoppingCart,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST"],
-    items: [
-  { href: "/pos", label: "POS", icon: ShoppingCart, roles: ["ADMIN", "MANAGER", "RECEPTIONIST"] },
-      { href: "/sales", label: "Sales Dashboard", icon: TrendingUp, roles: ["ADMIN", "MANAGER"] },
-    ],
   },
   {
-    label: "Báo cáo",
+    key: "sales-dashboard",
+    label: "Sales Dashboard",
+    path: "/sales",
+    group: "Bán hàng",
+    icon: TrendingUp,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    path: "/reports",
+    group: "Báo cáo",
     icon: BarChart3,
     roles: ["ADMIN", "MANAGER"],
-    items: [
-      { href: "/reports", label: "Reports", icon: BarChart3, roles: ["ADMIN", "MANAGER"] },
-      { href: "/reports/financial", label: "Financial", icon: DollarSign, roles: ["ADMIN", "MANAGER"] },
-    ],
   },
   {
-    label: "Marketing",
+    key: "reports-financial",
+    label: "Financial",
+    path: "/reports/financial",
+    group: "Báo cáo",
+    icon: DollarSign,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "marketing-dashboard",
+    label: "Marketing Dashboard",
+    path: "/marketing/dashboard",
+    group: "Marketing",
     icon: Sparkles,
     roles: ["ADMIN", "MANAGER"],
-    items: [
-      { href: "/marketing/dashboard", label: "Marketing Dashboard", icon: Sparkles, roles: ["ADMIN", "MANAGER"] },
-    ],
   },
   {
-    label: "Analytics",
-    icon: BarChart3,
+    key: "quality",
+    label: "Quality",
+    path: "/quality",
+    group: "Analytics",
+    icon: CheckCircle,
     roles: ["ADMIN", "MANAGER"],
-    items: [
-      { href: "/quality", label: "Quality", icon: CheckCircle, roles: ["ADMIN", "MANAGER"] },
-      { href: "/voice", label: "Voice Analytics", icon: Phone, roles: ["ADMIN", "MANAGER"] },
-      { href: "/hair-health", label: "Hair Health", icon: Heart, roles: ["ADMIN", "MANAGER", "STYLIST"] },
-    ],
   },
   {
-    label: "Hệ thống",
+    key: "voice-analytics",
+    label: "Voice Analytics",
+    path: "/voice",
+    group: "Analytics",
+    icon: Phone,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "hair-health",
+    label: "Hair Health",
+    path: "/hair-health",
+    group: "Analytics",
+    icon: Heart,
+    roles: ["ADMIN", "MANAGER", "STYLIST"],
+  },
+  {
+    key: "operations",
+    label: "Operations",
+    path: "/operations",
+    group: "Hệ thống",
     icon: Settings,
     roles: ["ADMIN", "MANAGER"],
-    items: [
-      { href: "/operations", label: "Operations", icon: Settings, roles: ["ADMIN", "MANAGER"] },
-      { href: "/training/dashboard", label: "Training", icon: Settings, roles: ["ADMIN", "MANAGER"] },
-      { href: "/sop", label: "SOP", icon: Settings, roles: ["ADMIN", "MANAGER"] },
-      { href: "/workflow-console", label: "Workflow", icon: Settings, roles: ["ADMIN", "MANAGER"] },
-      { href: "/partner/hq", label: "Partner HQ", icon: Building2, roles: ["ADMIN"] },
-      { href: "/settings", label: "Settings", icon: Settings, roles: ["ADMIN"] },
-    ],
   },
   {
-    label: "AI",
+    key: "training",
+    label: "Training",
+    path: "/training/dashboard",
+    group: "Hệ thống",
+    icon: Settings,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "sop",
+    label: "SOP",
+    path: "/sop",
+    group: "Hệ thống",
+    icon: Settings,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "workflow",
+    label: "Workflow",
+    path: "/workflow-console",
+    group: "Hệ thống",
+    icon: Settings,
+    roles: ["ADMIN", "MANAGER"],
+  },
+  {
+    key: "partner-hq",
+    label: "Partner HQ",
+    path: "/partner/hq",
+    group: "Hệ thống",
+    icon: Building2,
+    roles: ["ADMIN"],
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    path: "/settings",
+    group: "Hệ thống",
+    icon: Settings,
+    roles: ["ADMIN"],
+  },
+  {
+    key: "mina-ai",
+    label: "Mina AI",
+    path: "/mina",
+    group: "AI",
     icon: Sparkles,
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-    items: [
-  { href: "/mina", label: "Mina AI", icon: Sparkles, roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"] },
-    ],
   },
 ];
+
+// Group icons and order - Imported from shared file
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -163,6 +249,17 @@ export default function Sidebar() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["Dashboard"]));
   const { user, hasAnyRole } = useAuth();
   const { sidebarOpen, toggleSidebar } = useUIStore();
+
+  // Group menu items by group
+  const groupedItems = MENU_ITEMS.reduce((acc, item) => {
+    if (!user || !hasAnyRole(item.roles)) return acc;
+    
+    if (!acc[item.group]) {
+      acc[item.group] = [];
+    }
+    acc[item.group].push(item);
+    return acc;
+  }, {} as Record<string, MenuItemData[]>);
 
   const toggleGroup = (groupLabel: string) => {
     const newExpanded = new Set(expandedGroups);
@@ -174,10 +271,29 @@ export default function Sidebar() {
     setExpandedGroups(newExpanded);
   };
 
-  const visibleGroups = menuGroups.filter((group) => {
-    if (!user) return false;
-    return hasAnyRole(group.roles);
+  // Sort groups by GROUP_ORDER (business logic order, not alphabetical)
+  const visibleGroups = Object.keys(groupedItems).sort((a, b) => {
+    const indexA = GROUP_ORDER.indexOf(a);
+    const indexB = GROUP_ORDER.indexOf(b);
+    
+    // If both groups are in ORDER, sort by order
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    // If only A is in ORDER, A comes first
+    if (indexA !== -1) return -1;
+    // If only B is in ORDER, B comes first
+    if (indexB !== -1) return 1;
+    // If neither is in ORDER, sort alphabetically
+    return a.localeCompare(b);
   });
+
+  // Auto-collapse groups after navigation (optional)
+  useEffect(() => {
+    // Reset expandedGroups to default (only Dashboard) after pathname changes
+    // This provides cleaner UX - sidebar collapses after user navigates
+    setExpandedGroups(new Set(["Dashboard"]));
+  }, [pathname]);
 
   return (
     <>
@@ -194,15 +310,17 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-full w-sidebar z-40 transform transition-transform duration-300 ease-in-out",
+          "fixed left-0 top-0 h-full w-sidebar z-40 transform transition-transform duration-300 ease-in-out flex flex-col",
           "lg:translate-x-0",
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
           !sidebarOpen && "lg:-translate-x-full"
         )}
         style={{ backgroundColor: "#A4E3E3", width: "240px" }}
+        role="navigation"
+        aria-label="Main navigation"
       >
         {/* Logo */}
-        <div className="h-header flex items-center justify-between border-b px-4" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
+        <div className="h-header flex items-center justify-between border-b px-4 flex-shrink-0" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
           <h1 className="text-xl font-bold text-gray-800">CTSS</h1>
           <button
             onClick={() => {
@@ -217,123 +335,116 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Menu */}
-        <nav className="flex-1 overflow-y-auto py-4 scrollbar-hide">
+        {/* Menu Container with fixed height and scroll */}
+        <nav 
+          className="overflow-y-auto py-4 scrollbar-thin flex-shrink"
+          style={{ 
+            height: "calc(100vh - 72px)",
+            minHeight: 0
+          }}
+        >
           <ul className="space-y-1 px-2">
-            {visibleGroups.map((group) => {
-              const GroupIcon = group.icon;
-              const isExpanded = expandedGroups.has(group.label);
-              const visibleItems = group.items.filter((item) => {
-                if (!user) return false;
-                return hasAnyRole(item.roles);
-              });
+            {visibleGroups.map((groupLabel) => {
+              const groupItems = groupedItems[groupLabel];
+              if (!groupItems || groupItems.length === 0) return null;
 
-              if (visibleItems.length === 0) return null;
+              const GroupIcon = GROUP_ICONS[groupLabel] || Settings;
+              const isExpanded = expandedGroups.has(groupLabel);
 
-              // Nếu chỉ có 1 item, không cần group
-              if (visibleItems.length === 1) {
-                const item = visibleItems[0];
-                const ItemIcon = item.icon;
-              const isActive = pathname.startsWith(item.href);
+              // Single item - render as direct link with group icon and label (no accordion, no chevron)
+              if (groupItems.length === 1) {
+                const item = groupItems[0];
+                const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
 
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                      isActive
-                        ? "text-gray-800 font-semibold"
-                        : "text-gray-700 hover:text-gray-900"
-                    )}
-                    style={{
-                      backgroundColor: isActive
-                        ? "rgba(255,255,255,0.2)"
-                        : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
-                      } else {
-                        e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = isActive
-                        ? "rgba(255,255,255,0.2)"
-                        : "transparent";
-                    }}
-                  >
-                      <ItemIcon size={20} />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
+                return (
+                  <li key={item.key}>
+                    <Link
+                      href={item.path}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                        isActive
+                          ? "text-gray-800 font-semibold bg-white/20"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-white/10"
+                      )}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      {/* Use GroupIcon and groupLabel for single-item groups */}
+                      <GroupIcon size={20} className={cn("transition-colors", isActive && "text-gray-900")} />
+                      <span className="font-medium">{groupLabel}</span>
+                      {/* No chevron for single-item groups */}
+                    </Link>
                   </li>
                 );
               }
 
-              // Nếu có nhiều items, hiển thị group với submenu
+              // Multiple items - render as accordion group
+              const hasActiveItem = groupItems.some(
+                (item) => pathname === item.path || pathname.startsWith(item.path + "/")
+              );
+
               return (
-                <li key={group.label}>
+                <li key={groupLabel} className="mb-1">
                   <button
-                    onClick={() => toggleGroup(group.label)}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-700 hover:text-gray-900 hover:bg-white/10"
+                    onClick={() => toggleGroup(groupLabel)}
+                    className={cn(
+                      "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200",
+                      "text-gray-700 hover:text-gray-900 hover:bg-white/10",
+                      hasActiveItem && "bg-white/5"
+                    )}
+                    aria-expanded={isExpanded}
+                    aria-controls={`menu-group-${groupLabel}`}
                   >
                     <div className="flex items-center gap-3">
-                      <GroupIcon size={20} />
-                      <span className="font-medium">{group.label}</span>
+                      <GroupIcon size={20} className={cn(hasActiveItem && "text-gray-900")} />
+                      <span className="font-medium">{groupLabel}</span>
                     </div>
-                    <ChevronRight
+                    <ChevronDown
                       size={16}
                       className={cn(
-                        "transition-transform",
-                        isExpanded && "rotate-90"
+                        "transition-transform duration-200 flex-shrink-0",
+                        isExpanded ? "rotate-180" : "rotate-0"
                       )}
                     />
                   </button>
-                  {isExpanded && (
-                    <ul className="ml-4 mt-1 space-y-1">
-                      {visibleItems.map((item) => {
+                  
+                  {/* Collapsible content */}
+                  <div
+                    id={`menu-group-${groupLabel}`}
+                    className={cn(
+                      "overflow-hidden transition-all duration-200 ease-in-out",
+                      isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                    )}
+                  >
+                    <ul className="ml-4 mt-1 space-y-1 pb-1">
+                      {groupItems.map((item) => {
                         const ItemIcon = item.icon;
-                        const isActive = pathname.startsWith(item.href);
+                        const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
 
                         return (
-                          <li key={item.href}>
+                          <li key={item.key}>
                             <Link
-                              href={item.href}
+                              href={item.path}
                               onClick={() => setIsMobileOpen(false)}
                               className={cn(
-                                "flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm",
+                                "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm",
                                 isActive
-                                  ? "text-gray-800 font-semibold"
-                                  : "text-gray-600 hover:text-gray-900"
+                                  ? "text-gray-800 font-semibold bg-white/20"
+                                  : "text-gray-600 hover:text-gray-900 hover:bg-white/10"
                               )}
-                              style={{
-                                backgroundColor: isActive
-                                  ? "rgba(255,255,255,0.2)"
-                                  : "transparent",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!isActive) {
-                                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
-                                } else {
-                                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = isActive
-                                  ? "rgba(255,255,255,0.2)"
-                                  : "transparent";
-                              }}
+                              aria-current={isActive ? "page" : undefined}
                             >
-                              <ItemIcon size={16} />
+                              <ItemIcon 
+                                size={16} 
+                                className={cn("transition-colors", isActive && "text-gray-900")} 
+                              />
                               <span>{item.label}</span>
                             </Link>
                           </li>
                         );
                       })}
                     </ul>
-                  )}
+                  </div>
                 </li>
               );
             })}

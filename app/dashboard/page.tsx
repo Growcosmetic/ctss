@@ -9,9 +9,9 @@ import DashboardHeader from "@/features/dashboard/components/DashboardHeader";
 import TodayStatsCard from "@/features/dashboard/components/TodayStatsCard";
 import StaffPerformanceTable from "@/features/dashboard/components/StaffPerformanceTable";
 import BookingTimeline from "@/features/dashboard/components/BookingTimeline";
-import AlertsPanel from "@/features/dashboard/components/AlertsPanel";
 import QuickActionsBar from "@/features/dashboard/components/QuickActionsBar";
 import KPICards from "@/components/dashboard/KPICards";
+import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import DashboardModuleGrid from "@/components/dashboard/DashboardModuleGrid";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -150,7 +150,7 @@ export default function DashboardPage() {
 
             {/* Right Column - Alerts */}
             <div>
-              {data?.alerts && <AlertsPanel alerts={data.alerts} />}
+              <AlertsPanel limit={5} showActions={true} />
             </div>
           </div>
 

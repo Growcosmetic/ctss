@@ -1,90 +1,40 @@
-// ============================================
-// Automation - Trigger Flow
-// ============================================
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId } from "@/lib/api-helpers";
+import { checkAndExecuteAutomations } from "@/lib/automation/executor";
+import { AutomationTrigger } from "@prisma/client";
 
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { runAutomationFlow } from "@/core/automation/runFlow";
+/**
+ * Phase 12 - Automation Trigger API
+ * 
+ * POST /api/automation/trigger - Trigger automation execution
+ * 
+ * Called internally when AIAction with HIGH/CRITICAL priority is created
+ */
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { flowId, customerId } = await req.json();
+    const salonId = await requireSalonId(request);
+    const body = await request.json();
+    const { trigger, triggerId, triggerType, data } = body;
 
-    if (!flowId || !customerId) {
-      return NextResponse.json(
-        { error: "flowId and customerId are required" },
-        { status: 400 }
-      );
+    if (!trigger || !triggerId || !triggerType) {
+      return errorResponse("Missing required fields: trigger, triggerId, triggerType", 400);
     }
 
-    // Get flow
-    const flow = // @ts-ignore - automationFlow may not be generated yet
-      await
-        prisma.automationFlow.findUnique({
-          where: { id: flowId },
-        });
-
-    if (!flow) {
-      return NextResponse.json(
-        { error: "Flow not found" },
-        { status: 404 }
-      );
+    if (!Object.values(AutomationTrigger).includes(trigger)) {
+      return errorResponse("Invalid trigger", 400);
     }
 
-    // Get customer data
-    const customer = await prisma.customer.findUnique({
-      where: { id: customerId },
+    await checkAndExecuteAutomations(salonId, trigger, {
+      triggerId,
+      triggerType,
+      data: data || {},
     });
 
-    if (!customer) {
-      return NextResponse.json(
-        { error: "Customer not found" },
-        { status: 404 }
-      );
-    }
-
-    // Get visits
-    const visits = await prisma.visit.findMany({
-      where: { customerId },
-      orderBy: { date: "desc" },
-      take: 10,
-    });
-
-    // Get tags
-    const tags = await prisma.customerTag.findMany({
-      where: { customerId },
-    });
-
-    // Get insight
-    const insight = await prisma.customerInsight.findFirst({
-      where: { customerId },
-      orderBy: { createdAt: "desc" },
-    });
-
-    // Run flow
-    const result = await runAutomationFlow(
-      flow as any,
-      customer,
-      visits,
-      tags,
-      insight
-    );
-
-    return NextResponse.json({
-      success: result.success,
-      executed: result.executed,
-      errors: result.errors,
-      message: `Flow "${flow.name}" executed: ${result.executed} actions`,
-    });
-  } catch (err: any) {
-    console.error("Trigger automation error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: err.message || "Failed to trigger automation",
-      },
-      { status: 500 }
-    );
+    return successResponse(null, "Automation triggered successfully");
+  } catch (error: any) {
+    console.error("[Automation Trigger API] Error:", error);
+    return errorResponse(error.message || "Failed to trigger automation", 500);
   }
 }
-

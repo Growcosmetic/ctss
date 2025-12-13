@@ -42,6 +42,30 @@ export const MENU_ITEMS: MenuItemData[] = [
     roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
   },
   {
+    key: "insights",
+    label: "Operation Insights",
+    path: "/dashboard/insights",
+    group: "Dashboard",
+    icon: BarChart3,
+    roles: ["OWNER", "ADMIN"], // Phase 10.1: Only OWNER/ADMIN
+  },
+  {
+    key: "actions",
+    label: "AI Actions",
+    path: "/dashboard/actions",
+    group: "Dashboard",
+    icon: Sparkles,
+    roles: ["OWNER", "ADMIN"], // Phase 11.3: Only OWNER/ADMIN
+  },
+  {
+    key: "automation",
+    label: "Automation",
+    path: "/dashboard/automation",
+    group: "Dashboard",
+    icon: Settings,
+    roles: ["OWNER"], // Phase 12: Only OWNER
+  },
+  {
     key: "dashboard-ceo",
     label: "CEO Control Tower",
     path: "/control-tower",

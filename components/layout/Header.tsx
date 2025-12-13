@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
+import AlertBadge from "@/components/alerts/AlertBadge";
 import { useUIStore } from "@/store/useUIStore";
 import { useEffect, useState } from "react";
 
@@ -83,6 +84,9 @@ export default function Header() {
           </div>
         )}
 
+        {/* System Alerts */}
+        <AlertBadge className="mr-2" />
+        
         {/* Notifications */}
         <NotificationBell />
 

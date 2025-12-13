@@ -10,6 +10,8 @@ interface StatCardProps {
   icon: LucideIcon;
   iconColor?: string;
   iconBg?: string;
+  description?: string | React.ReactNode;
+  footer?: string | React.ReactNode;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -26,6 +28,8 @@ export default function StatCard({
   icon: Icon,
   iconColor = "#0c4a6e",
   iconBg = "#A4E3E3",
+  description,
+  footer,
   trend,
   loading = false,
   error = false,
@@ -79,8 +83,11 @@ export default function StatCard({
           <p className="font-bold text-gray-900 mb-1 text-3xl leading-tight">
             {value}
           </p>
+          {description && (
+            <p className="text-sm text-gray-600 mt-1">{description}</p>
+          )}
           {trend && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-2">
               <span
                 className={`text-xs font-medium ${
                   trend.isPositive ? "text-success-600" : "text-danger-600"
@@ -92,6 +99,9 @@ export default function StatCard({
                 {trend.label || "so với kỳ trước"}
               </span>
             </div>
+          )}
+          {footer && (
+            <div className="mt-2 text-xs text-gray-500">{footer}</div>
           )}
         </div>
       </div>

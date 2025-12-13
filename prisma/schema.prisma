@@ -89,15 +89,22 @@ model Salon {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  plan          Plan?           @relation(fields: [planId], references: [id])
-  users         User[]
-  customers     Customer[]
-  bookings      Booking[]
-  invoices      Invoice[]
-  services      Service[]
-  products      Product[]
-  subscription  Subscription?
-  usageTracking UsageTracking[]
+  plan               Plan?                @relation(fields: [planId], references: [id])
+  users              User[]
+  customers          Customer[]
+  bookings           Booking[]
+  invoices           Invoice[]
+  services           Service[]
+  products           Product[]
+  subscription       Subscription?
+  usageTracking      UsageTracking[]
+  SystemAlert        SystemAlert[]
+  AlertRule          AlertRule[]
+  aiSummaries         AISummary[]
+  AIAlertExplanation  AIAlertExplanation[]
+  aiActions           AIAction[]
+  automationRules     AutomationRule[]
+  automationLogs      AutomationLog[]
 
   @@index([slug])
   @@index([status])
@@ -5547,4 +5554,267 @@ model UsageTracking {
   @@index([salonId])
   @@index([period])
   @@index([metric])
+}
+
+///////////////////////////////////////////////////////////////
+// PHASE 10.2 - RULE-BASED ALERTS SYSTEM
+///////////////////////////////////////////////////////////////
+
+enum AlertType {
+  BOOKING_OVERDUE // Lịch hẹn quá hạn
+  BOOKING_CONFLICT // Lịch hẹn trùng lịch
+  LOW_STOCK // Hàng tồn kho thấp
+  CUSTOMER_BIRTHDAY // Sinh nhật khách hàng
+  SUBSCRIPTION_EXPIRING // Gói dịch vụ sắp hết hạn
+  REVENUE_TARGET // Mục tiêu doanh thu
+  STAFF_OVERLOAD // Nhân viên quá tải
+  PAYMENT_PENDING // Thanh toán chưa hoàn tất
+  SYSTEM_ERROR // Lỗi hệ thống
+  INFO // Thông tin chung
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model SystemAlert {
+  id             String        @id @default(cuid())
+  salonId        String // Multi-tenant: Salon isolation
+  type           AlertType
+  severity       AlertSeverity @default(MEDIUM)
+  status         AlertStatus   @default(ACTIVE)
+  title          String
+  message        String
+  metadata       Json? // Additional data (bookingId, customerId, etc.)
+  ruleId         String? // ID of the rule that generated this alert
+  acknowledgedAt DateTime?
+  acknowledgedBy String? // User ID
+  resolvedAt     DateTime?
+  resolvedBy     String? // User ID
+  dismissedAt    DateTime?
+  dismissedBy    String? // User ID
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  salon              Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  AIAlertExplanation AIAlertExplanation?
+
+  @@index([salonId])
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@index([createdAt])
+  @@index([salonId, status])
+}
+
+model AlertRule {
+  id          String        @id @default(cuid())
+  salonId     String // Multi-tenant: Salon isolation
+  name        String
+  description String?
+  type        AlertType
+  severity    AlertSeverity @default(MEDIUM)
+  enabled     Boolean       @default(true)
+  conditions  Json // Rule conditions (e.g., { threshold: 10, metric: "stock" })
+  schedule    String? // Cron expression (e.g., "0 9 * * *" for daily at 9 AM)
+  lastRunAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([type])
+  @@index([enabled])
+}
+
+///////////////////////////////////////////////////////////////
+// PHASE 11.1 - AI OPERATIONAL SUMMARY
+///////////////////////////////////////////////////////////////
+
+enum SummaryPeriod {
+  DAY
+  WEEK
+  MONTH
+}
+
+model AISummary {
+  id           String        @id @default(cuid())
+  salonId      String // Multi-tenant: Salon isolation
+  period       SummaryPeriod // DAY, WEEK, MONTH
+  periodDate   DateTime // Date of the period (start of day/week/month)
+  content      Json // { summary, risks, suggestedActions }
+  insightsData Json? // Snapshot of insights data used
+  alertsData   Json? // Snapshot of alerts data used
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@unique([salonId, period, periodDate])
+  @@index([salonId])
+  @@index([period])
+  @@index([periodDate])
+  @@index([createdAt])
+}
+
+///////////////////////////////////////////////////////////////
+// PHASE 11.2 - AI ALERT EXPLANATION
+///////////////////////////////////////////////////////////////
+
+model AIAlertExplanation {
+  id          String   @id @default(cuid())
+  alertId     String   @unique // One explanation per alert
+  salonId     String // Multi-tenant: Salon isolation
+  content     Json // { cause, risk, suggestedAction }
+  relatedData Json? // Snapshot of related operational data
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  alert SystemAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  salon Salon       @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@index([salonId])
+  @@index([createdAt])
+}
+
+///////////////////////////////////////////////////////////////
+// PHASE 12 - AUTOMATION ENGINE (RULE-BASED, SAFE)
+///////////////////////////////////////////////////////////////
+
+enum AutomationTrigger {
+  ACTION_HIGH_PRIORITY // Trigger when AIAction with HIGH priority is created
+  ACTION_CRITICAL_PRIORITY // Trigger when AIAction with CRITICAL priority is created
+  ALERT_CRITICAL // Trigger when SystemAlert with CRITICAL severity is created
+  ALERT_HIGH // Trigger when SystemAlert with HIGH severity is created
+  SCHEDULED // Trigger on schedule (cron)
+  MANUAL // Manual trigger only
+}
+
+enum AutomationAction {
+  SEND_NOTIFICATION // Send notification to staff
+  CREATE_TASK // Create task for staff
+  UPDATE_STATUS // Update related record status
+  SEND_EMAIL // Send email notification
+  LOG_EVENT // Log event for tracking
+}
+
+enum AutomationStatus {
+  SUCCESS
+  FAILED
+  PARTIAL
+  ROLLED_BACK
+}
+
+model AutomationRule {
+  id          String            @id @default(cuid())
+  salonId     String // Multi-tenant: Salon isolation
+  name        String
+  description String?
+  trigger     AutomationTrigger
+  action      AutomationAction
+  enabled     Boolean           @default(false) // OFF by default, OWNER must enable
+  conditions  Json? // Additional conditions (e.g., { actionType: "LOW_STOCK" })
+  config      Json? // Action configuration (e.g., { emailTemplate: "...", recipients: [...] })
+  schedule    String? // Cron expression for SCHEDULED trigger
+  createdBy  String? // User ID who created
+  enabledBy   String? // User ID who enabled
+  enabledAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  salon Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  logs  AutomationLog[]
+
+  @@index([salonId])
+  @@index([enabled])
+  @@index([trigger])
+  @@index([salonId, enabled])
+}
+
+model AutomationLog {
+  id          String            @id @default(cuid())
+  ruleId      String
+  salonId     String // Multi-tenant: Salon isolation
+  triggerId   String? // ID of trigger (actionId, alertId, etc.)
+  triggerType String // Type of trigger
+  status      AutomationStatus
+  action      AutomationAction
+  result      Json? // Result data
+  error       String? // Error message if failed
+  rolledBack  Boolean           @default(false)
+  rolledBackAt DateTime?
+  rolledBackBy String?
+  executedAt DateTime          @default(now())
+
+  rule AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  salon Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([salonId])
+  @@index([status])
+  @@index([executedAt])
+  @@index([triggerId])
+}
+
+///////////////////////////////////////////////////////////////
+// PHASE 11.3 - AI ACTION ENGINE
+///////////////////////////////////////////////////////////////
+
+enum ActionStatus {
+  PENDING
+  DONE
+  IGNORED
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ActionSource {
+  AI_SUMMARY // From AI Operational Summary
+  ALERT_EXPLANATION // From AI Alert Explanation
+  MANUAL // Manually created
+}
+
+model AIAction {
+  id          String         @id @default(cuid())
+  salonId     String // Multi-tenant: Salon isolation
+  source      ActionSource // Where this action came from
+  sourceId    String? // ID of source (summaryId, alertId, etc.)
+  priority    ActionPriority @default(MEDIUM)
+  status      ActionStatus   @default(PENDING)
+  title       String
+  description String
+  contextLink String? // Link to related page/context
+  metadata    Json? // Additional context data
+  completedAt DateTime?
+  completedBy String? // User ID
+  ignoredAt   DateTime?
+  ignoredBy   String? // User ID
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([status])
+  @@index([priority])
+  @@index([source])
+  @@index([salonId, status])
+  @@index([createdAt])
 }

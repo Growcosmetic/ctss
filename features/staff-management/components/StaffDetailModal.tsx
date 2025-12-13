@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { X, UserCircle, Phone, Briefcase, Calendar, DollarSign, Percent, Award } from "lucide-react";
 

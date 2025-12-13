@@ -262,6 +262,7 @@ export default function BookingPage() {
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST, CTSSRole.STYLIST, CTSSRole.ASSISTANT]}>
       <div className="flex min-h-screen bg-[#FAFAFA]">
+        <h1 className="sr-only">Đặt lịch</h1>
         <Sidebar />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'lg:ml-[240px]' : 'lg:ml-0'}`}>
           <Header />

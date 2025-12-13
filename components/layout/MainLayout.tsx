@@ -13,6 +13,14 @@ export default function MainLayout({
   
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: "#FAFAFA" }}>
+      {/* Skip to content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+      >
+        Skip to content
+      </a>
+
       {/* Sidebar - chỉ sidebar có background mint */}
       <Sidebar />
       
@@ -25,7 +33,7 @@ export default function MainLayout({
         <Header />
         
         {/* Main content */}
-        <main className="flex-1 p-6">
+        <main id="main-content" className="flex-1 p-6" tabIndex={-1}>
           {children}
         </main>
       </div>

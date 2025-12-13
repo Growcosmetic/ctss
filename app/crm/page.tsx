@@ -7,7 +7,7 @@ import { CTSSRole } from "@/features/auth/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import {
   Table,
@@ -125,11 +125,13 @@ export default function CRMPage() {
   const [sortBy, setSortBy] = useState<"createdAt" | "totalSpent" | "totalVisits" | "lastVisitDate">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedSegment, setSelectedSegment] = useState<string>("");
+  const [advancedFilters, setAdvancedFilters] = useState<any>({});
+  const [totalCount, setTotalCount] = useState<number>(0);
   const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCustomers();
-  }, [activeTab, sortBy, sortOrder, selectedSegment]);
+  }, [activeTab, sortBy, sortOrder, selectedSegment, searchTerm, advancedFilters, currentPage]);
 
   const fetchCustomers = async () => {
     try {
@@ -152,6 +154,23 @@ export default function CRMPage() {
         params.append("limit", itemsPerPage.toString());
         params.append("sortBy", sortBy);
         params.append("sortOrder", sortOrder);
+
+        // Add advanced filters
+        if (advancedFilters.membershipStatus?.length > 0) {
+          params.append("membershipStatus", advancedFilters.membershipStatus.join(","));
+        }
+        if (advancedFilters.source?.length > 0) {
+          params.append("source", advancedFilters.source.join(","));
+        }
+        if (advancedFilters.dateFrom) {
+          params.append("dateFrom", advancedFilters.dateFrom);
+        }
+        if (advancedFilters.dateTo) {
+          params.append("dateTo", advancedFilters.dateTo);
+        }
+        if (advancedFilters.customerGroup?.length > 0) {
+          params.append("customerGroup", advancedFilters.customerGroup.join(","));
+        }
 
         const response = await fetch(`/api/customers?${params.toString()}`);
         result = await response.json();
@@ -180,6 +199,15 @@ export default function CRMPage() {
           };
         });
         setCustomers(mappedCustomers);
+        
+        // Set total count
+        if (result.data?.pagination?.total !== undefined) {
+          setTotalCount(result.data.pagination.total);
+        } else if (result.pagination?.total !== undefined) {
+          setTotalCount(result.pagination.total);
+        } else {
+          setTotalCount(mappedCustomers.length);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
@@ -505,9 +533,22 @@ export default function CRMPage() {
             selectedCustomerId={selectedCustomer?.id || null}
             onSelectCustomer={handleSelectCustomer}
             searchTerm={listSearchTerm}
-            onSearchChange={setListSearchTerm}
+            onSearchChange={(term) => {
+              setListSearchTerm(term);
+              setSearchTerm(term);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
             selectedSegment={selectedSegment}
-            onSegmentChange={setSelectedSegment}
+            onSegmentChange={(segment) => {
+              setSelectedSegment(segment);
+              setCurrentPage(1);
+            }}
+            onAdvancedFilterChange={(filters) => {
+              setAdvancedFilters(filters);
+              setCurrentPage(1); // Reset to first page when filtering
+            }}
+            advancedFilters={advancedFilters}
+            totalCount={totalCount}
           />
 
                   {/* Center Panel - Customer Detail */}

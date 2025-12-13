@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Save, Loader2, X } from "lucide-react";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import ProductUnitSelector from "./ProductUnitSelector";
 import SupplierSelector from "./SupplierSelector";

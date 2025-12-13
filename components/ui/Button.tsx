@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
 }
@@ -13,10 +13,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variants = {
       primary: "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
-      secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500",
+      secondary: "bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-500",
       outline: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-primary-500",
       ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
-      danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+      danger: "bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500",
+      success: "bg-success-600 text-white hover:bg-success-700 focus:ring-success-500",
     };
 
     const sizes = {
@@ -27,9 +28,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(
+          baseStyles,
+          variants[variant],
+          sizes[size],
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+          variant === "primary" && "focus-visible:ring-primary-500",
+          variant === "secondary" && "focus-visible:ring-secondary-500",
+          variant === "success" && "focus-visible:ring-success-500",
+          variant === "danger" && "focus-visible:ring-danger-500",
+          (variant === "outline" || variant === "ghost") && "focus-visible:ring-primary-500",
+          className
+        )}
         ref={ref}
         disabled={disabled || isLoading}
+        aria-busy={isLoading}
         {...props}
       >
         {isLoading ? (

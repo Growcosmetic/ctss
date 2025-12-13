@@ -226,6 +226,14 @@ export const MENU_ITEMS: MenuItemData[] = [
     roles: ["ADMIN"],
   },
   {
+    key: "salons",
+    label: "Quản lý Salon",
+    path: "/system/salons",
+    group: "Hệ thống",
+    icon: Building2,
+    roles: ["ADMIN"],
+  },
+  {
     key: "settings",
     label: "Settings",
     path: "/settings",

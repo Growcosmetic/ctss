@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { X, Upload, Download, FileSpreadsheet, Check, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";

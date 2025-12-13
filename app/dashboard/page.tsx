@@ -14,8 +14,11 @@ import QuickActionsBar from "@/features/dashboard/components/QuickActionsBar";
 import KPICards from "@/components/dashboard/KPICards";
 import DashboardModuleGrid from "@/components/dashboard/DashboardModuleGrid";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -63,9 +66,15 @@ export default function DashboardPage() {
         ]}
       >
         <MainLayout>
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700">Lỗi: {error}</p>
-          </div>
+          <EmptyState
+            icon={AlertCircle}
+            title="Lỗi tải dữ liệu"
+            description={error}
+            action={{
+              label: "Thử lại",
+              onClick: refresh,
+            }}
+          />
         </MainLayout>
       </RoleGuard>
     );
@@ -85,6 +94,9 @@ export default function DashboardPage() {
     >
       <MainLayout>
         <div className="space-y-6">
+          {/* Page Title */}
+          <h1 className="sr-only">Dashboard</h1>
+          
           {/* Header */}
           <DashboardHeader onRefresh={refresh} refreshing={loading} />
 
@@ -110,10 +122,23 @@ export default function DashboardPage() {
             onAddWalkIn={handleAddWalkIn}
           />
 
-          {/* Module Grid - Cards các module */}
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Các Module</h2>
-            <DashboardModuleGrid />
+          {/* Link to All Modules - Thay thế Module Grid */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Tất cả các Module</h2>
+                <p className="text-gray-600 text-sm">
+                  Khám phá tất cả các tính năng của hệ thống CTSS với tìm kiếm và bộ lọc
+                </p>
+              </div>
+              <Button
+                onClick={() => router.push("/modules")}
+                variant="primary"
+                aria-label="Xem tất cả modules"
+              >
+                Xem tất cả →
+              </Button>
+            </div>
           </div>
 
           {/* Main Content Grid */}

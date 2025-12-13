@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { cookies } from "next/headers";
 import { startOfDay, endOfDay, subDays } from "date-fns";
+import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
 
 // Simple token validation
 function validateToken(token: string): string | null {
@@ -18,6 +19,9 @@ function validateToken(token: string): string | null {
 // GET /api/dashboard/stats
 export async function GET(request: NextRequest) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
     const cookieStore = await cookies();
     const token = cookieStore.get("auth-token")?.value;
 
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest) {
     // Get today's invoices (PAID)
     const todayInvoices = await prisma.invoice.findMany({
       where: {
+        ...getSalonFilter(salonId), // Filter by salonId
         // status: "PAID",
         date: {
           gte: todayStart,
@@ -66,6 +71,7 @@ export async function GET(request: NextRequest) {
     // Get yesterday's revenue for comparison
     const yesterdayInvoices = await prisma.invoice.findMany({
       where: {
+        ...getSalonFilter(salonId), // Filter by salonId
         // status: "PAID",
         date: {
           gte: yesterdayStart,
@@ -90,6 +96,7 @@ export async function GET(request: NextRequest) {
     // Get today's bookings
     const todayBookings = await prisma.booking.findMany({
       where: {
+        ...getSalonFilter(salonId), // Filter by salonId
         date: {
           gte: todayStart,
           lte: todayEnd,
@@ -108,6 +115,7 @@ export async function GET(request: NextRequest) {
     // Get new customers today
     const newCustomers = await prisma.customer.count({
       where: {
+        ...getSalonFilter(salonId), // Filter by salonId
         createdAt: {
           gte: todayStart,
           lte: todayEnd,

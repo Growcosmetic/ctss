@@ -32,6 +32,9 @@ export async function GET(request: NextRequest) {
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
+        include: {
+          salon: true, // Include salon for salonId
+        },
       });
 
       if (!user) {
@@ -43,13 +46,22 @@ export async function GET(request: NextRequest) {
       // }
 
       // Return user (without password)
-      const { password: _, ...userWithoutPassword } = user;
+      const { password: _, salon, ...userWithoutPassword } = user;
+      const userResponse = {
+        ...userWithoutPassword,
+        salonId: user.salonId, // Include salonId
+      };
 
-      return successResponse(userWithoutPassword);
+      return successResponse(userResponse);
     } catch (dbError: any) {
       // If database error, fallback to mock user
       if (dbError.message?.includes("denied access") || dbError.message?.includes("ECONNREFUSED") || dbError.code === "P1001") {
         // Return mock user based on token
+        // Get default salon for mock user
+        const defaultSalon = await prisma.salon.findFirst({
+          where: { slug: "chi-tam" },
+        }).catch(() => null);
+
         const mockUser = {
           id: userId,
           email: userId.includes("admin") ? "admin@ctss.com" : 
@@ -69,6 +81,7 @@ export async function GET(request: NextRequest) {
                 userId.includes("stylist") ? "STYLIST" :
                 "ASSISTANT",
           phone: "0900000001",
+          salonId: defaultSalon?.id || "mock-salon-1",
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

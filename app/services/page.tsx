@@ -5,7 +5,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import {
   Table,
   TableBody,

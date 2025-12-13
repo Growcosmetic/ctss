@@ -32,6 +32,9 @@ export async function POST(request: NextRequest) {
       if (phone) {
         user = await prisma.user.findUnique({
           where: { phone },
+          include: {
+            salon: true, // Include salon for salonId
+          },
         });
       } else if (email) {
         // Try to find by email (may not exist in schema)
@@ -40,6 +43,9 @@ export async function POST(request: NextRequest) {
           where: { 
             // Try phone as fallback if email doesn't work
             phone: email 
+          },
+          include: {
+            salon: true, // Include salon for salonId
           },
         });
       }
@@ -50,6 +56,9 @@ export async function POST(request: NextRequest) {
         try {
           user = await prisma.user.findUnique({
             where: { phone: email },
+            include: {
+              salon: true, // Include salon for salonId
+            },
           });
         } catch (e) {
           // Still error, will use mock
@@ -69,13 +78,18 @@ export async function POST(request: NextRequest) {
       if (isDbError) {
         console.warn("Database connection failed, using mock login");
         // Mock users for localhost development
+        // Get default salon for mock users
+        const defaultSalon = await prisma.salon.findFirst({
+          where: { slug: "chi-tam" },
+        }).catch(() => null);
+
         const mockUsers: any = {
-          "0900000001": { id: "mock-admin", name: "Admin User", phone: "0900000001", password: "123456", role: "ADMIN" },
-          "0900000002": { id: "mock-manager", name: "Manager User", phone: "0900000002", password: "123456", role: "MANAGER" },
-          "0900000003": { id: "mock-reception", name: "Reception User", phone: "0900000003", password: "123456", role: "RECEPTIONIST" },
-          "0900000004": { id: "mock-stylist", name: "Stylist User", phone: "0900000004", password: "123456", role: "STYLIST" },
-          "0900000005": { id: "mock-assistant", name: "Assistant User", phone: "0900000005", password: "123456", role: "ASSISTANT" },
-          "admin@ctss.com": { id: "mock-admin", name: "Admin User", phone: "0900000001", password: "123456", role: "ADMIN" },
+          "0900000001": { id: "mock-admin", name: "Admin User", phone: "0900000001", password: "123456", role: "ADMIN", salonId: defaultSalon?.id || "mock-salon-1" },
+          "0900000002": { id: "mock-manager", name: "Manager User", phone: "0900000002", password: "123456", role: "MANAGER", salonId: defaultSalon?.id || "mock-salon-1" },
+          "0900000003": { id: "mock-reception", name: "Reception User", phone: "0900000003", password: "123456", role: "RECEPTIONIST", salonId: defaultSalon?.id || "mock-salon-1" },
+          "0900000004": { id: "mock-stylist", name: "Stylist User", phone: "0900000004", password: "123456", role: "STYLIST", salonId: defaultSalon?.id || "mock-salon-1" },
+          "0900000005": { id: "mock-assistant", name: "Assistant User", phone: "0900000005", password: "123456", role: "ASSISTANT", salonId: defaultSalon?.id || "mock-salon-1" },
+          "admin@ctss.com": { id: "mock-admin", name: "Admin User", phone: "0900000001", password: "123456", role: "ADMIN", salonId: defaultSalon?.id || "mock-salon-1" },
         };
 
         const loginKey = phone || email || "";

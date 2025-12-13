@@ -1,69 +1,121 @@
-# 🚀 DEPLOY LÊN VPS - HƯỚNG DẪN NHANH
+# 🚀 Deploy ngay lên VPS
 
-## ✅ Đã hoàn thành:
-- ✅ Code đã được commit
-- ✅ Code đã được push lên GitHub
+## ✅ Đã push code lên GitHub thành công!
 
-## 📋 Bước tiếp theo - Deploy lên VPS:
+Commit: `bbd1407` - feat: Refactor Sidebar với accordion và tạo All Modules page
 
-### Cách 1: SSH vào VPS và chạy lệnh
+## 📋 Các bước deploy lên VPS:
+
+### Option 1: SSH vào VPS và chạy script (Khuyến nghị)
 
 ```bash
-# SSH vào VPS
+# 1. SSH vào VPS
 ssh root@72.61.119.247
 
-# Sau khi vào VPS, chạy các lệnh sau:
+# 2. Chạy script deploy
 cd ~/ctss
-git pull origin main
-npm install
-npx prisma db push --accept-data-loss
-npx prisma generate
-npm run build
-pm2 restart ctss
+bash deploy-from-vps.sh
 ```
 
-### Cách 2: Dùng script deploy.sh (nếu SSH key đã setup)
+### Option 2: Deploy thủ công từng bước
 
 ```bash
-./deploy.sh
+# 1. SSH vào VPS
+ssh root@72.61.119.247
+
+# 2. Pull code từ GitHub
+cd ~/ctss
+git pull origin main
+
+# 3. Cài đặt dependencies
+npm install --legacy-peer-deps
+
+# 4. Cập nhật database
+npx prisma generate
+npx prisma db push --accept-data-loss
+
+# 5. Build ứng dụng
+npm run build
+
+# 6. Khởi động lại PM2
+pm2 restart ctss || pm2 start npm --name "ctss" -- start
+pm2 save
+
+# 7. Kiểm tra status
+pm2 status
+pm2 logs ctss --lines 50
 ```
 
----
+### Option 3: Sử dụng script từ local (nếu có SSH key setup)
+
+```bash
+# Chạy từ local machine
+ssh root@72.61.119.247 "cd ~/ctss && bash deploy-from-vps.sh"
+```
+
+## 🎯 Tính năng mới đã deploy:
+
+1. **Sidebar Refactor:**
+   - Data structure mới với MENU_ITEMS, GROUP_ORDER
+   - Single-item groups render trực tiếp (không chevron)
+   - Multi-item groups render accordion
+   - Auto-collapse sau navigation
+   - Scroll bar với height cố định
+
+2. **All Modules Page:**
+   - Route: `/modules`
+   - Search functionality
+   - Group filter
+   - Favorite feature
+   - Role-based filtering
+   - Responsive grid layout
+
+3. **Shared Data Source:**
+   - `lib/menuItems.ts` - Single source of truth
+   - Sidebar và Modules page dùng chung data
 
 ## 🔍 Kiểm tra sau khi deploy:
 
-```bash
-# Kiểm tra PM2 status
-pm2 status
+1. **Kiểm tra Sidebar:**
+   - Truy cập bất kỳ trang nào
+   - Kiểm tra sidebar hiển thị đúng
+   - Test expand/collapse groups
+   - Test scroll bar
 
-# Xem logs
-pm2 logs ctss --lines 50
+2. **Kiểm tra All Modules page:**
+   - Truy cập `/modules`
+   - Test search functionality
+   - Test filter buttons
+   - Test favorite feature
+   - Test navigation
 
-# Kiểm tra ứng dụng
-curl http://72.61.119.247/api/health
-```
+3. **Kiểm tra PM2:**
+   ```bash
+   pm2 status
+   pm2 logs ctss --lines 50
+   ```
 
----
+4. **Kiểm tra ứng dụng:**
+   - Truy cập: http://72.61.119.247
+   - Test các tính năng chính
 
-## 📝 Các thay đổi đã deploy:
+## ⚠️ Lưu ý:
 
-1. ✅ Seed data system (`data/seed-data.js`)
-2. ✅ Script seed toàn bộ hệ thống (`scripts/seed-all-via-api.js`)
-3. ✅ POST endpoint cho `/api/services`
-4. ✅ Sửa Prisma schema
-5. ✅ README hướng dẫn seed data
+- Nếu có lỗi build, kiểm tra:
+  - Node version: `node --version` (nên là 18+)
+  - Dependencies: `npm install --legacy-peer-deps`
+  - Database connection: Kiểm tra `.env` file
 
----
+- Nếu PM2 không chạy:
+  ```bash
+  pm2 delete ctss
+  pm2 start npm --name "ctss" -- start
+  pm2 save
+  ```
 
-## 🌐 Sau khi deploy xong:
+## 📞 Support:
 
-- Truy cập: http://72.61.119.247
-- CRM: http://72.61.119.247/crm
-- Booking: http://72.61.119.247/booking
-
----
-
-**Lưu ý**: Nếu SSH bị từ chối, cần:
-1. Kiểm tra SSH key đã được thêm vào VPS chưa
-2. Hoặc dùng password để SSH
-3. Hoặc deploy thủ công qua SSH client
+Nếu gặp vấn đề, kiểm tra:
+- `pm2 logs ctss` - Xem logs
+- `pm2 status` - Kiểm tra process status
+- `npm run build` - Test build locally trước

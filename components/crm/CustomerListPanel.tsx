@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Search, Download, Filter, FileSpreadsheet } from "lucide-react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Search, Download, Filter, FileSpreadsheet, X } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import AdvancedFilterModal, { AdvancedFilters } from "./AdvancedFilterModal";
+import { debounce, searchInFields } from "@/lib/searchUtils";
 
 interface Customer {
   id: string;
@@ -23,6 +25,9 @@ interface CustomerListPanelProps {
   onSearchChange: (term: string) => void;
   selectedSegment?: string;
   onSegmentChange?: (segment: string) => void;
+  onAdvancedFilterChange?: (filters: AdvancedFilters) => void;
+  advancedFilters?: AdvancedFilters;
+  totalCount?: number;
 }
 
 export default function CustomerListPanel({
@@ -33,17 +38,49 @@ export default function CustomerListPanel({
   onSearchChange,
   selectedSegment,
   onSegmentChange,
+  onAdvancedFilterChange,
+  advancedFilters = {},
+  totalCount,
 }: CustomerListPanelProps) {
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  // Debounce search
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      setDebouncedSearchTerm(term);
+      onSearchChange(term);
+    }, 300),
+    [onSearchChange]
+  );
+
+  useEffect(() => {
+    debouncedSearch(localSearchTerm);
+  }, [localSearchTerm, debouncedSearch]);
+
+  useEffect(() => {
+    setLocalSearchTerm(searchTerm);
+  }, [searchTerm]);
+
   const filteredCustomers = useMemo(() => {
-    if (!searchTerm) return customers;
-    const term = searchTerm.toLowerCase();
-    return customers.filter(
-      (c) =>
-        `${c.firstName} ${c.lastName}`.toLowerCase().includes(term) ||
-        c.phone.includes(term) ||
-        c.customerCode?.toLowerCase().includes(term)
-    );
-  }, [customers, searchTerm]);
+    let filtered = customers;
+
+    // Search filter (client-side for instant feedback)
+    if (debouncedSearchTerm) {
+      filtered = filtered.filter((c) =>
+        searchInFields(c, debouncedSearchTerm, [
+          "firstName",
+          "lastName",
+          "phone",
+          "email",
+          "customerCode",
+        ])
+      );
+    }
+
+    return filtered;
+  }, [customers, debouncedSearchTerm]);
 
   const getInitials = (firstName: string, lastName: string) => {
     const first = firstName?.[0]?.toUpperCase() || "";
@@ -63,18 +100,156 @@ export default function CustomerListPanel({
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <Input
-            placeholder="Tìm kiếm khách hàng"
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Tìm theo tên, SĐT, email, mã KH..."
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
             className="pl-10"
+            aria-label="Tìm kiếm khách hàng"
           />
+          {localSearchTerm && (
+            <button
+              onClick={() => {
+                setLocalSearchTerm("");
+                onSearchChange("");
+              }}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label="Xóa tìm kiếm"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
+
+        {/* Filter Badges */}
+        {(advancedFilters.membershipStatus?.length > 0 ||
+          advancedFilters.source?.length > 0 ||
+          advancedFilters.dateFrom ||
+          advancedFilters.dateTo ||
+          advancedFilters.customerGroup?.length > 0) && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {advancedFilters.membershipStatus?.map((status) => (
+              <span
+                key={status}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+              >
+                Membership: {status}
+                <button
+                  onClick={() => {
+                    const newFilters = {
+                      ...advancedFilters,
+                      membershipStatus: advancedFilters.membershipStatus?.filter((s) => s !== status),
+                    };
+                    if (onAdvancedFilterChange) {
+                      onAdvancedFilterChange(newFilters);
+                    }
+                  }}
+                  className="hover:text-blue-900"
+                  aria-label={`Xóa filter ${status}`}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            {advancedFilters.source?.map((source) => (
+              <span
+                key={source}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+              >
+                Nguồn: {source}
+                <button
+                  onClick={() => {
+                    const newFilters = {
+                      ...advancedFilters,
+                      source: advancedFilters.source?.filter((s) => s !== source),
+                    };
+                    if (onAdvancedFilterChange) {
+                      onAdvancedFilterChange(newFilters);
+                    }
+                  }}
+                  className="hover:text-green-900"
+                  aria-label={`Xóa filter ${source}`}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            {(advancedFilters.dateFrom || advancedFilters.dateTo) && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                Ngày: {advancedFilters.dateFrom || "..."} - {advancedFilters.dateTo || "..."}
+                <button
+                  onClick={() => {
+                    const newFilters = { ...advancedFilters, dateFrom: undefined, dateTo: undefined };
+                    if (onAdvancedFilterChange) {
+                      onAdvancedFilterChange(newFilters);
+                    }
+                  }}
+                  className="hover:text-purple-900"
+                  aria-label="Xóa filter ngày"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            {advancedFilters.customerGroup?.map((group) => (
+              <span
+                key={group}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium"
+              >
+                Nhóm: {group}
+                <button
+                  onClick={() => {
+                    const newFilters = {
+                      ...advancedFilters,
+                      customerGroup: advancedFilters.customerGroup?.filter((g) => g !== group),
+                    };
+                    if (onAdvancedFilterChange) {
+                      onAdvancedFilterChange(newFilters);
+                    }
+                  }}
+                  className="hover:text-orange-900"
+                  aria-label={`Xóa filter ${group}`}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={() => {
+                if (onAdvancedFilterChange) {
+                  onAdvancedFilterChange({});
+                }
+              }}
+              className="text-xs text-gray-600 hover:text-gray-900 underline"
+            >
+              Xóa tất cả
+            </button>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 mb-2">
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => setShowAdvancedFilter(true)}
+          >
             <Filter size={14} className="mr-1" />
-            Tìm nâng cao
+            Bộ lọc
+            {(advancedFilters.membershipStatus?.length > 0 ||
+              advancedFilters.source?.length > 0 ||
+              advancedFilters.dateFrom ||
+              advancedFilters.dateTo ||
+              advancedFilters.customerGroup?.length > 0) && (
+              <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white rounded-full text-xs">
+                {[
+                  advancedFilters.membershipStatus?.length || 0,
+                  advancedFilters.source?.length || 0,
+                  advancedFilters.dateFrom || advancedFilters.dateTo ? 1 : 0,
+                  advancedFilters.customerGroup?.length || 0,
+                ].reduce((a, b) => a + b, 0)}
+              </span>
+            )}
           </Button>
           <Button variant="outline" size="sm" title="Xuất dữ liệu">
             <Download size={14} />
@@ -104,11 +279,34 @@ export default function CustomerListPanel({
         </div>
       </div>
 
+      {/* Customer Count */}
+      {(debouncedSearchTerm || Object.keys(advancedFilters).length > 0) && (
+        <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <p className="text-xs text-gray-600">
+            Hiển thị <span className="font-semibold text-gray-900">{filteredCustomers.length}</span>
+            {totalCount !== undefined && (
+              <>
+                {" "}trên <span className="font-semibold text-gray-900">{totalCount}</span> khách hàng
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Customer List */}
       <div className="flex-1 overflow-y-auto">
         {filteredCustomers.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
-            {searchTerm ? "Không tìm thấy khách hàng" : "Chưa có khách hàng"}
+            {debouncedSearchTerm || Object.keys(advancedFilters).length > 0 ? (
+              <div>
+                <p className="font-medium mb-1">Không tìm thấy khách hàng</p>
+                <p className="text-xs">
+                  Thử thay đổi từ khóa tìm kiếm hoặc bỏ bộ lọc
+                </p>
+              </div>
+            ) : (
+              "Chưa có khách hàng"
+            )}
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
@@ -151,6 +349,16 @@ export default function CustomerListPanel({
           </div>
         )}
       </div>
+
+      {/* Advanced Filter Modal */}
+      {onAdvancedFilterChange && (
+        <AdvancedFilterModal
+          isOpen={showAdvancedFilter}
+          onClose={() => setShowAdvancedFilter(false)}
+          onApply={onAdvancedFilterChange}
+          currentFilters={advancedFilters}
+        />
+      )}
     </div>
   );
 }

@@ -31,217 +31,6 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
 import { useUIStore } from "@/store/useUIStore";
 import { MENU_ITEMS, GROUP_ORDER, GROUP_ICONS, MenuItemData } from "@/lib/menuItems";
-  {
-    key: "dashboard-main",
-    label: "Main Dashboard",
-    path: "/dashboard",
-    group: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-  },
-  {
-    key: "dashboard-ceo",
-    label: "CEO Control Tower",
-    path: "/control-tower",
-    group: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["ADMIN"],
-  },
-  {
-    key: "booking-calendar",
-    label: "Booking Calendar",
-    path: "/booking",
-    group: "Đặt lịch",
-    icon: Calendar,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-  },
-  {
-    key: "crm-dashboard",
-    label: "CRM Dashboard",
-    path: "/crm",
-    group: "Khách hàng",
-    icon: Users,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST"],
-  },
-  {
-    key: "membership",
-    label: "Membership",
-    path: "/membership",
-    group: "Khách hàng",
-    icon: Award,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "personalization",
-    label: "Personalization",
-    path: "/personalization",
-    group: "Khách hàng",
-    icon: Target,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "services",
-    label: "Services",
-    path: "/services",
-    group: "Dịch vụ",
-    icon: Scissors,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-  },
-  {
-    key: "pricing",
-    label: "Pricing",
-    path: "/pricing",
-    group: "Dịch vụ",
-    icon: DollarSign,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "inventory",
-    label: "Inventory",
-    path: "/inventory",
-    group: "Kho hàng",
-    icon: Package,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST"],
-  },
-  {
-    key: "staff",
-    label: "Staff",
-    path: "/staff",
-    group: "Nhân viên",
-    icon: UserCircle,
-    roles: ["STYLIST", "ASSISTANT"],
-  },
-  {
-    key: "staff-management",
-    label: "Staff Management",
-    path: "/staff-management",
-    group: "Nhân viên",
-    icon: UserCircle,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "pos",
-    label: "POS",
-    path: "/pos",
-    group: "Bán hàng",
-    icon: ShoppingCart,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST"],
-  },
-  {
-    key: "sales-dashboard",
-    label: "Sales Dashboard",
-    path: "/sales",
-    group: "Bán hàng",
-    icon: TrendingUp,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    path: "/reports",
-    group: "Báo cáo",
-    icon: BarChart3,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "reports-financial",
-    label: "Financial",
-    path: "/reports/financial",
-    group: "Báo cáo",
-    icon: DollarSign,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "marketing-dashboard",
-    label: "Marketing Dashboard",
-    path: "/marketing/dashboard",
-    group: "Marketing",
-    icon: Sparkles,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "quality",
-    label: "Quality",
-    path: "/quality",
-    group: "Analytics",
-    icon: CheckCircle,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "voice-analytics",
-    label: "Voice Analytics",
-    path: "/voice",
-    group: "Analytics",
-    icon: Phone,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "hair-health",
-    label: "Hair Health",
-    path: "/hair-health",
-    group: "Analytics",
-    icon: Heart,
-    roles: ["ADMIN", "MANAGER", "STYLIST"],
-  },
-  {
-    key: "operations",
-    label: "Operations",
-    path: "/operations",
-    group: "Hệ thống",
-    icon: Settings,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "training",
-    label: "Training",
-    path: "/training/dashboard",
-    group: "Hệ thống",
-    icon: Settings,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "sop",
-    label: "SOP",
-    path: "/sop",
-    group: "Hệ thống",
-    icon: Settings,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "workflow",
-    label: "Workflow",
-    path: "/workflow-console",
-    group: "Hệ thống",
-    icon: Settings,
-    roles: ["ADMIN", "MANAGER"],
-  },
-  {
-    key: "partner-hq",
-    label: "Partner HQ",
-    path: "/partner/hq",
-    group: "Hệ thống",
-    icon: Building2,
-    roles: ["ADMIN"],
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    path: "/settings",
-    group: "Hệ thống",
-    icon: Settings,
-    roles: ["ADMIN"],
-  },
-  {
-    key: "mina-ai",
-    label: "Mina AI",
-    path: "/mina",
-    group: "AI",
-    icon: Sparkles,
-    roles: ["ADMIN", "MANAGER", "RECEPTIONIST", "STYLIST", "ASSISTANT"],
-  },
-];
-
-// Group icons and order - Imported from shared file
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -362,7 +151,7 @@ export default function Sidebar() {
                       href={item.path}
                       onClick={() => setIsMobileOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
                         isActive
                           ? "text-gray-800 font-semibold bg-white/20"
                           : "text-gray-700 hover:text-gray-900 hover:bg-white/10"
@@ -370,7 +159,7 @@ export default function Sidebar() {
                       aria-current={isActive ? "page" : undefined}
                     >
                       {/* Use GroupIcon and groupLabel for single-item groups */}
-                      <GroupIcon size={20} className={cn("transition-colors", isActive && "text-gray-900")} />
+                      <GroupIcon size={20} className={cn("transition-colors", isActive && "text-gray-900")} aria-hidden="true" />
                       <span className="font-medium">{groupLabel}</span>
                       {/* No chevron for single-item groups */}
                     </Link>
@@ -389,7 +178,7 @@ export default function Sidebar() {
                     onClick={() => toggleGroup(groupLabel)}
                     className={cn(
                       "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200",
-                      "text-gray-700 hover:text-gray-900 hover:bg-white/10",
+                      "text-gray-700 hover:text-gray-900 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
                       hasActiveItem && "bg-white/5"
                     )}
                     aria-expanded={isExpanded}
@@ -415,6 +204,8 @@ export default function Sidebar() {
                       "overflow-hidden transition-all duration-200 ease-in-out",
                       isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
                     )}
+                    aria-hidden={!isExpanded}
+                    hidden={!isExpanded}
                   >
                     <ul className="ml-4 mt-1 space-y-1 pb-1">
                       {groupItems.map((item) => {
@@ -427,7 +218,7 @@ export default function Sidebar() {
                               href={item.path}
                               onClick={() => setIsMobileOpen(false)}
                               className={cn(
-                                "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm",
+                                "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
                                 isActive
                                   ? "text-gray-800 font-semibold bg-white/20"
                                   : "text-gray-600 hover:text-gray-900 hover:bg-white/10"
@@ -437,6 +228,7 @@ export default function Sidebar() {
                               <ItemIcon 
                                 size={16} 
                                 className={cn("transition-colors", isActive && "text-gray-900")} 
+                                aria-hidden="true"
                               />
                               <span>{item.label}</span>
                             </Link>

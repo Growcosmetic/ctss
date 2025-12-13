@@ -12,13 +12,15 @@ export enum CTSSRole {
 
 export interface User {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string; // Full name (if firstName/lastName not available)
   phone?: string | null;
   avatar?: string | null;
   role: CTSSRole;
-  isActive: boolean;
+  salonId?: string; // Multi-tenant: Salon ID
+  isActive?: boolean;
   lastLoginAt?: string | null;
   createdAt: string;
   updatedAt: string;

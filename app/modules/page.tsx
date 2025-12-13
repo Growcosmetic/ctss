@@ -108,7 +108,7 @@ export default function ModulesPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Modules</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tất cả các Module</h1>
           <p className="text-gray-600">
             Tìm kiếm và khám phá tất cả các tính năng của hệ thống CTSS
           </p>

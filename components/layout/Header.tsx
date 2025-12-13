@@ -1,11 +1,12 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, Search, User, LogOut, Menu, X, ChevronLeft, ChevronRight, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CTSSRole } from "@/features/auth/types";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import { useUIStore } from "@/store/useUIStore";
+import { useEffect, useState } from "react";
 
 const roleLabels: Record<CTSSRole, string> = {
   ADMIN: "Quản trị viên",
@@ -19,6 +20,21 @@ export default function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const [salonName, setSalonName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch current salon info
+    fetch("/api/salons")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setSalonName(data.data.name);
+        }
+      })
+      .catch(() => {
+        // Silently fail if API is not available
+      });
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -57,6 +73,16 @@ export default function Header() {
 
       {/* Right side */}
       <div className="flex items-center gap-4">
+        {/* Tenant Indicator */}
+        {salonName && (
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+            <Building2 size={16} className="text-blue-600" />
+            <span className="text-sm font-medium text-blue-900">
+              Salon: {salonName}
+            </span>
+          </div>
+        )}
+
         {/* Notifications */}
         <NotificationBell />
 

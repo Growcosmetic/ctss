@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { X, BarChart3, TrendingUp, Users, Calendar } from "lucide-react";
 

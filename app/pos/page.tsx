@@ -18,8 +18,16 @@ import {
   CreditCard,
   Wallet,
   Banknote,
+  Tag,
+  FileText,
+  Printer,
+  Loader2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import CancelOrderModal from "@/components/pos/CancelOrderModal";
+import DiscountModal from "@/components/pos/DiscountModal";
+import NoteModal from "@/components/pos/NoteModal";
 
 interface Product {
   id: string;
@@ -58,6 +66,12 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
   const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [orderNote, setOrderNote] = useState("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchProducts();
@@ -152,6 +166,12 @@ export default function POSPage() {
       return;
     }
 
+    if (!paymentMethod) {
+      alert("Vui lòng chọn phương thức thanh toán!");
+      return;
+    }
+
+    setIsProcessing(true);
     try {
       const response = await fetch("/api/pos", {
         method: "POST",
@@ -170,7 +190,8 @@ export default function POSPage() {
           discount: finalDiscount,
           tax,
           paymentMethod,
-          createdById: "system",
+          notes: orderNote || null,
+          createdById: user?.id || "system",
         }),
       });
 
@@ -179,6 +200,7 @@ export default function POSPage() {
         alert("Thanh toán thành công!");
         setCart([]);
         setDiscount(0);
+        setOrderNote("");
         await fetchProducts(); // Refresh products
       } else {
         alert(result.error || "Thanh toán thất bại");
@@ -186,8 +208,42 @@ export default function POSPage() {
     } catch (error) {
       console.error("Failed to checkout:", error);
       alert("Thanh toán thất bại");
+    } finally {
+      setIsProcessing(false);
     }
   };
+
+  const handleCancelOrder = () => {
+    setCart([]);
+    setDiscount(0);
+    setOrderNote("");
+    setCustomerSearch("");
+    setPaymentMethod("CASH");
+  };
+
+  const handlePrintInvoice = () => {
+    if (cart.length === 0) {
+      alert("Giỏ hàng trống!");
+      return;
+    }
+    // TODO: Implement print invoice functionality
+    window.print();
+  };
+
+  const handleApplyDiscount = (discountAmount: number, voucherCode?: string) => {
+    setDiscount(discountAmount);
+    if (voucherCode) {
+      // TODO: Validate voucher code
+      console.log("Voucher code:", voucherCode);
+    }
+  };
+
+  const handleSaveNote = (note: string) => {
+    setOrderNote(note);
+  };
+
+  // Check if user can process payment
+  const canProcessPayment = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "RECEPTIONIST";
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -200,6 +256,7 @@ export default function POSPage() {
   return (
     <RoleGuard roles={[CTSSRole.ADMIN, CTSSRole.MANAGER, CTSSRole.RECEPTIONIST]}>
       <MainLayout>
+        <h1 className="sr-only">Thu ngân</h1>
         <div className="space-y-6">
         {/* Header */}
         <div>
@@ -352,16 +409,17 @@ export default function POSPage() {
                   <span className="text-gray-600">Tạm tính:</span>
                   <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Giảm giá"
-                    value={discount}
-                    onChange={(e) => setDiscount(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-gray-500">₫</span>
-                </div>
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-sm bg-blue-50 p-2 rounded">
+                    <span className="text-gray-600">Giảm giá:</span>
+                    <span className="font-semibold text-blue-700">-{formatCurrency(discount)}</span>
+                  </div>
+                )}
+                {orderNote && (
+                  <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                    <span className="font-medium">Ghi chú:</span> {orderNote}
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-lg font-bold pt-2 border-t">
                   <span>Tổng cộng:</span>
                   <span className="text-primary-600">{formatCurrency(total)}</span>
@@ -450,20 +508,111 @@ export default function POSPage() {
                 </div>
               </div>
 
-              {/* Checkout Button */}
-              <div className="pt-4 border-t">
-                <Button
-                  onClick={handleCheckout}
-                  className="w-full"
-                  size="lg"
-                  disabled={cart.length === 0}
-                >
-                  Thanh toán
-                </Button>
-              </div>
             </Card>
           </div>
         </div>
+
+        {/* Action Buttons Area - Refactored */}
+        <div className="space-y-4 mt-6">
+          {/* Khu vực 1: Xử lý đơn hàng */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Xử lý đơn hàng</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Hủy */}
+              <Button
+                onClick={() => setShowCancelModal(true)}
+                variant="secondary"
+                className="flex items-center justify-center gap-2"
+                title="Hủy đơn hàng hiện tại"
+                aria-label="Hủy đơn hàng"
+              >
+                <X size={20} />
+                Hủy
+              </Button>
+              
+              {/* Áp dụng giảm giá */}
+              <Button
+                onClick={() => setShowDiscountModal(true)}
+                variant="outline"
+                className="flex items-center justify-center gap-2"
+                title="Áp dụng giảm giá hoặc voucher"
+                aria-label="Áp dụng giảm giá"
+              >
+                <Tag size={20} />
+                Giảm giá/Voucher
+              </Button>
+              
+              {/* Thêm ghi chú */}
+              <Button
+                onClick={() => setShowNoteModal(true)}
+                variant="outline"
+                className="flex items-center justify-center gap-2"
+                title="Thêm ghi chú cho đơn hàng"
+                aria-label="Thêm ghi chú"
+              >
+                <FileText size={20} />
+                Ghi chú
+              </Button>
+            </div>
+          </div>
+
+          {/* Khu vực 2: Hoàn tất giao dịch */}
+          {canProcessPayment && (
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Hoàn tất giao dịch</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* In hóa đơn */}
+                <Button
+                  onClick={handlePrintInvoice}
+                  disabled={cart.length === 0 || isProcessing}
+                  variant="secondary"
+                  isLoading={isProcessing}
+                  className="flex items-center justify-center gap-2 shadow-md"
+                  title="In hóa đơn"
+                  aria-label="In hóa đơn"
+                >
+                  <Printer size={20} />
+                  In hóa đơn
+                </Button>
+                
+                {/* Thanh toán */}
+                <Button
+                  onClick={handleCheckout}
+                  disabled={cart.length === 0 || isProcessing || !paymentMethod}
+                  variant="success"
+                  isLoading={isProcessing}
+                  className="flex items-center justify-center gap-2 shadow-lg"
+                  title="Thanh toán đơn hàng"
+                  aria-label="Thanh toán"
+                >
+                  <CreditCard size={20} />
+                  Thanh toán
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Modals */}
+        <CancelOrderModal
+          isOpen={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          onConfirm={handleCancelOrder}
+          itemCount={cart.length}
+        />
+        <DiscountModal
+          isOpen={showDiscountModal}
+          onClose={() => setShowDiscountModal(false)}
+          onApply={handleApplyDiscount}
+          currentDiscount={discount}
+          subtotal={subtotal}
+        />
+        <NoteModal
+          isOpen={showNoteModal}
+          onClose={() => setShowNoteModal(false)}
+          onSave={handleSaveNote}
+          currentNote={orderNote}
+        />
       </div>
       </MainLayout>
     </RoleGuard>

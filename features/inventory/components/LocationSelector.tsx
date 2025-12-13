@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { MapPin, Plus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal";
 
 interface Location {
   id: string;

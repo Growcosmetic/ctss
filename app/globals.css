@@ -3,8 +3,56 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* CTSS Design Tokens - CSS Variables */
+    --ctss-primary: #0284c7;
+    --ctss-primary-hover: #0369a1;
+    --ctss-secondary: #64748b;
+    --ctss-success: #22c55e;
+    --ctss-warning: #f59e0b;
+    --ctss-danger: #ef4444;
+    --ctss-info: #3b82f6;
+    
+    --ctss-bg: #f9fafb;
+    --ctss-surface: #ffffff;
+    --ctss-border: #e5e7eb;
+    
+    --ctss-text-primary: #111827;
+    --ctss-text-secondary: #6b7280;
+    --ctss-text-tertiary: #9ca3af;
+  }
+
   body {
     @apply bg-gray-50 text-gray-900;
+  }
+
+  /* Focus ring for keyboard navigation */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+
+  /* Skip link styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 }
 

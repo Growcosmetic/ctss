@@ -2,17 +2,24 @@
 // Services - List Services & Create Service
 // ============================================
 
+import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(req);
+
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
     const isActive = searchParams.get("isActive");
 
-    const where: any = {};
+    const where: any = {
+      ...getSalonFilter(salonId), // Filter by salonId
+    };
     if (category) {
       where.category = { equals: category, mode: "insensitive" };
     }
@@ -50,8 +57,11 @@ export async function GET(req: Request) {
 }
 
 // POST /api/services - Create a new service
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(req);
+
     const {
       name,
       code,
@@ -83,16 +93,20 @@ export async function POST(req: Request) {
     let existing = null;
     if (code) {
       existing = await prisma.service.findFirst({
-        where: { code },
+        where: {
+          ...getSalonFilter(salonId),
+          code,
+        },
       });
     }
     if (!existing) {
       existing = await prisma.service.findFirst({
-      where: {
-        name: { equals: name, mode: "insensitive" },
+        where: {
+          ...getSalonFilter(salonId),
+          name: { equals: name, mode: "insensitive" },
           category: { equals: finalCategory, mode: "insensitive" },
-      },
-    });
+        },
+      });
     }
 
     if (existing) {
@@ -104,6 +118,7 @@ export async function POST(req: Request) {
 
     const service = await prisma.service.create({
       data: {
+        salonId, // Multi-tenant: Assign to current salon
         name,
         code: code || null,
         category: finalCategory,

@@ -1,10 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { requireSalonId, getSalonFilter } from "@/lib/api-helpers";
 
 // GET /api/pos - Get all POS orders
 export async function GET(request: NextRequest) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
@@ -15,7 +19,9 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      ...getSalonFilter(salonId), // Filter by salonId
+    };
     if (status) {
       where.status = status;
     }
@@ -93,6 +99,9 @@ export async function GET(request: NextRequest) {
 // POST /api/pos - Create a new POS order
 export async function POST(request: NextRequest) {
   try {
+    // Require salonId for multi-tenant isolation
+    const salonId = await requireSalonId(request);
+
     const body = await request.json();
     const {
       customerId,
@@ -125,6 +134,7 @@ export async function POST(request: NextRequest) {
 
     const order = await prisma.posOrder.create({
       data: {
+        salonId, // Multi-tenant: Assign to current salon
         orderNo,
         customerId,
         staffId,

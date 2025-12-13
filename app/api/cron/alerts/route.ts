@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { runAlertRulesForAllSalons } from "@/lib/alerts/rules";
+import { AlertType } from "@prisma/client";
 
 /**
  * Phase 10.2 - Cron Job for Alert Rules
@@ -16,6 +17,16 @@ import { runAlertRulesForAllSalons } from "@/lib/alerts/rules";
 
 export async function GET(request: NextRequest) {
   try {
+    // Safety check: Ensure AlertType enum is available
+    if (!AlertType || !AlertType.BOOKING_OVERDUE) {
+      console.warn("[Cron] AlertType enum not available, skipping alert rules");
+      return successResponse({
+        success: false,
+        skipped: true,
+        message: "AlertType enum not available",
+      });
+    }
+
     // Optional: Add authentication/authorization for cron endpoint
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;

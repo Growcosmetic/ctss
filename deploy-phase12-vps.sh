@@ -1,15 +1,18 @@
 #!/bin/bash
 # ============================================
-# SCRIPT DEPLOY LÊN VPS - CHẠY TRÊN VPS
+# SCRIPT DEPLOY PHASE 12 LÊN VPS
+# Chạy script này trên VPS sau khi SSH vào
 # ============================================
 
-echo "🚀 Bắt đầu deploy CTSS lên VPS..."
+echo "🚀 Bắt đầu deploy Phase 12 (Automation Engine) lên VPS..."
 echo ""
 
-cd ~/ctss || { echo "❌ Không tìm thấy thư mục ~/ctss"; exit 1; }
+cd ~/ctss || cd /home/user/ctss || { echo "❌ Không tìm thấy thư mục ctss"; exit 1; }
 
-echo "📥 Pulling code từ GitHub..."
-git pull origin main
+echo "📥 Pulling code từ GitHub (branch: phase-8-saas)..."
+git fetch origin
+git checkout phase-8-saas
+git pull origin phase-8-saas
 
 if [ $? -ne 0 ]; then
     echo "❌ Lỗi khi pull code từ GitHub"
@@ -24,7 +27,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "🗄️  Cập nhật database schema..."
+echo "🗄️  Cập nhật database schema (Phase 12: Automation Engine)..."
 npx prisma migrate deploy
 npx prisma generate
 
@@ -53,7 +56,7 @@ echo "💾 Lưu cấu hình PM2..."
 pm2 save
 
 echo ""
-echo "✅ Deploy hoàn tất!"
+echo "✅ Deploy Phase 12 hoàn tất!"
 echo ""
 echo "📊 Kiểm tra trạng thái:"
 pm2 status
@@ -65,11 +68,11 @@ echo "🌐 Truy cập ứng dụng:"
 echo "  - http://72.61.119.247"
 echo "  - https://ctss.huynhchitam.com (nếu đã setup domain)"
 echo ""
-echo "✨ Tính năng mới trong lần deploy này:"
-echo "  - ✅ Hoàn thiện Copy/Duplicate Booking với API"
-echo "  - ✅ Hoàn thiện Edit Booking với API"
-echo "  - ✅ Quick Edit Booking (click để edit nhanh)"
-echo "  - ✅ Walk-in Booking flow hoàn chỉnh"
-echo "  - ✅ Staff Management module hoàn chỉnh"
-echo "  - ✅ Cập nhật danh sách Dashboards (27 dashboards)"
+echo "✨ Tính năng mới trong Phase 12:"
+echo "  - ✅ Automation Engine (rule-based, safe)"
+echo "  - ✅ Automation Rules management"
+echo "  - ✅ Automation Logs & Rollback"
+echo "  - ✅ Trigger từ AIAction (HIGH/CRITICAL priority)"
+echo "  - ✅ UI /dashboard/automation (OWNER only)"
 echo ""
+

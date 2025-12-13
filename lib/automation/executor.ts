@@ -65,7 +65,7 @@ export async function executeAutomationRule(
   }
 
   // Log execution
-  await prisma.automationLog.create({
+  await prisma.automationRuleLog.create({
     data: {
       ruleId: rule.id,
       salonId: rule.salonId,
@@ -266,7 +266,7 @@ function checkConditions(conditions: any, context: AutomationContext): boolean {
  * Rollback automation execution
  */
 export async function rollbackAutomation(logId: string, userId: string): Promise<void> {
-  const log = await prisma.automationLog.findUnique({
+  const log = await prisma.automationRuleLog.findUnique({
     where: { id: logId },
     include: { rule: true },
   });
@@ -282,7 +282,7 @@ export async function rollbackAutomation(logId: string, userId: string): Promise
   // TODO: Implement rollback logic based on action type
   // For now, just mark as rolled back
 
-  await prisma.automationLog.update({
+  await prisma.automationRuleLog.update({
     where: { id: logId },
     data: {
       rolledBack: true,

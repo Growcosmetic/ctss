@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [logs, total] = await Promise.all([
-      prisma.automationLog.findMany({
+      prisma.automationRuleLog.findMany({
         where,
         orderBy: { executedAt: "desc" },
         take: limit,
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.automationLog.count({ where }),
+      prisma.automationRuleLog.count({ where }),
     ]);
 
     return successResponse({

@@ -24,7 +24,7 @@ export async function POST(
     }
 
     // Verify log belongs to salon
-    const log = await prisma.automationLog.findUnique({
+    const log = await prisma.automationRuleLog.findUnique({
       where: { id: params.id },
       select: { salonId: true },
     });

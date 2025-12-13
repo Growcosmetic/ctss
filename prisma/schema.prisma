@@ -100,11 +100,11 @@ model Salon {
   usageTracking      UsageTracking[]
   SystemAlert        SystemAlert[]
   AlertRule          AlertRule[]
-  aiSummaries         AISummary[]
-  AIAlertExplanation  AIAlertExplanation[]
-  aiActions           AIAction[]
-  automationRules     AutomationRule[]
-  automationLogs      AutomationLog[]
+  aiSummaries        AISummary[]
+  AIAlertExplanation AIAlertExplanation[]
+  aiActions          AIAction[]
+  automationRules    AutomationRule[]
+  automationRuleLogs AutomationRuleLog[]
 
   @@index([slug])
   @@index([status])
@@ -5728,14 +5728,14 @@ model AutomationRule {
   conditions  Json? // Additional conditions (e.g., { actionType: "LOW_STOCK" })
   config      Json? // Action configuration (e.g., { emailTemplate: "...", recipients: [...] })
   schedule    String? // Cron expression for SCHEDULED trigger
-  createdBy  String? // User ID who created
+  createdBy   String? // User ID who created
   enabledBy   String? // User ID who enabled
   enabledAt   DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  salon Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  logs  AutomationLog[]
+  salon Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  logs  AutomationRuleLog[]
 
   @@index([salonId])
   @@index([enabled])
@@ -5743,23 +5743,23 @@ model AutomationRule {
   @@index([salonId, enabled])
 }
 
-model AutomationLog {
-  id          String            @id @default(cuid())
-  ruleId      String
-  salonId     String // Multi-tenant: Salon isolation
-  triggerId   String? // ID of trigger (actionId, alertId, etc.)
-  triggerType String // Type of trigger
-  status      AutomationStatus
-  action      AutomationAction
-  result      Json? // Result data
-  error       String? // Error message if failed
-  rolledBack  Boolean           @default(false)
+model AutomationRuleLog {
+  id           String           @id @default(cuid())
+  ruleId       String
+  salonId      String // Multi-tenant: Salon isolation
+  triggerId    String? // ID of trigger (actionId, alertId, etc.)
+  triggerType  String // Type of trigger
+  status       AutomationStatus
+  action       AutomationAction
+  result       Json? // Result data
+  error        String? // Error message if failed
+  rolledBack   Boolean          @default(false)
   rolledBackAt DateTime?
   rolledBackBy String?
-  executedAt DateTime          @default(now())
+  executedAt   DateTime         @default(now())
 
-  rule AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
-  salon Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  rule  AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  salon Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@index([ruleId])
   @@index([salonId])
